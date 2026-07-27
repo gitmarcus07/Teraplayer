@@ -8,7 +8,6 @@ import {
   Send,
   ExternalLink,
   ChevronRight,
-  Github,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -25,23 +24,23 @@ const contactMethods = [
   {
     icon: Bug,
     title: "Bug Reports",
-    body: "Found something broken? Open an issue on GitHub with steps to reproduce and we'll take a look.",
-    action: "Report on GitHub",
-    href: "https://github.com/teraplayer/teraplayer/issues",
+    body: "Found something broken? Send us the details and we'll take a look as soon as possible.",
+    action: "Report a bug",
+    href: "mailto:teraplayer.contact@gmail.com?subject=Bug%20Report",
   },
   {
     icon: Briefcase,
     title: "Business Inquiries",
     body: "Partnerships, licensing, or other business-related questions. We'd love to hear from you.",
     action: "Email us",
-    href: "mailto:business@teraplayer.app",
+    href: "mailto:teraplayer.contact@gmail.com?subject=Business%20Inquiry",
   },
   {
     icon: MessageSquare,
     title: "General Feedback",
     body: "Suggestions, feature requests, or just want to say hello. All feedback is welcome.",
     action: "Send feedback",
-    href: "mailto:feedback@teraplayer.app",
+    href: "mailto:teraplayer.contact@gmail.com?subject=Feedback",
   },
 ];
 
@@ -144,9 +143,9 @@ export default function Contact() {
               Drop us an email and we'll get back to you as soon as possible.
             </p>
             <Button asChild className="mt-6 h-12 px-8 text-base" size="lg" variant="default">
-              <a href="mailto:hello@teraplayer.app">
+              <a href="mailto:teraplayer.contact@gmail.com">
                 <Mail className="mr-2 h-5 w-5" />
-                hello@teraplayer.app
+                teraplayer.contact@gmail.com
               </a>
             </Button>
           </motion.div>
@@ -198,13 +197,11 @@ export default function Contact() {
               </div>
               <div className="flex items-center gap-4">
                 <a
-                  href="https://github.com/teraplayer"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="mailto:teraplayer.contact@gmail.com"
                   className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 >
-                  <Github className="h-4 w-4" />
-                  GitHub
+                  <Mail className="h-4 w-4" />
+                  Contact
                 </a>
                 <Link to="/about" className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">
                   About

@@ -212,19 +212,19 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="mx-auto max-w-3xl text-center"
           >
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:text-xs">
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
               <Sparkles className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
               <span className="hidden sm:inline">Now with folders, quality picker &amp; ZIP downloads</span>
               <span className="sm:hidden">Folders · Quality · ZIP</span>
             </div>
-            <h1 className="font-display text-3xl font-bold tracking-tighter sm:text-5xl lg:text-6xl" data-testid="hero-title">
+            <h1 className="font-display text-2xl font-bold tracking-tighter sm:text-5xl lg:text-6xl" data-testid="hero-title">
               Watch any <span className="text-primary">TeraBox</span> link
               <br className="hidden sm:block" /> <span className="sm:hidden">like a </span><span className="hidden sm:inline">like a </span><span className="relative inline-block">
                 streaming platform.
                 <span className="absolute inset-x-0 -bottom-1 h-1 bg-primary/40" />
               </span>
             </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
+            <p className="mx-auto mt-2 max-w-2xl text-xs text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
               Paste a public share link and TeraPlayer instantly extracts the file, generates a rich preview,
               and lets you watch or download — no signup required.
             </p>
@@ -243,7 +243,7 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-10 rounded-2xl border border-destructive/40 bg-destructive/10 p-6 text-destructive"
+            className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-destructive sm:mt-10 sm:p-6"
             data-testid="error-panel"
           >
             <div className="flex items-start gap-3">
@@ -263,7 +263,7 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-10 rounded-2xl border border-primary/40 bg-primary/5 p-6"
+            className="mt-6 rounded-2xl border border-primary/40 bg-primary/5 p-4 sm:mt-10 sm:p-6"
             data-testid="password-required-panel"
           >
             <div className="flex items-start gap-3">
@@ -287,7 +287,7 @@ export default function Home() {
         )}
 
         {!loading && preview && preview.ok && (
-          <div className="mt-10 space-y-6">
+          <div className="mt-6 space-y-4 sm:mt-10 sm:space-y-6">
             {watching && streamViaProxy ? (
               <div className="space-y-3">
                 <VideoPlayer
@@ -295,9 +295,9 @@ export default function Home() {
                   poster={currentFile?.thumbnail || preview.thumbnail}
                   title={currentFile?.name || preview.title}
                 />
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                   <Button variant="outline" size="sm" onClick={() => setWatching(false)} data-testid="close-player-btn">
-                    ← Back to details
+                    ← Back
                   </Button>
                   <QualityPicker
                     options={qualityOptions}
@@ -360,17 +360,16 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="mt-12 border-t border-border py-6 sm:mt-16 sm:py-8">
-        <div className="tp-container flex flex-col items-center justify-between gap-3 text-center text-xs text-muted-foreground sm:flex-row sm:text-left sm:text-sm">
-          <div className="flex items-center gap-2">
-            <span className="font-display text-base font-semibold text-foreground sm:text-lg">
+      <footer className="mt-8 border-t border-border py-5 sm:mt-16 sm:py-8">
+        <div className="tp-container flex flex-col items-center justify-between gap-2 text-center text-[10px] text-muted-foreground sm:flex-row sm:gap-3 sm:text-left sm:text-sm">
+          <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-2">
+            <span className="font-display text-sm font-semibold text-foreground sm:text-lg">
               Tera<span className="text-primary">Player</span>
             </span>
-            <span>·</span>
-            <span>Free to use · no account required</span>
-          </div>
-          <div className="opacity-70">
-            Only supports public TeraBox links. Respect the original owners.
+            <span className="hidden sm:inline">·</span>
+            <span className="text-[10px] sm:text-sm">Free to use — no account required</span>
+          </div>            <div className="text-[9px] opacity-70 sm:text-sm">
+              Only supports public TeraBox links<span className="hidden sm:inline">. Respect the original owners</span>.
           </div>
         </div>
       </footer>
@@ -408,8 +407,7 @@ const FEATURES = [
   { icon: ShieldCheck, title: "Sign in optional", body: "Google sign-in syncs history/favorites across devices." },
 ];
 
-const FeaturesStrip = () => (
-  <div className="mx-auto mt-10 grid max-w-5xl grid-cols-2 gap-3 sm:mt-14 sm:gap-4 md:grid-cols-4">
+const FeaturesStrip = () => (          <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-2.5 sm:mt-14 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">
     {FEATURES.map((f, i) => (
       <motion.div
         key={f.title}
@@ -427,8 +425,8 @@ const FeaturesStrip = () => (
 );
 
 const LoadingSkeleton = () => (
-  <div className="mt-12">
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+  <div className="mt-8 sm:mt-12">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
       <div className="md:col-span-7">
         <div className="aspect-video w-full animate-pulse rounded-2xl bg-secondary shimmer" />
       </div>
