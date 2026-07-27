@@ -1,0 +1,9 @@
+name = "terabox-extractor"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+
+# Free plan: 100k requests/day, 10ms CPU per request
+# No environment variables needed — the worker is self-contained
+
+[env.production]
+vars = { ENVIRONMENT = "production" }

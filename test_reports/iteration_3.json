@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 3 verifies the password-heuristic bug fix for TeraPlayer. 26/26 pytest cases pass (unit + API + orchestrator monkeypatched). Frontend Playwright verifies (a) non-TeraBox URL shows the red error-panel, NOT the password-dialog; (b) well-formed dead TeraBox link also lands on error-panel with no false password prompt. PasswordDialog source verified to render distinct 'Incorrect password' title, red 'password-incorrect-hint', and 'Try again' button when incorrect=true.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_teraplayer_iter3.py",
+    "/app/test_reports/pytest/pytest_iter3_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "extractors._is_password_error is now correctly scoped to explicit errnos (-9, 105, -105, 130) or a curated PASSWORD_PHRASES list. Bare 'pwd' substring no longer triggers detection – verified via unit test test_bare_pwd_does_not_trigger.",
+    "resolve_terabox only sets password_required=True when at least one extractor raised PasswordError. When PasswordError raised AND password param truthy, password_incorrect=True. Verified via orchestrator monkeypatch tests.",
+    "services/terabox.parse_share_input correctly extracts inline password from: '<url> Password:xxx', '<url> password: xxx', '<url> pwd=xxx', '<url>|xxx', '<url> pass xxx'. If both inline and explicit password are provided, explicit wins (line 51 `if inline_pwd and not password`).",
+    "PreviewResponse model now exposes password_incorrect: Optional[bool]=False. Confirmed present in /api/preview, /api/watch, /api/download, /api/folder responses.",
+    "Frontend Home.jsx correctly branches: preview.ok===false && preview.password_required renders the primary 'password required' panel + auto-opens PasswordDialog with incorrect=true when password_incorrect is true; else shows the red error-panel. State pwdDialog now carries {open,url,incorrect} as required.",
+    "PasswordDialog.jsx accepts new `incorrect` prop and renders distinct title ('Incorrect password' vs 'This link is password protected'), a red data-testid='password-incorrect-hint' block, and a 'Try again' button when incorrect=true – confirmed in source.",
+    "Minor (existing, not introduced this iteration): services/rate_limit.py still uses request.client.host — carried over from iteration 2, not in scope for this bug fix."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_teraplayer_iter3.py (new)"
+  ],
+  "success_rate": {"backend": "100% (26/26)", "frontend": "100% (3/3 flows)"},
+  "test_credentials": "None required.",
+  "seed_data_creation": "None. All tests use monkeypatched extractors + garbage/dead URLs. No DB writes beyond rate_limits (auto-TTL).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The password-heuristic bug is fully fixed. Regression suite lives at /app/backend/tests/test_teraplayer_iter3.py. Key invariants to preserve going forward: (1) _is_password_error must NEVER match a bare 'pwd' substring – only exact PASSWORD_PHRASES or numeric errnos in {-9,105,-105,130}. (2) resolve_terabox must set password_incorrect=True ONLY when PasswordError raised AND password argument was truthy. (3) PreviewResponse must always expose both password_required and password_incorrect booleans (defaults False). (4) Frontend PasswordDialog must render 'password-incorrect-hint' testid whenever incorrect prop is truthy. Third-party extractors (hnn/teradl/wdzone) may still be up/down – tests do NOT depend on their availability. No real password-protected TeraBox link is required; the orchestrator path is verified via monkeypatch.",
+  "rca of the issue": "Root cause (fixed): previous heuristic matched substring 'pwd' or 'password' anywhere in the stringified extractor error. Extractor mirrors return JSON like {'errno': -6, 'pwd': ''} even for non-password errors, and str() of that dict contains 'pwd', so orchestrator falsely set password_required=True. Fix landed: (a) hnn extractor now raises a dedicated extractors.PasswordError only when data.errno matches a known password errno OR the error string contains one of the specific PASSWORD_PHRASES (e.g., 'wrong password', 'invalid pwd', not bare 'pwd'). (b) Orchestrator flips password_required=True only when PasswordError was raised, and password_incorrect=(password param was truthy). (c) Frontend UX distinguishes 'first ask' vs 'wrong password' via the new incorrect prop. Verified via 26 pytest cases including one that stringifies a dict containing 'pwd' as a key and confirms password_required stays False."
+}

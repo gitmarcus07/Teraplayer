@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Admin/Teraplayer-main/frontend/src/**)",
+      "Read(//c/Users/Admin/Teraplayer-main/cloudflare-worker/src/**)"
+    ]
+  }
+}

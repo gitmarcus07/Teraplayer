@@ -1,0 +1,64 @@
+# =============================================================================
+# TeraPlayer — Render Blueprint (Infrastructure as Code)
+# =============================================================================
+# Deploy the full stack on Render with one click.
+# See https://render.com/docs/blueprint-spec for details.
+#
+# Services:
+#   1. Backend — FastAPI web service (Python)
+#   2. Frontend — Static site (React SPA)
+#
+# External dependencies:
+#   - MongoDB Atlas (free M0 tier): https://www.mongodb.com/atlas
+# =============================================================================
+
+services:
+  # --- Backend API -----------------------------------------------------------
+  - type: web
+    name: teraplayer-api
+    env: python
+    region: oregon  # Change to us-east / frankfurt / singapore as needed
+    plan: free      # Upgrade to starter ($7/mo) for better performance
+    buildCommand: pip install -r requirements.txt
+    startCommand: >
+      uvicorn server:app --host 0.0.0.0 --port $PORT
+      --workers ${WEB_CONCURRENCY:-1}
+      --limit-concurrency 100
+      --backlog 2048
+      --timeout-keep-alive 30
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: MONGO_URL
+        sync: false  # Set manually: mongodb+srv://<user>:<pass>@<cluster>.mongodb.net
+      - key: DB_NAME
+        value: teraplayer
+      - key: CORS_ORIGINS
+        value: https://teraplayer.netlify.app  # Replace with your frontend URL
+      - key: LOG_LEVEL
+        value: INFO
+      - key: RATE_LIMIT_MAX
+        value: "60"
+      - key: RATE_LIMIT_WINDOW
+        value: "60"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # Optional — set only if you have a TeraBox ndus cookie:
+      # - key: COOKIE_JSON
+      #   sync: false
+      # Optional — set only if you have a Cloudflare Worker:
+      # - key: TERABOX_WORKER_URL
+      #   sync: false
+
+  # --- Frontend SPA ----------------------------------------------------------
+  - type: web
+    name: teraplayer-frontend
+    env: static
+    region: oregon
+    buildCommand: yarn install && yarn build
+    staticPublishPath: build
+    pullRequestPreviewsEnabled: false
+    autoDeploy: true
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        value: https://teraplayer-api.onrender.com  # Replace with your backend URL
