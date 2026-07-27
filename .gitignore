@@ -7,6 +7,9 @@
 # Dependencies
 node_modules/
 /node_modules
+
+# Node
+frontend/node_modules/
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -31,16 +34,28 @@ dist/
 dist
 
 # Environment files (comprehensive coverage)
+.env
+.env.*
+!**/.env.example
+backend/.env
+frontend/.env
 
 *token.json*
 *credentials.json*
 
 # Logs and debug files
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 dump.rdb
+backend/server.log
+
+# Windows reserved files
+nul
+backend/nul
+frontend/nul
 
 # System files
 .DS_Store
@@ -51,6 +66,9 @@ __pycache__/
 *pyc*
 venv/
 .venv/
+backend/.venv/
+backend/venv/
+.pytest_cache/
 
 # Development tools
 chainlit.md
