@@ -206,35 +206,53 @@ export default function Home() {
 
       <main className="tp-container py-6 md:py-16">
         <section className="relative">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mx-auto max-w-3xl text-center"
-          >
-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
-              <Sparkles className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
-              <span className="hidden sm:inline">Now with folders, quality picker &amp; ZIP downloads</span>
-              <span className="sm:hidden">Folders · Quality · ZIP</span>
+          <div className="mx-auto max-w-3xl px-5">
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center"
+            >
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
+                <Sparkles className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
+                <span className="hidden sm:inline">
+                  Now with folders, quality picker &amp; ZIP downloads
+                </span>
+                <span className="sm:hidden">
+                  Folders · Quality · ZIP
+                </span>
+              </div>
+
+              <h1
+                className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl"
+                data-testid="hero-title"
+              >
+                Watch & Download
+                <br />
+                <span className="text-primary">TeraBox</span> Videos
+                <br />
+                Instantly.
+              </h1>
+
+              <p className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:text-lg">
+                Stream, preview and download public TeraBox links in seconds.
+                <br className="hidden sm:block" />
+                No login • HD Streaming • Folder Support
+              </p>
+            </motion.div>
+
+            <div className="mt-6">
+              <HeroInput
+                onSubmit={submit}
+                loading={loading}
+                defaultValue={searchParams.get("url") || ""}
+              />
             </div>
-            <h1 className="font-display text-2xl font-bold tracking-tighter sm:text-5xl lg:text-6xl" data-testid="hero-title">
-              Watch any <span className="text-primary">TeraBox</span> link
-              <br className="hidden sm:block" /> <span className="sm:hidden">like a </span><span className="hidden sm:inline">like a </span><span className="relative inline-block">
-                streaming platform.
-                <span className="absolute inset-x-0 -bottom-1 h-1 bg-primary/40" />
-              </span>
-            </h1>
-            <p className="mx-auto mt-2 max-w-2xl text-xs text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
-              Paste a public share link and TeraPlayer instantly extracts the file, generates a rich preview,
-              and lets you watch or download — no signup required.
-            </p>
-          </motion.div>
 
-          <div className="mt-6 sm:mt-8">
-            <HeroInput onSubmit={submit} loading={loading} defaultValue={searchParams.get("url") || ""} />
+            {!preview && !loading && <FeaturesStrip />}
+
           </div>
-
-          {!preview && !loading && <FeaturesStrip />}
         </section>
 
         {loading && <LoadingSkeleton />}
@@ -369,7 +387,7 @@ export default function Home() {
             <span className="hidden sm:inline">·</span>
             <span className="text-[10px] sm:text-sm">Free to use — no account required</span>
           </div>            <div className="text-[9px] opacity-70 sm:text-sm">
-              Only supports public TeraBox links<span className="hidden sm:inline">. Respect the original owners</span>.
+            Only supports public TeraBox links<span className="hidden sm:inline">. Respect the original owners</span>.
           </div>
         </div>
       </footer>
@@ -407,21 +425,21 @@ const FEATURES = [
   { icon: ShieldCheck, title: "Sign in optional", body: "Google sign-in syncs history/favorites across devices." },
 ];
 
-const FeaturesStrip = () => (          <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-2.5 sm:mt-14 sm:grid-cols-2 sm:gap-4 md:grid-cols-4">
-    {FEATURES.map((f, i) => (
-      <motion.div
-        key={f.title}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05 * i }}
-        className="rounded-2xl border border-border bg-card p-4 transition-transform duration-300 hover:-translate-y-0.5 hover:border-primary/50 sm:p-5"
-      >
-        <f.icon className="mb-2 h-4 w-4 text-primary sm:mb-3 sm:h-5 sm:w-5" strokeWidth={1.75} />
-        <div className="text-xs font-semibold sm:text-sm">{f.title}</div>
-        <div className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{f.body}</div>
-      </motion.div>
-    ))}
-  </div>
+const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 grid grid-cols-1 gap-3 sm:mt-14 sm:max-w-5xl sm:px-0 sm:grid-cols-2 md:grid-cols-4">
+  {FEATURES.map((f, i) => (
+    <motion.div
+      key={f.title}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.05 * i }}
+      className="rounded-2xl border border-border bg-card p-4 transition-transform duration-300 hover:-translate-y-0.5 hover:border-primary/50 sm:p-5"
+    >
+      <f.icon className="mb-2 h-4 w-4 text-primary sm:mb-3 sm:h-5 sm:w-5" strokeWidth={1.75} />
+      <div className="text-xs font-semibold sm:text-sm">{f.title}</div>
+      <div className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{f.body}</div>
+    </motion.div>
+  ))}
+</div >
 );
 
 const LoadingSkeleton = () => (
