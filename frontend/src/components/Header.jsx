@@ -1,3 +1,4 @@
+import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
 import { Film, History, Star, Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
@@ -32,12 +33,11 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
       >
         <div className="tp-container flex h-16 items-center justify-between">
           <Link to="/" data-testid="brand-link" className="group flex items-center gap-2.5">
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform duration-300 group-hover:-translate-y-0.5">
-              <Film className="h-5 w-5" strokeWidth={2} />
-            </span>
-            <span className="font-display text-xl font-bold tracking-tight">
-              Tera<span className="text-primary">Player</span>
-            </span>
+            <img
+              src={logo}
+              alt="TeraPlayer"
+              className="h-10 md:h-14 w-auto"
+            />
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
