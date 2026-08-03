@@ -195,23 +195,16 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
 
                 <div className="flex items-center justify-between">
 
-                  <div className="flex items-center gap-3">
-
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-                      <Film className="h-6 w-6" />
-                    </div>
-
-                    <div>
-                      <h2 className="font-display text-lg font-bold">
-                        Tera<span className="text-primary">Player</span>
-                      </h2>
-
-                      <p className="text-xs text-muted-foreground">
-                        Premium TeraBox Player
-                      </p>
-                    </div>
-
-                  </div>
+                  <Link
+                    to="/"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <img
+                      src={logo}
+                      alt="TeraPlayer"
+                      className="h-14 w-auto"
+                    />
+                  </Link>
 
                   <Button
                     variant="ghost"
