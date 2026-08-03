@@ -36,7 +36,7 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
             <img
               src={logo}
               alt="TeraPlayer"
-              className="h-10 md:h-14 w-auto"
+              className="h-16 md:h-18 w-auto"
             />
           </Link>
 
@@ -202,7 +202,7 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
                     <img
                       src={logo}
                       alt="TeraPlayer"
-                      className="h-17 w-auto"
+                      className="h-20 w-auto"
                     />
                   </Link>
 
