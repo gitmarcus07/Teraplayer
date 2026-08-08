@@ -38,7 +38,7 @@ BASE_URL = BASE_URL.rstrip("/")
 API = f"{BASE_URL}/api"
 
 MONGO_URL = "mongodb://localhost:27017"
-DB_NAME = "test_database"
+DB_NAME = "teraplayer"
 
 # Set env vars before importing server module for in-process Google auth tests
 os.environ.setdefault("MONGO_URL", MONGO_URL)
