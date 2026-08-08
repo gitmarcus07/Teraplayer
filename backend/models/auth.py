@@ -26,9 +26,26 @@ class UserSession(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+class UserCreate(BaseModel):
+    email: str
+    password: str = Field(min_length=1)
+    name: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    user: User
+    session_token: str
+
+
 def new_user_id() -> str:
     return f"user_{uuid.uuid4().hex[:12]}"
 
 
 def session_expiry(days: int = 7) -> str:
     return (datetime.now(timezone.utc) + timedelta(days=days)).isoformat()
+
