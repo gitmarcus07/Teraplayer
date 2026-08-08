@@ -187,15 +187,15 @@ class TestAuth:
         )
         assert r.status_code == 401
 
-    def test_auth_session_bogus_returns_401_no_crash(self, client):
+    def test_auth_session_endpoint_removed(self, client):
+        """The old /api/auth/session endpoint has been removed for native auth."""
         r = client.post(
             f"{API}/auth/session",
             json={"session_id": "bogus-session-id-xyz"},
-            timeout=20,
+            timeout=10,
         )
-        # Must be 401, must NOT be 500
-        assert r.status_code == 401, r.text
-        assert r.status_code != 500
+        # Endpoint no longer exists — must be 404, must NOT be 500.
+        assert r.status_code == 404, r.text
 
     def test_auth_logout_idempotent_no_session(self, client):
         # No cookies attached

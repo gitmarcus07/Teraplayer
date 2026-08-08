@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Film, History, Star, Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import AuthModal from "./AuthModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,12 +19,13 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function Header({ onOpenHistory, onOpenFavorites }) {
   const { mode, setTheme } = useTheme();
-  const { user, isAuthed, login, logout } = useAuth();
+  const { user, isAuthed, logout } = useAuth();
   const location = useLocation();
 
   const ThemeIcon = mode === "dark" ? Moon : mode === "light" ? Sun : Monitor;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   return (
     <>
@@ -145,7 +147,7 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
               </DropdownMenu>
             ) : (
               <Button
-                onClick={login}
+                onClick={() => setAuthModalOpen(true)}
                 variant="outline"
                 size="sm"
                 className="ml-1 hidden sm:inline-flex"
@@ -154,18 +156,18 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
                 <LogIn className="mr-1.5 h-4 w-4" /> Sign in
               </Button>
             )}
-            {!isAuthed && (
-              <Button
-                onClick={login}
-                variant="outline"
-                size="icon"
-                className="ml-1 sm:hidden"
-                data-testid="mobile-login-btn"
-                aria-label="Sign in"
-              >
-                <UserIcon className="h-4 w-4" />
-              </Button>
-            )}
+              {!isAuthed && (
+                <Button
+                  onClick={() => setAuthModalOpen(true)}
+                  variant="outline"
+                  size="icon"
+                  className="ml-1 sm:hidden"
+                  data-testid="mobile-login-btn"
+                  aria-label="Sign in"
+                >
+                  <UserIcon className="h-4 w-4" />
+                </Button>
+              )}
           </div>
         </div>
 
@@ -252,13 +254,13 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
 
                     </div>
                   ) : (
-                    <Button
-                      onClick={login}
-                      className="w-full h-11 rounded-xl"
-                    >
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Sign in with Google
-                    </Button>
+                  <Button
+                    onClick={() => setAuthModalOpen(true)}
+                    className="w-full h-11 rounded-xl"
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign in
+                  </Button>
                   )}
 
                 </div>
@@ -329,6 +331,8 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
           </>
         )}
       </AnimatePresence>
+
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </>
   );
 }

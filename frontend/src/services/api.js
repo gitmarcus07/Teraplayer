@@ -74,10 +74,13 @@ export async function deleteFavorite(itemId, sessionId) {
 }
 
 // Auth
-export async function exchangeSessionId(sessionId) {
-  const { data } = await api.post("/auth/session", {
-    session_id: sessionId,
-  });
+export async function signupApi({ email, password, name }) {
+  const { data } = await api.post("/auth/signup", { email, password, name });
+  return data;
+}
+
+export async function loginApi({ email, password }) {
+  const { data } = await api.post("/auth/login", { email, password });
   return data;
 }
 

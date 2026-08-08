@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getMe, logoutApi } from "../services/api";
+import { getMe, loginApi, logoutApi, signupApi } from "../services/api";
 
 const AuthCtx = createContext(null);
 
@@ -20,12 +20,6 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    // CRITICAL: If returning from OAuth callback, skip the /me check.
-    // AuthCallback will exchange the session_id and establish the session first.
-    if (window.location.hash?.includes("session_id=")) {
-      setLoading(false);
-      return;
-    }
     refresh();
   }, [refresh]);
 
@@ -38,14 +32,31 @@ export function AuthProvider({ children }) {
     setUser(false);
   }, []);
 
-  // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-  const login = useCallback(() => {
-    const redirectUrl = window.location.origin + "/";
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+  const login = useCallback(async ({ email, password }) => {
+    const data = await loginApi({ email, password });
+    setUser(data.user);
+    return data.user;
+  }, []);
+
+  const signup = useCallback(async ({ email, password, name }) => {
+    const data = await signupApi({ email, password, name });
+    setUser(data.user);
+    return data.user;
   }, []);
 
   return (
-    <AuthCtx.Provider value={{ user: user || null, isAuthed: !!user, loading, login, logout, refresh, setUser }}>
+    <AuthCtx.Provider
+      value={{
+        user: user || null,
+        isAuthed: !!user,
+        loading,
+        login,
+        signup,
+        logout,
+        refresh,
+        setUser,
+      }}
+    >
       {children}
     </AuthCtx.Provider>
   );

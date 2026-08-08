@@ -37,9 +37,11 @@ from models.terabox import (
     PreviewRequest,
     PreviewResponse,
 )
+from models.auth import UserCreate, UserLogin
 from services.terabox import get_preview, _set_db as _set_cache_db
 from services.auth import (
-    exchange_session_id,
+    signup_user,
+    login_user,
     get_current_user,
     logout as auth_logout,
 )
@@ -215,10 +217,6 @@ class PreviewRequestWithPwd(BaseModel):
     password: Optional[str] = None
 
 
-class SessionExchange(BaseModel):
-    session_id: str
-
-
 async def _get_db():
     return db
 
@@ -274,9 +272,28 @@ async def health(request: Request) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-@api.post("/auth/session")
-async def auth_session(payload: SessionExchange, response: Response):
-    user, token = await exchange_session_id(payload.session_id, db)
+@api.post("/auth/signup")
+async def auth_signup(payload: UserCreate, response: Response):
+    if db is None:
+        raise HTTPException(status_code=503, detail="MongoDB not configured")
+    user, token = await signup_user(db, payload)
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 3600,
+    )
+    return {"user": user.model_dump(), "session_token": token}
+
+
+@api.post("/auth/login")
+async def auth_login(payload: UserLogin, response: Response):
+    if db is None:
+        raise HTTPException(status_code=503, detail="MongoDB not configured")
+    user, token = await login_user(db, payload)
     response.set_cookie(
         key="session_token",
         value=token,
@@ -299,7 +316,8 @@ async def auth_me(request: Request):
 
 @api.post("/auth/logout")
 async def auth_logout_endpoint(request: Request, response: Response):
-    await auth_logout(request, db)
+    if db is not None:
+        await auth_logout(request, db)
     response.delete_cookie(key="session_token", path="/", samesite="none", secure=True)
     return {"ok": True}
 
