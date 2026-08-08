@@ -12,6 +12,7 @@ import uuid
 import pytest
 import requests
 from pymongo import MongoClient
+from unittest.mock import patch
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -39,6 +40,16 @@ API = f"{BASE_URL}/api"
 MONGO_URL = "mongodb://localhost:27017"
 DB_NAME = "test_database"
 
+# Set env vars before importing server module for in-process Google auth tests
+os.environ.setdefault("MONGO_URL", MONGO_URL)
+os.environ.setdefault("DB_NAME", DB_NAME)
+os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-client-id")
+
+# In-process test client for Google auth tests (requires mock patching in same process)
+from starlette.testclient import TestClient as _StarletteTestClient
+import server as _server_module
+_ASGI_APP = _server_module.app
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -50,6 +61,13 @@ def client() -> requests.Session:
     s = requests.Session()
     s.headers.update({"Content-Type": "application/json"})
     return s
+
+
+@pytest.fixture(scope="module")
+def asgi_client():
+    """In-process ASGI test client for Google auth tests (supports mock patching)."""
+    with _StarletteTestClient(_ASGI_APP) as c:
+        yield c
 
 
 @pytest.fixture
@@ -481,3 +499,197 @@ class TestPasswordHashing:
         assert stored_hash.startswith("$2"), f"Hash should be bcrypt: {stored_hash[:10]}"
         # Must NOT contain the plaintext password
         assert "PlainText123!" not in stored_hash
+
+
+# ---------------------------------------------------------------------------
+# Google authentication (mocked token verification)
+# ---------------------------------------------------------------------------
+
+
+def _google_info(sub="google_sub_12345", email=None, name="Google User", picture="https://lh3.googleusercontent.com/u/0/photo.jpg"):
+    """Build a fake Google ID token claims dict matching what verify_oauth2_token returns."""
+    return {
+        "sub": sub,
+        "email": email or f"google_{uuid.uuid4().hex[:8]}@gmail.com",
+        "email_verified": True,
+        "name": name,
+        "picture": picture,
+        "iss": "https://accounts.google.com",
+        "aud": "test-google-client-id",
+        "exp": 9999999999,
+        "iat": 1000000000,
+    }
+
+
+class TestGoogleAuth:
+    def test_google_signup_new_user(self, asgi_client, cleanup_user, mongo):
+        """A new Google user is created with google_id and auth_provider."""
+        email = f"google_{uuid.uuid4().hex[:8]}@gmail.com"
+        cleanup_user.append(email)
+        info = _google_info(email=email)
+
+        with patch("services.auth.verify_google_token", return_value=info):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "fake-google-credential"},
+                timeout=30,
+            )
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["user"]["email"] == email
+        assert data["user"]["name"] == "Google User"
+        assert data["user"].get("google_id") == info["sub"]
+        assert "password_hash" not in data["user"]
+        assert len(data["session_token"]) > 10
+
+        # Verify in DB that the user was created correctly
+        user_doc = mongo.users.find_one({"email": email}, {"_id": 0})
+        assert user_doc["google_id"] == info["sub"]
+        assert user_doc["auth_provider"] == "google"
+        assert "password_hash" not in user_doc
+
+    def test_google_login_existing_user(self, asgi_client, cleanup_user):
+        """A Google user who already exists is logged in (not re-created)."""
+        email = f"google_{uuid.uuid4().hex[:8]}@gmail.com"
+        cleanup_user.append(email)
+        info = _google_info(email=email)
+        sub = info["sub"]
+
+        # First login — creates the user
+        with patch("services.auth.verify_google_token", return_value=info):
+            r1 = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "fake-google-credential"},
+                timeout=30,
+            )
+        assert r1.status_code == 200, r1.text
+        token1 = r1.json()["session_token"]
+
+        # Second login — should find existing user
+        with patch("services.auth.verify_google_token", return_value=info):
+            r2 = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "fake-google-credential"},
+                timeout=30,
+            )
+        assert r2.status_code == 200, r2.text
+        token2 = r2.json()["session_token"]
+        assert token2 != token1, "New login should create a new session token"
+        assert r2.json()["user"]["google_id"] == sub
+
+    def test_google_invalid_token_rejected(self, asgi_client):
+        """An invalid Google token returns 401."""
+        with patch("services.auth.verify_google_token", side_effect=ValueError("Invalid token")):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "invalid-credential"},
+                timeout=30,
+            )
+        assert r.status_code == 401, r.text
+        assert "Invalid" in r.json().get("detail", "")
+
+    def test_google_expired_token_rejected(self, asgi_client):
+        """An expired Google token returns 401."""
+        with patch("services.auth.verify_google_token", side_effect=ValueError("Token expired")):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "expired-credential"},
+                timeout=30,
+            )
+        assert r.status_code == 401, r.text
+
+    def test_google_wrong_audience_rejected(self, asgi_client):
+        """A token with wrong audience is rejected by verification."""
+        with patch("services.auth.verify_google_token", side_effect=ValueError("Wrong audience")):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "wrong-audience-credential"},
+                timeout=30,
+            )
+        assert r.status_code == 401, r.text
+
+    def test_google_email_conflict_with_local_account(self, asgi_client, unique_email, cleanup_user):
+        """Google login with an email that matches a local/password account returns 409."""
+        cleanup_user.append(unique_email)
+        # Create a local account first (via in-process client)
+        local_r = asgi_client.post(
+            "/api/auth/signup",
+            json={"email": unique_email, "password": "LocalPass123!", "name": "Local User"},
+            timeout=30,
+        )
+        assert local_r.status_code == 200, local_r.text
+
+        # Now try Google login with same email
+        info = _google_info(email=unique_email)
+        with patch("services.auth.verify_google_token", return_value=info):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "fake-google-credential"},
+                timeout=30,
+            )
+        assert r.status_code == 409, r.text
+        assert "already exists" in r.json().get("detail", "").lower()
+
+    def test_google_user_receives_session(self, asgi_client, cleanup_user):
+        """A Google-authenticated user gets a normal session and /auth/me works."""
+        email = f"google_{uuid.uuid4().hex[:8]}@gmail.com"
+        cleanup_user.append(email)
+        info = _google_info(email=email)
+
+        with patch("services.auth.verify_google_token", return_value=info):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "fake-google-credential"},
+                timeout=30,
+            )
+        assert r.status_code == 200, r.text
+        token = r.json()["session_token"]
+
+        # /auth/me should work with the token (via asgi_client to use same mocked context)
+        r_me = asgi_client.get(
+            "/api/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        assert r_me.status_code == 200, r_me.text
+        me_data = r_me.json()
+        assert me_data["email"] == email
+        assert me_data["google_id"] == info["sub"]
+
+    def test_google_logout_invalidates_session(self, asgi_client, cleanup_user):
+        """Logout invalidates a Google-created session."""
+        email = f"google_{uuid.uuid4().hex[:8]}@gmail.com"
+        cleanup_user.append(email)
+        info = _google_info(email=email)
+
+        with patch("services.auth.verify_google_token", return_value=info):
+            r = asgi_client.post(
+                "/api/auth/google",
+                json={"credential": "fake-google-credential"},
+                timeout=30,
+            )
+        token = r.json()["session_token"]
+
+        # Before logout: /auth/me works
+        r_before = asgi_client.get(
+            "/api/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        assert r_before.status_code == 200
+
+        # Logout
+        r_logout = asgi_client.post(
+            "/api/auth/logout",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        assert r_logout.status_code == 200
+
+        # After logout: /auth/me returns 401
+        r_after = asgi_client.get(
+            "/api/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        assert r_after.status_code == 401

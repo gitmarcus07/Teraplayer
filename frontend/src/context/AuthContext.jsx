@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getMe, loginApi, logoutApi, signupApi } from "../services/api";
+import { getMe, loginApi, logoutApi, signupApi, googleLoginApi } from "../services/api";
 
 const AuthCtx = createContext(null);
 
@@ -44,6 +44,12 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const googleLogin = useCallback(async ({ credential }) => {
+    const data = await googleLoginApi({ credential });
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   return (
     <AuthCtx.Provider
       value={{
@@ -52,6 +58,7 @@ export function AuthProvider({ children }) {
         loading,
         login,
         signup,
+        googleLogin,
         logout,
         refresh,
         setUser,

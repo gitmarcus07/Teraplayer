@@ -5,7 +5,9 @@ creation/verification, and user document management in MongoDB.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
+import os
 import secrets
 from datetime import datetime, timezone
 from typing import Optional
@@ -13,7 +15,7 @@ from typing import Optional
 import bcrypt
 from fastapi import Request, HTTPException
 
-from models.auth import User, UserCreate, UserLogin, new_user_id, session_expiry
+from models.auth import User, UserCreate, UserLogin, GoogleAuthRequest, new_user_id, session_expiry
 
 logger = logging.getLogger("teraplayer.auth")
 
@@ -70,6 +72,84 @@ async def login_user(db, payload: UserLogin) -> tuple[User, str]:
 
     session_token = await _create_session(db, user_doc["user_id"])
     return await _build_user(db, user_doc["user_id"]), session_token
+
+
+def verify_google_token(credential: str, client_id: str) -> dict:
+    """Verify a Google ID token and return the decoded claims dict.
+
+    Uses google-auth's official verify_oauth2_token which checks
+    signature, expiration, issuer, and audience.
+    """
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+
+    info = id_token.verify_oauth2_token(
+        credential,
+        google_requests.Request(),
+        client_id,
+    )
+    return info
+
+
+async def google_authenticate(db, credential: str, client_id: str) -> tuple[User, str]:
+    """Authenticate a user via a Google ID token.
+
+    - Verifies the token on the backend (never trusts frontend claims).
+    - Finds existing user by google_id (sub claim) -> login.
+    - Finds existing user by email but different provider -> 409 conflict.
+    - No existing user -> creates a new Google-authenticated user.
+    """
+    if not client_id:
+        raise HTTPException(status_code=503, detail="Google authentication not configured")
+
+    try:
+        info = await asyncio.to_thread(verify_google_token, credential, client_id)
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Google token verification failed")
+
+    google_id = info.get("sub")
+    email = (info.get("email") or "").strip().lower()
+    if not google_id or not email:
+        raise HTTPException(status_code=401, detail="Google token missing required claims")
+
+    # Search by google_id first
+    user_doc = await db.users.find_one({"google_id": google_id}, {"_id": 0})
+    if user_doc:
+        session_token = await _create_session(db, user_doc["user_id"])
+        return await _build_user(db, user_doc["user_id"]), session_token
+
+    # No google_id match — check by email
+    existing = await db.users.find_one({"email": email}, {"_id": 0})
+    if existing:
+        # SECURITY: do NOT auto-link Google to a local password account
+        if existing.get("password_hash") or existing.get("auth_provider") == "local":
+            raise HTTPException(
+                status_code=409,
+                detail="An account with this email already exists. Sign in with your email and password first, then link Google from account settings.",
+            )
+        # Existing Google user with different google_id — should not happen, treat as conflict
+        raise HTTPException(
+            status_code=409,
+            detail="An account with this email already exists. Please sign in instead.",
+        )
+
+    # Create new Google-authenticated user
+    user_id = new_user_id()
+    new_doc = {
+        "user_id": user_id,
+        "email": email,
+        "name": info.get("name"),
+        "picture": info.get("picture"),
+        "google_id": google_id,
+        "auth_provider": "google",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.users.insert_one(new_doc)
+
+    session_token = await _create_session(db, user_id)
+    return await _build_user(db, user_id), session_token
 
 
 async def _create_session(db, user_id: str) -> str:

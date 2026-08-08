@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -189,6 +189,88 @@ function SignUpForm({ onSuccess }) {
   );
 }
 
+const GOOGLE_GSI_SCRIPT = "https://accounts.google.com/gsi/client";
+
+function GoogleSignInButton({ onSuccess }) {
+  const { googleLogin } = useAuth();
+  const buttonRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [scriptError, setScriptError] = useState(false);
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
+  useEffect(() => {
+    const el = buttonRef.current;
+    if (!googleClientId || !el) return;
+
+    const initGoogle = () => {
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        setScriptError(true);
+        setLoading(false);
+        return;
+      }
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response) => {
+          try {
+            await googleLogin({ credential: response.credential });
+            toast.success("Signed in with Google");
+            onSuccess?.();
+          } catch (err) {
+            const msg = err?.response?.data?.detail || "Google authentication failed";
+            toast.error(msg);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(el, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+      });
+      setLoading(false);
+    };
+
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      initGoogle();
+    } else {
+      const script = document.createElement("script");
+      script.src = GOOGLE_GSI_SCRIPT;
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      script.onerror = () => {
+        setScriptError(true);
+        setLoading(false);
+      };
+      document.head.appendChild(script);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      if (el) {
+        el.innerHTML = "";
+      }
+    };
+  }, [googleClientId, googleLogin, onSuccess]);
+
+  if (!googleClientId) return null;
+
+  return (
+    <div className="mb-4">
+      {loading && (
+        <p className="text-xs text-muted-foreground mb-2" data-testid="google-loading">
+          Loading Google…
+        </p>
+      )}
+      {scriptError && (
+        <p className="text-xs text-destructive mb-2" data-testid="google-error">
+          Google Sign-In unavailable
+        </p>
+      )}
+      <div ref={buttonRef} data-testid="google-signin-button" />
+    </div>
+  );
+}
+
 export function AuthModal({ open, onOpenChange }) {
   const { isAuthed } = useAuth();
 
@@ -211,22 +293,30 @@ export function AuthModal({ open, onOpenChange }) {
         {isAuthed ? (
           <p>You are already signed in. Close this window to continue.</p>
         ) : (
-          <Tabs defaultValue="signin" className="w-full" data-testid="auth-tabs">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin" data-testid="tab-signin">
-                Sign In
-              </TabsTrigger>
-              <TabsTrigger value="signup" data-testid="tab-signup">
-                Sign Up
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin" className="mt-4">
-              <SignInForm onSuccess={handleSuccess} />
-            </TabsContent>
-            <TabsContent value="signup" className="mt-4">
-              <SignUpForm onSuccess={handleSuccess} />
-            </TabsContent>
-          </Tabs>
+          <>
+            <GoogleSignInButton onSuccess={handleSuccess} />
+            <div className="my-4 flex items-center">
+              <div className="flex-1 border-t border-border"></div>
+              <span className="px-3 text-xs text-muted-foreground">OR</span>
+              <div className="flex-1 border-t border-border"></div>
+            </div>
+            <Tabs defaultValue="signin" className="w-full" data-testid="auth-tabs">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin" data-testid="tab-signin">
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger value="signup" data-testid="tab-signup">
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="signin" className="mt-4">
+                <SignInForm onSuccess={handleSuccess} />
+              </TabsContent>
+              <TabsContent value="signup" className="mt-4">
+                <SignUpForm onSuccess={handleSuccess} />
+              </TabsContent>
+            </Tabs>
+          </>
         )}
       </DialogContent>
     </Dialog>

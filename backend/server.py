@@ -37,11 +37,12 @@ from models.terabox import (
     PreviewRequest,
     PreviewResponse,
 )
-from models.auth import UserCreate, UserLogin
+from models.auth import UserCreate, UserLogin, GoogleAuthRequest
 from services.terabox import get_preview, _set_db as _set_cache_db
 from services.auth import (
     signup_user,
     login_user,
+    google_authenticate,
     get_current_user,
     logout as auth_logout,
 )
@@ -88,6 +89,10 @@ _handler.addFilter(RequestIDFilter())
 logging.basicConfig(level=_LOG_LEVEL, handlers=[_handler], force=True)
 
 logger = logging.getLogger("teraplayer")
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 
 # ---------------------------------------------------------------------------
 # MongoDB connection
@@ -294,6 +299,25 @@ async def auth_login(payload: UserLogin, response: Response):
     if db is None:
         raise HTTPException(status_code=503, detail="MongoDB not configured")
     user, token = await login_user(db, payload)
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 3600,
+    )
+    return {"user": user.model_dump(), "session_token": token}
+
+
+@api.post("/auth/google")
+async def auth_google(payload: GoogleAuthRequest, response: Response):
+    if db is None:
+        raise HTTPException(status_code=503, detail="MongoDB not configured")
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="Google authentication not configured")
+    user, token = await google_authenticate(db, payload.credential, GOOGLE_CLIENT_ID)
     response.set_cookie(
         key="session_token",
         value=token,

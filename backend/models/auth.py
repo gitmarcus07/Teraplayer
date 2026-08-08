@@ -14,6 +14,8 @@ class User(BaseModel):
     email: str
     name: Optional[str] = None
     picture: Optional[str] = None
+    google_id: Optional[str] = None
+    auth_provider: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -35,6 +37,10 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
 
 
 class AuthResponse(BaseModel):

@@ -84,6 +84,11 @@ export async function loginApi({ email, password }) {
   return data;
 }
 
+export async function googleLoginApi({ credential }) {
+  const { data } = await api.post("/auth/google", { credential });
+  return data;
+}
+
 export async function getMe() {
   const { data } = await api.get("/auth/me");
   return data;
