@@ -3,9 +3,8 @@ import {
   Play,
   Download,
   Copy,
-  Share2,
-  Star,
-  FileVideo,
+   Share2,
+   FileVideo,
   Image as ImageIcon,
   FileText,
   FileArchive,
@@ -33,8 +32,6 @@ export default function PreviewCard({
   onDownload,
   onCopy,
   onShare,
-  onFavorite,
-  isFavorite,
 }) {
   const Icon = TYPE_ICON[data.file_type || "file"] || FileIcon;
   const canWatch = data.file_type === "video" && (data.stream_url || data.download_url);
@@ -156,19 +153,6 @@ export default function PreviewCard({
             >
               <Share2 className="h-3.5 w-3.5 sm:mr-2" />
               <span className="hidden sm:inline">Share</span>
-            </Button>
-            <Button
-              onClick={onFavorite}
-              data-testid="favorite-btn"
-              variant="outline"
-              size="sm"
-              aria-pressed={isFavorite}
-              className="text-xs sm:text-sm"
-            >
-              <Star
-                className={`h-3.5 w-3.5 sm:mr-2 ${isFavorite ? "fill-primary text-primary" : ""}`}
-              />
-              <span className="hidden sm:inline">{isFavorite ? "Saved" : "Save"}</span>
             </Button>
           </div>
         </div>

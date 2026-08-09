@@ -4,7 +4,6 @@ Covers:
 - Auth endpoints (session exchange, me, logout)
 - Optional password field on preview/watch/download/folder
 - password_required boolean in response
-- History/Favorites scoping by user_id when Bearer token provided
 - MongoDB rate limiter (burst -> 429, TTL index existence)
 """
 from __future__ import annotations
@@ -45,7 +44,7 @@ API = f"{BASE_URL}/api"
 
 # Backend Mongo (same DB the app uses)
 MONGO_URL = "mongodb://localhost:27017"
-DB_NAME = "test_database"
+DB_NAME = "teraplayer"
 
 
 # ---------------------------------------------------------------------------
@@ -58,11 +57,6 @@ def client() -> requests.Session:
     s = requests.Session()
     s.headers.update({"Content-Type": "application/json"})
     return s
-
-
-@pytest.fixture(scope="session")
-def session_id() -> str:
-    return f"TEST_iter2_{uuid.uuid4().hex[:10]}"
 
 
 @pytest.fixture(scope="session")
@@ -98,8 +92,6 @@ def seeded_user(mongo):
     # Cleanup
     mongo.users.delete_many({"user_id": user_id})
     mongo.user_sessions.delete_many({"session_token": session_token})
-    mongo.history.delete_many({"user_id": user_id})
-    mongo.favorites.delete_many({"user_id": user_id})
 
 
 # ---------------------------------------------------------------------------
@@ -213,136 +205,6 @@ class TestAuth:
         assert r.status_code == 200, r.text
         data = r.json()
         assert data.get("email", "").startswith("TEST_iter2_")
-
-
-# ---------------------------------------------------------------------------
-# History flows (anonymous, invalid bearer, authenticated)
-# ---------------------------------------------------------------------------
-
-
-class TestHistoryAnonymous:
-    def test_history_create_get_delete(self, client, session_id):
-        payload = {
-            "session_id": session_id,
-            "url": "https://terabox.com/s/1TEST_hist_iter2",
-            "title": "TEST History Iter2",
-        }
-        r = client.post(f"{API}/history", json=payload, timeout=15)
-        assert r.status_code == 200, r.text
-        created = r.json()
-        assert created["url"] == payload["url"]
-        hist_id = created["id"]
-
-        r = client.get(f"{API}/history", params={"session_id": session_id}, timeout=15)
-        assert r.status_code == 200
-        items = r.json()
-        assert any(it["id"] == hist_id for it in items)
-
-        r = client.delete(
-            f"{API}/history/{hist_id}", params={"session_id": session_id}, timeout=15
-        )
-        assert r.status_code == 200
-        assert r.json().get("deleted") == 1
-
-
-class TestHistoryInvalidBearer:
-    def test_invalid_bearer_falls_back_to_session(self, session_id):
-        """A bogus Bearer token should be treated as anonymous — no crash."""
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer totally-bogus-token-123",
-        }
-        payload = {
-            "session_id": session_id + "_badtok",
-            "url": "https://terabox.com/s/1TEST_hist_badtok",
-            "title": "TEST Bad Token",
-        }
-        r = requests.post(f"{API}/history", json=payload, headers=headers, timeout=15)
-        assert r.status_code == 200, r.text
-        created = r.json()
-        # Because bogus bearer -> anonymous, entry should be stored under session_id
-        assert created["session_id"] == payload["session_id"]
-
-        r = requests.get(
-            f"{API}/history",
-            params={"session_id": payload["session_id"]},
-            headers=headers,
-            timeout=15,
-        )
-        assert r.status_code == 200
-        items = r.json()
-        assert any(it["url"] == payload["url"] for it in items)
-
-        # Cleanup
-        requests.delete(
-            f"{API}/history",
-            params={"session_id": payload["session_id"]},
-            timeout=15,
-        )
-
-
-class TestHistoryAuthenticated:
-    def test_history_user_scoped(self, seeded_user):
-        user_id, token = seeded_user
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        }
-        payload = {
-            "session_id": "IGNORED_when_authed",
-            "url": f"https://terabox.com/s/1TEST_auth_{uuid.uuid4().hex[:6]}",
-            "title": "TEST Authed Hist",
-        }
-        r = requests.post(f"{API}/history", json=payload, headers=headers, timeout=15)
-        assert r.status_code == 200, r.text
-
-        # GET without session_id but with token -> should return user's data
-        r = requests.get(f"{API}/history", headers=headers, timeout=15)
-        assert r.status_code == 200
-        items = r.json()
-        assert any(it["url"] == payload["url"] for it in items)
-
-        # Cross-device: same token from a "different device" (fresh session) still returns items
-        r2 = requests.get(f"{API}/history", headers=headers, timeout=15)
-        assert r2.status_code == 200
-        assert any(it["url"] == payload["url"] for it in r2.json())
-
-        # Anonymous request with the "IGNORED" session_id should NOT return this item
-        r_anon = requests.get(
-            f"{API}/history",
-            params={"session_id": "IGNORED_when_authed"},
-            timeout=15,
-        )
-        assert r_anon.status_code == 200
-        assert not any(it["url"] == payload["url"] for it in r_anon.json())
-
-
-class TestFavoritesAuthenticated:
-    def test_favorites_user_scoped_and_idempotent(self, seeded_user):
-        _, token = seeded_user
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        }
-        payload = {
-            "session_id": "IGNORED_when_authed",
-            "url": f"https://terabox.com/s/1TEST_fav_{uuid.uuid4().hex[:6]}",
-            "title": "TEST Authed Fav",
-        }
-        r1 = requests.post(f"{API}/favorites", json=payload, headers=headers, timeout=15)
-        assert r1.status_code == 200, r1.text
-        first_id = r1.json()["id"]
-
-        # Idempotent
-        r2 = requests.post(f"{API}/favorites", json=payload, headers=headers, timeout=15)
-        assert r2.status_code == 200
-        assert r2.json()["id"] == first_id
-
-        # GET returns user's fav
-        r = requests.get(f"{API}/favorites", headers=headers, timeout=15)
-        assert r.status_code == 200
-        items = r.json()
-        assert any(it["url"] == payload["url"] for it in items)
 
 
 # ---------------------------------------------------------------------------

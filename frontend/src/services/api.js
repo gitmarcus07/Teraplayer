@@ -28,50 +28,6 @@ export async function postDownload(url, password) {
   return data;
 }
 
-export async function addHistory(payload) {
-  const { data } = await api.post("/history", payload);
-  return data;
-}
-
-export async function getHistory(sessionId) {
-  const { data } = await api.get("/history", {
-    params: { session_id: sessionId },
-  });
-  return data;
-}
-
-export async function clearHistory(sessionId) {
-  const { data } = await api.delete("/history", {
-    params: { session_id: sessionId },
-  });
-  return data;
-}
-
-export async function deleteHistoryItem(itemId, sessionId) {
-  const { data } = await api.delete(`/history/${itemId}`, {
-    params: { session_id: sessionId },
-  });
-  return data;
-}
-
-export async function addFavorite(payload) {
-  const { data } = await api.post("/favorites", payload);
-  return data;
-}
-
-export async function getFavorites(sessionId) {
-  const { data } = await api.get("/favorites", {
-    params: { session_id: sessionId },
-  });
-  return data;
-}
-
-export async function deleteFavorite(itemId, sessionId) {
-  const { data } = await api.delete(`/favorites/${itemId}`, {
-    params: { session_id: sessionId },
-  });
-  return data;
-}
 
 // Auth
 export async function signupApi({ email, password, name }) {

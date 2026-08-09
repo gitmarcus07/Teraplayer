@@ -1,6 +1,6 @@
 import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
-import { Film, History, Star, Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, } from "lucide-react";
+import { Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function Header({ onOpenHistory, onOpenFavorites }) {
+export default function Header() {
   const { mode, setTheme } = useTheme();
   const { user, isAuthed, logout } = useAuth();
   const location = useLocation();
@@ -52,31 +52,6 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
             <NavLink to="/contact" active={location.pathname === "/contact"} testId="nav-contact">
               Contact
             </NavLink>
-            {onOpenHistory && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenHistory();
-                }}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-secondary text-left"
-              >
-                <History className="h-5 w-5" />
-                <span>History</span>
-              </button>
-            )}
-
-            {onOpenFavorites && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenFavorites();
-                }}
-                className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-secondary text-left"
-              >
-                <Star className="h-5 w-5" />
-                <span>Favorites</span>
-              </button>
-            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -297,35 +272,6 @@ export default function Header({ onOpenHistory, onOpenFavorites }) {
                     <span>Contact</span>
                   </div>
                 </Link>
-                {(onOpenHistory || onOpenFavorites) && (
-                  <div className="my-3 border-t border-border" />
-                )}
-
-                {onOpenHistory && (
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenHistory();
-                    }}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-secondary text-left"
-                  >
-                    <History className="h-5 w-5" />
-                    <span>History</span>
-                  </button>
-                )}
-
-                {onOpenFavorites && (
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenFavorites();
-                    }}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-secondary text-left"
-                  >
-                    <Star className="h-5 w-5" />
-                    <span>Favorites</span>
-                  </button>
-                )}
               </div>
             </motion.div>
           </>

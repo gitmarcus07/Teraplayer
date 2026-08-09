@@ -30,10 +30,6 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 from models.terabox import (
-    FavoriteCreate,
-    FavoriteEntry,
-    HistoryCreate,
-    HistoryEntry,
     PreviewRequest,
     PreviewResponse,
 )
@@ -111,7 +107,7 @@ if mongo_url:
     db = mongo_client[os.environ.get("DB_NAME", "teraplayer")]
     logger.info("MongoDB connected", extra={"mongo_url": mongo_url.split("@")[-1] if "@" in mongo_url else "local"})
 else:
-    logger.info("MongoDB not configured – running in extraction-only mode (no history/favorites/rate-limit)")
+    logger.info("MongoDB not configured – running in extraction-only mode (no auth/rate-limit)")
 
 
 # ---------------------------------------------------------------------------
@@ -224,15 +220,6 @@ class PreviewRequestWithPwd(BaseModel):
 
 async def _get_db():
     return db
-
-
-async def _scope_id(request: Request, session_id: Optional[str]) -> tuple[str, str]:
-    if db is None:
-        return "session_id", session_id or ""
-    user = await get_current_user(request, db)
-    if user:
-        return "user_id", user.user_id
-    return "session_id", session_id or ""
 
 
 # ---------------------------------------------------------------------------
@@ -481,98 +468,6 @@ async def stream(request: Request, url: str = Query(...)):
         headers=resp_headers,
         media_type=req.headers.get("content-type", "application/octet-stream"),
     )
-
-
-# ---------------------------------------------------------------------------
-# History (user- or session-scoped)
-# ---------------------------------------------------------------------------
-
-
-@api.post("/history", response_model=HistoryEntry)
-async def add_history(entry: HistoryCreate, request: Request) -> HistoryEntry:
-    key, val = await _scope_id(request, entry.session_id)
-    existing = await db.history.find_one({key: val, "url": entry.url}, {"_id": 0})
-    if existing:
-        merged = {**existing, **entry.model_dump(exclude_none=True)}
-        merged[key] = val
-        merged.pop("session_id" if key == "user_id" else "user_id", None)
-        merged["created_at"] = HistoryEntry().created_at
-        await db.history.update_one({key: val, "url": entry.url}, {"$set": merged})
-        merged.setdefault("session_id", val if key == "session_id" else "")
-        return HistoryEntry(**merged)
-    obj = HistoryEntry(**{**entry.model_dump(), "session_id": val if key == "session_id" else ""})
-    doc = obj.model_dump()
-    doc[key] = val
-    await db.history.insert_one(doc)
-    return obj
-
-
-@api.get("/history")
-async def get_history(request: Request, session_id: str = "", limit: int = 50) -> list[dict[str, Any]]:
-    key, val = await _scope_id(request, session_id)
-    if not val:
-        return []
-    items = (
-        await db.history.find({key: val}, {"_id": 0})
-        .sort("created_at", -1)
-        .to_list(limit)
-    )
-    return items
-
-
-@api.delete("/history")
-async def clear_history(request: Request, session_id: str = "") -> dict[str, Any]:
-    key, val = await _scope_id(request, session_id)
-    if not val:
-        return {"deleted": 0}
-    result = await db.history.delete_many({key: val})
-    return {"deleted": result.deleted_count}
-
-
-@api.delete("/history/{item_id}")
-async def delete_history_item(item_id: str, request: Request, session_id: str = "") -> dict[str, Any]:
-    key, val = await _scope_id(request, session_id)
-    result = await db.history.delete_one({"id": item_id, key: val})
-    return {"deleted": result.deleted_count}
-
-
-# ---------------------------------------------------------------------------
-# Favorites (user- or session-scoped)
-# ---------------------------------------------------------------------------
-
-
-@api.post("/favorites", response_model=FavoriteEntry)
-async def add_favorite(entry: FavoriteCreate, request: Request) -> FavoriteEntry:
-    key, val = await _scope_id(request, entry.session_id)
-    existing = await db.favorites.find_one({key: val, "url": entry.url}, {"_id": 0})
-    if existing:
-        existing.setdefault("session_id", val if key == "session_id" else "")
-        return FavoriteEntry(**existing)
-    obj = FavoriteEntry(**{**entry.model_dump(), "session_id": val if key == "session_id" else ""})
-    doc = obj.model_dump()
-    doc[key] = val
-    await db.favorites.insert_one(doc)
-    return obj
-
-
-@api.get("/favorites")
-async def get_favorites(request: Request, session_id: str = "") -> list[dict[str, Any]]:
-    key, val = await _scope_id(request, session_id)
-    if not val:
-        return []
-    items = (
-        await db.favorites.find({key: val}, {"_id": 0})
-        .sort("created_at", -1)
-        .to_list(200)
-    )
-    return items
-
-
-@api.delete("/favorites/{item_id}")
-async def delete_favorite(item_id: str, request: Request, session_id: str = "") -> dict[str, Any]:
-    key, val = await _scope_id(request, session_id)
-    result = await db.favorites.delete_one({"id": item_id, key: val})
-    return {"deleted": result.deleted_count}
 
 
 # ---------------------------------------------------------------------------

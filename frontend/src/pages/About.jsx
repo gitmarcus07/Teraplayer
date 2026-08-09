@@ -66,7 +66,7 @@ const roadmap = [
   },
   {
     quarter: "Q4 2026",
-    items: ["User-created share collections", "Watch history sync across devices", "Analytics dashboard (opt-in)"],
+    items: ["User-created share collections", "Analytics dashboard (opt-in)"],
   },
   {
     quarter: "2027",
@@ -299,9 +299,8 @@ export default function About() {
                     a link and go. No tracking scripts, no analytics cookies, no data sold to third parties.
                   </p>
                   <p>
-                    Your history and favorites are stored locally in your browser's storage by default. If you choose to
-                    sign in with Google (optional), they sync to our database so you can access them across devices. You
-                    can clear all stored data at any time.
+                    Sign in with Google (optional) to sync your preferences across devices. You can
+                    clear all stored data at any time.
                   </p>
                   <p>
                     The extraction pipeline fetches metadata on our server — your IP is never exposed to third-party

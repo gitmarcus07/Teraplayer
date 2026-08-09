@@ -286,7 +286,7 @@ export function AuthModal({ open, onOpenChange }) {
           <DialogDescription>
             {isAuthed
               ? "You are already signed in."
-              : "Sign in or create an account to save your favorites and history across devices."}
+              : "Sign in or create an account to keep your preferences in sync across devices."}
           </DialogDescription>
         </DialogHeader>
 

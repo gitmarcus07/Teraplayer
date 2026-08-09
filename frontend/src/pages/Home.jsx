@@ -17,7 +17,6 @@ import HeroInput from "../components/HeroInput";
 import PreviewCard from "../components/PreviewCard";
 import VideoPlayer from "../components/VideoPlayer";
 import DownloadPanel from "../components/DownloadPanel";
-import HistoryDrawer from "../components/HistoryDrawer";
 import PasswordDialog from "../components/PasswordDialog";
 import QualityPicker from "../components/QualityPicker";
 import FolderBrowser from "../components/FolderBrowser";
@@ -25,13 +24,8 @@ import { Button } from "../components/ui/button";
 
 import {
   postPreview,
-  addHistory,
-  addFavorite,
-  getFavorites,
-  deleteFavorite,
   streamProxyUrl,
 } from "../services/api";
-import { getSessionId } from "../lib/session";
 
 // Detect if the file collection looks like alternate resolutions of the same asset.
 function buildQualityOptions(preview) {
@@ -60,27 +54,10 @@ export default function Home() {
   const [preview, setPreview] = useState(null);
   const [watching, setWatching] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [favoritesOpen, setFavoritesOpen] = useState(false);
-  const [favorites, setFavorites] = useState([]);
   const [pwdDialog, setPwdDialog] = useState({ open: false, url: "", incorrect: false });
   const [selectedQualityId, setSelectedQualityId] = useState("");
   const [activeFile, setActiveFile] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const sessionId = getSessionId();
-
-  const loadFavorites = useCallback(async () => {
-    try {
-      const data = await getFavorites(sessionId);
-      setFavorites(data || []);
-    } catch {
-      /* silent */
-    }
-  }, [sessionId]);
-
-  useEffect(() => {
-    loadFavorites();
-  }, [loadFavorites]);
 
   const submit = useCallback(
     async (url, password = "") => {
@@ -104,18 +81,6 @@ export default function Home() {
           }
         } else {
           toast.success("Link resolved");
-          try {
-            await addHistory({
-              session_id: sessionId,
-              url,
-              title: data.title,
-              thumbnail: data.thumbnail,
-              size_str: data.size_str,
-              file_type: data.file_type,
-            });
-          } catch {
-            /* ignore */
-          }
         }
         setSearchParams({ url });
       } catch (e) {
@@ -125,7 +90,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [sessionId, setSearchParams]
+    [setSearchParams]
   );
 
   useEffect(() => {
@@ -135,30 +100,6 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const isFavorite = preview && favorites.some((f) => f.url === preview.sourceUrl);
-
-  const toggleFavorite = async () => {
-    if (!preview?.sourceUrl) return;
-    if (isFavorite) {
-      const existing = favorites.find((f) => f.url === preview.sourceUrl);
-      if (existing) {
-        await deleteFavorite(existing.id, sessionId);
-        toast.success("Removed from favorites");
-      }
-    } else {
-      await addFavorite({
-        session_id: sessionId,
-        url: preview.sourceUrl,
-        title: preview.title,
-        thumbnail: preview.thumbnail,
-        size_str: preview.size_str,
-        file_type: preview.file_type,
-      });
-      toast.success("Saved to favorites");
-    }
-    loadFavorites();
-  };
 
   const copyLink = async () => {
     try {
@@ -199,10 +140,7 @@ export default function Home() {
 
   return (
     <div className="App min-h-screen">
-      <Header
-        onOpenHistory={() => setHistoryOpen(true)}
-        onOpenFavorites={() => setFavoritesOpen(true)}
-      />
+      <Header />
 
       <main className="tp-container py-6 md:py-16">
         <section className="relative">
@@ -340,8 +278,6 @@ export default function Home() {
                 onDownload={() => setDownloading(true)}
                 onCopy={copyLink}
                 onShare={share}
-                onFavorite={toggleFavorite}
-                isFavorite={isFavorite}
               />
             )}
 
@@ -402,18 +338,6 @@ export default function Home() {
           submit(pwdDialog.url, pwd);
         }}
       />
-      <HistoryDrawer
-        open={historyOpen}
-        onOpenChange={setHistoryOpen}
-        mode="history"
-        onSelect={(url) => submit(url)}
-      />
-      <HistoryDrawer
-        open={favoritesOpen}
-        onOpenChange={setFavoritesOpen}
-        mode="favorites"
-        onSelect={(url) => submit(url)}
-      />
     </div>
   );
 }
@@ -422,7 +346,7 @@ const FEATURES = [
   { icon: Zap, title: "Instant Preview", body: "Native + fallback extractors resolve links in under 2 seconds." },
   { icon: Cpu, title: "Beautiful Player", body: "Full keyboard controls, PIP, speed, and cinematic overlay." },
   { icon: Cloud, title: "Folder & ZIP", body: "Browse shared folders and grab everything as a single ZIP." },
-  { icon: ShieldCheck, title: "Sign in optional", body: "Google sign-in syncs history/favorites across devices." },
+  { icon: ShieldCheck, title: "Sign in optional", body: "Sign in with Google to save your preferences across devices." },
 ];
 
 const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 grid grid-cols-1 gap-3 sm:mt-14 sm:max-w-5xl sm:px-0 sm:grid-cols-2 md:grid-cols-4">

@@ -51,7 +51,7 @@ const faqs = [
   },
   {
     q: "Do you store my data?",
-    a: "History and favorites are stored in your browser by default. If you sign in with Google, they sync to our database so you can access them across devices. You can clear all data at any time.",
+    a: "No data is stored by default. If you sign in with Google, your preferences sync to our database so you can access them across devices. You can clear all data at any time.",
   },
   {
     q: "How long does extraction take?",
