@@ -10,6 +10,8 @@ import {
   Cloud,
   Cpu,
   KeyRound,
+  Film,
+  FolderOpen,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -139,20 +141,20 @@ export default function Home() {
   };
 
   return (
-    <div className="App min-h-screen">
+    <div className="App noise min-h-screen">
       <Header />
 
-      <main className="tp-container py-6 md:py-16">
-        <section className="relative">
-          <div className="mx-auto max-w-3xl px-5">
+      <main id="main" className="tp-container">
+        <section className="relative flex min-h-[calc(100vh-3rem)] flex-col items-center justify-start pt-12 pb-4 md:min-h-[calc(100vh-4rem)] md:pt-16 md:pb-6">
+          <div className="mx-auto w-full max-w-3xl px-5">
 
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="text-center"
             >
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
                 <Sparkles className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
                 <span className="hidden sm:inline">
                   Now with folders, quality picker &amp; ZIP downloads
@@ -163,24 +165,25 @@ export default function Home() {
               </div>
 
               <h1
-                className="font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl"
+                className="font-display font-black leading-[0.95] tracking-tighter sm:leading-[0.9]"
+                style={{ fontSize: "clamp(2.5rem, 8vw, 7.5rem)" }}
                 data-testid="hero-title"
               >
-                Watch & Download
+                Watch &amp; Download
                 <br />
                 <span className="text-primary">TeraBox</span> Videos
                 <br />
                 Instantly.
               </h1>
 
-              <p className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:text-lg">
-                Stream, preview and download public TeraBox links in seconds.
+              <p className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:text-base">
+                Stream, preview and download public TeraBox links in seconds.{" "}
                 <br className="hidden sm:block" />
                 No login • HD Streaming • Folder Support
               </p>
             </motion.div>
 
-            <div className="mt-6">
+            <div className="mt-8">
               <HeroInput
                 onSubmit={submit}
                 loading={loading}
@@ -188,8 +191,27 @@ export default function Home() {
               />
             </div>
 
-            {!preview && !loading && <FeaturesStrip />}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mx-auto mt-6 flex max-w-sm flex-wrap items-center justify-center gap-2 sm:max-w-xl sm:gap-3"
+            >
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
+                <Film className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
+                HD Streaming
+              </span>
 
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
+                <FolderOpen className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
+                Folder Support
+              </span>
+
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
+                <ShieldCheck className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
+                No Login Required
+              </span>
+            </motion.div>
           </div>
         </section>
 
@@ -197,9 +219,9 @@ export default function Home() {
 
         {!loading && preview && preview.ok === false && !preview.password_required && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-destructive sm:mt-10 sm:p-6"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mx-auto mb-6 max-w-3xl rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-destructive sm:mb-10 sm:p-6"
             data-testid="error-panel"
           >
             <div className="flex items-start gap-3">
@@ -217,9 +239,9 @@ export default function Home() {
 
         {!loading && preview && preview.ok === false && preview.password_required && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 rounded-2xl border border-primary/40 bg-primary/5 p-4 sm:mt-10 sm:p-6"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mx-auto mb-6 max-w-3xl rounded-2xl border border-primary/40 bg-primary/5 p-4 sm:mb-10 sm:p-6"
             data-testid="password-required-panel"
           >
             <div className="flex items-start gap-3">
@@ -243,7 +265,7 @@ export default function Home() {
         )}
 
         {!loading && preview && preview.ok && (
-          <div className="mt-6 space-y-4 sm:mt-10 sm:space-y-6">
+          <div className="mx-auto mb-6 max-w-5xl space-y-4 sm:mb-10 sm:space-y-6">
             {watching && streamViaProxy ? (
               <div className="space-y-3">
                 <VideoPlayer
@@ -314,7 +336,7 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="mt-8 border-t border-border py-5 sm:mt-16 sm:py-8">
+      <footer className="border-t border-border/80 py-5 sm:py-8">
         <div className="tp-container flex flex-col items-center justify-between gap-2 text-center text-[10px] text-muted-foreground sm:flex-row sm:gap-3 sm:text-left sm:text-sm">
           <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-2">
             <span className="font-display text-sm font-semibold text-foreground sm:text-lg">
@@ -353,10 +375,10 @@ const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 g
   {FEATURES.map((f, i) => (
     <motion.div
       key={f.title}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, delay: 0.05 * i }}
-      className="rounded-2xl border border-border bg-card p-4 transition-transform duration-300 hover:-translate-y-0.5 hover:border-primary/50 sm:p-5"
+      className="rounded-2xl border border-border bg-surface-raised p-4 transition-[border-color,box-shadow] duration-300 ease-out hover:border-primary/50 hover:brightness-110 sm:p-5"
     >
       <f.icon className="mb-2 h-4 w-4 text-primary sm:mb-3 sm:h-5 sm:w-5" strokeWidth={1.75} />
       <div className="text-xs font-semibold sm:text-sm">{f.title}</div>

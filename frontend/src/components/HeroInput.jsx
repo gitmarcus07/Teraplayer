@@ -58,60 +58,51 @@ export default function HeroInput({
   return (
     <motion.form
       onSubmit={submit}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{
         duration: 0.6,
         ease: [0.16, 1, 0.3, 1],
-        delay: 0.1,
+        delay: 0.15,
       }}
-      className="relative mx-auto w-full max-w-md sm:max-w-3xl"
+      className="mx-auto w-full max-w-2xl"
       data-testid="hero-form"
     >
-      <div className="mb-4 text-center">
-        <p className="text-sm font-medium text-muted-foreground">
-          Paste your public TeraBox link below
-        </p>
-      </div>
-
-      {/* INPUT */}
-      <div className="rounded-2xl border border-border bg-card shadow-xl">
-        <div className="flex h-14 items-center px-4">
-          <Link2 className="mr-3 h-5 w-5 shrink-0 text-muted-foreground" />
-
-          <input
-            ref={inputRef}
-            type="url"
-            inputMode="url"
-            data-testid="paste-input"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={`Paste your TeraBox link... ${EXAMPLES[placeholderIndex]}`}
-            className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
-            spellCheck={false}
-            autoCorrect="off"
-            autoCapitalize="off"
-          />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-0">
+        <div className="flex items-center rounded-2xl border border-border bg-surface-raised shadow-2xl shadow-primary/5 focus-within:border-primary focus-within:ring-2 focus-within:ring-accent/20 transition-colors duration-300 sm:flex-1">
+          <button
+            type="button"
+            onClick={paste}
+            data-testid="paste-clipboard-btn"
+            className="flex h-16 shrink-0 items-center justify-center gap-2 rounded-l-2xl px-4 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-overlay hover:text-foreground sm:h-20 sm:px-5"
+            aria-label="Paste from clipboard"
+          >
+            <ClipboardPaste className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Paste</span>
+          </button>
+          <div className="flex items-center px-3 sm:px-5">
+            <Link2 className="mr-2 h-4 w-4 shrink-0 text-muted-foreground sm:mr-3 sm:h-5 sm:w-5" />
+            <input
+              ref={inputRef}
+              type="url"
+              inputMode="url"
+              data-testid="paste-input"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder="Paste your TeraBox link..."
+              className="flex-1 bg-transparent py-4 text-base outline-none placeholder:text-muted-foreground sm:py-5 sm:text-lg"
+              spellCheck={false}
+              autoCorrect="off"
+              autoCapitalize="off"
+            />
+          </div>
         </div>
-      </div>
-
-      {/* BUTTONS */}
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={paste}
-          data-testid="paste-clipboard-btn"
-          className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-secondary font-semibold text-muted-foreground transition hover:bg-secondary/80 hover:text-foreground"
-        >
-          <ClipboardPaste className="h-4 w-4" />
-          Paste
-        </button>
 
         <Button
           type="submit"
           data-testid="hero-submit-btn"
           disabled={loading || !value.trim()}
-          className="h-12 rounded-xl text-base font-semibold"
+          className="h-14 w-full rounded-2xl text-base font-semibold text-white shadow-lg shadow-primary/20 transition-[box-shadow,transform] duration-300 ease-out hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] sm:h-20 sm:w-auto sm:rounded-l-none sm:rounded-r-2xl sm:px-8 sm:text-lg"
         >
           {loading ? (
             <>
@@ -127,22 +118,8 @@ export default function HeroInput({
         </Button>
       </div>
 
-      {/* FEATURES */}
-      <div className="mx-auto mt-4 flex max-w-sm flex-wrap items-center justify-center gap-2">
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-          <Film className="h-3.5 w-3.5 text-primary" />
-          HD Streaming
-        </span>
-
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-          <FolderOpen className="h-3.5 w-3.5 text-primary" />
-          Folder Support
-        </span>
-
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-          No Login Required
-        </span>
+      <div className="sr-only">
+        Paste your public TeraBox link below and click Watch Now
       </div>
     </motion.form>
   );

@@ -13,8 +13,14 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)'
       },
       colors: {
+        void: 'hsl(var(--void))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        surface: {
+          DEFAULT: 'hsl(var(--surface))',
+          raised: 'hsl(var(--surface-raised))',
+          overlay: 'hsl(var(--surface-overlay))',
+        },
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
@@ -37,6 +43,7 @@ module.exports = {
         },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
+          glow: 'hsl(var(--accent-glow))',
           foreground: 'hsl(var(--accent-foreground))'
         },
         destructive: {
@@ -52,6 +59,25 @@ module.exports = {
           '3': 'hsl(var(--chart-3))',
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))'
+        }
+      },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '1.5rem',
+          md: '2rem',
+          lg: '3rem',
+          xl: '4rem',
+          '2xl': '5rem'
+        },
+        screens: {
+          sm: '640px',
+          md: '768px',
+          lg: '1024px',
+          xl: '1280px',
+          '2xl': '1440px',
+          '7xl': '1536px'
         }
       },
       keyframes: {

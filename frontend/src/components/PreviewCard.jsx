@@ -38,68 +38,75 @@ export default function PreviewCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6"
+      className="rounded-2xl border border-border bg-surface-raised overflow-hidden"
       data-testid="preview-card"
     >
-      {/* Thumbnail */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-card md:col-span-7">
-        <div className="relative aspect-video w-full">
-          {data.thumbnail ? (
-            <img
-              src={data.thumbnail}
-              alt={data.title}
-              className="h-full w-full object-cover"
-              data-testid="preview-thumbnail"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-secondary">
-              <Icon className="h-16 w-16 text-muted-foreground" strokeWidth={1.25} />
-            </div>
-          )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          {canWatch && (
-            <button
-              onClick={onWatch}
-              data-testid="thumbnail-play-btn"
-              className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 hover:scale-110 sm:h-20 sm:w-20"
-              aria-label="Play video"
-            >
-              <Play className="h-6 w-6 fill-white sm:h-8 sm:w-8" strokeWidth={0} />
-            </button>
-          )}
-          {data.file_type && (
+      {/* Media Tile */}
+      <div className="relative aspect-video w-full overflow-hidden">
+        {data.thumbnail ? (
+          <img
+            src={data.thumbnail}
+            alt={data.title}
+            className="h-full w-full object-cover"
+            data-testid="preview-thumbnail"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-surface-overlay">
+            <Icon className="h-16 w-16 text-muted-foreground" strokeWidth={1.25} />
+          </div>
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-3 sm:p-5">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             <Badge
               variant="secondary"
-              className="absolute left-2 top-2 border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md sm:left-3 sm:top-3 sm:text-xs"
+              className="border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md"
               data-testid="preview-type-badge"
             >
               <Icon className="mr-1 h-3 w-3" /> {data.file_type}
             </Badge>
+            {data.size_str && (
+              <Badge
+                variant="secondary"
+                className="border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md"
+                data-testid="preview-size-badge"
+              >
+                <HardDrive className="mr-1 h-3 w-3" /> {data.size_str}
+              </Badge>
+            )}
+          </div>
+          {canWatch && (
+            <button
+              onClick={onWatch}
+              data-testid="thumbnail-play-btn"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-300 ease-out hover:scale-110 hover:bg-white/20 sm:h-16 sm:w-16"
+              aria-label="Play video"
+            >
+              <Play className="h-5 w-5 fill-white sm:h-6 sm:w-6" strokeWidth={0} />
+            </button>
           )}
         </div>
       </div>
 
-      {/* Metadata */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 sm:gap-5 sm:p-6 md:col-span-5 md:p-8">
-        <div>
-          <div className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground sm:text-xs">
-            TeraBox · via {data.source}
-          </div>
-          <h2
-            className="font-display text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl"
-            data-testid="preview-title"
-          >
-            {data.title}
-          </h2>
+      {/* Metadata & Actions */}
+      <div className="p-4 sm:p-5 md:p-6">
+        <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground sm:text-xs">
+          TeraBox · via {data.source}
         </div>
+        <h2
+          className="font-display text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl"
+          data-testid="preview-title"
+        >
+          {data.title}
+        </h2>
 
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
           <Meta icon={HardDrive} label="Size" value={data.size_str || "—"} testId="meta-size" />
           <Meta
             icon={Clock}
@@ -111,13 +118,13 @@ export default function PreviewCard({
           <Meta icon={Icon} label="Type" value={data.file_type || "file"} testId="meta-type" />
         </div>
 
-        <div className="mt-auto flex flex-col gap-2">
+        <div className="mt-5 flex flex-col gap-2">
           <div className="flex flex-col gap-2 sm:flex-row">
             {canWatch && (
               <Button
                 onClick={onWatch}
                 data-testid="watch-now-btn"
-                className="w-full sm:flex-1"
+                className="w-full text-white sm:flex-1"
                 size="lg"
               >
                 <Play className="mr-2 h-4 w-4 fill-current" strokeWidth={0} /> Watch Now
@@ -163,7 +170,7 @@ export default function PreviewCard({
 
 const Meta = ({ icon: Icon, label, value, testId }) => (
   <div
-    className="rounded-xl border border-border bg-secondary/40 p-2.5 sm:p-3"
+    className="rounded-xl border border-border bg-surface-overlay/50 p-2.5 sm:p-3"
     data-testid={testId}
   >
     <div className="mb-1 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">

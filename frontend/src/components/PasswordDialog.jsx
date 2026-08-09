@@ -26,7 +26,7 @@ export default function PasswordDialog({ open, onOpenChange, onSubmit, url, inco
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="password-dialog">
+      <DialogContent data-testid="password-dialog" className="bg-surface-raised border-border">
         <DialogHeader>
           <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary">
             <KeyRound className="h-5 w-5" />
@@ -57,9 +57,10 @@ export default function PasswordDialog({ open, onOpenChange, onSubmit, url, inco
             onChange={(e) => setPwd(e.target.value)}
             placeholder="Share password"
             data-testid="password-input"
+            className="h-10 bg-surface-overlay border-border"
           />
           {url && (
-            <div className="line-clamp-1 rounded-lg border border-border bg-secondary/50 px-3 py-2 font-mono text-xs text-muted-foreground">
+            <div className="line-clamp-1 rounded-lg border border-border bg-surface-overlay/50 px-3 py-2 font-mono text-xs text-muted-foreground">
               {url}
             </div>
           )}

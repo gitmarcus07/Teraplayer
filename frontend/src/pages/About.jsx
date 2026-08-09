@@ -20,8 +20,8 @@ import Header from "../components/Header";
 import { Button } from "../components/ui/button";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
+  initial: { opacity: 0, scale: 0.97 },
+  whileInView: { opacity: 1, scale: 1 },
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.5, ease: "easeOut" },
 };
@@ -80,24 +80,24 @@ export default function About() {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-void">
       <Header />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="tp-container py-16 md:py-24"
         >
           <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               About TeraPlayer
             </div>
-            <h1 className="font-display text-4xl font-bold tracking-tighter sm:text-5xl lg:text-6xl">
+            <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl lg:text-6xl">
               Watch TeraBox links like a{" "}
               <span className="relative inline-block">
                 <span className="text-primary">streaming platform.</span>
@@ -115,7 +115,7 @@ export default function About() {
       {/* What is TeraPlayer */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl">
-          <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
             <span className="text-primary">What</span> is TeraPlayer?
           </h2>
           <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -135,7 +135,7 @@ export default function About() {
       </section>
 
       {/* Mission */}
-      <section className="border-y border-border/40 bg-secondary/30">
+      <section className="border-y border-border/40 bg-surface-overlay/30">
         <div className="tp-container py-16 md:py-20">
           <motion.div {...fadeUp} className="mx-auto max-w-4xl">
             <div className="flex items-start gap-4">
@@ -143,7 +143,7 @@ export default function About() {
                 <HeartHandshake className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+                <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
                   Our <span className="text-primary">Mission</span>
                 </h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -160,7 +160,7 @@ export default function About() {
       {/* Features Grid */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl text-center">
-          <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
             Everything you <span className="text-primary">need</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
@@ -172,11 +172,11 @@ export default function About() {
           {features.map((f, i) => (
             <motion.div
               key={f.title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.05 * i }}
-              className="group rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+              className="group rounded-2xl border border-border bg-surface-raised p-5 transition-[border-color,box-shadow,brightness] duration-300 ease-out hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:brightness-110"
             >
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
                 <f.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
@@ -189,10 +189,10 @@ export default function About() {
       </section>
 
       {/* Supported Links */}
-      <section className="border-y border-border/40 bg-secondary/30">
+      <section className="border-y border-border/40 bg-surface-overlay/30">
         <div className="tp-container py-16 md:py-20">
           <motion.div {...fadeUp} className="mx-auto max-w-4xl">
-            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
               Supported <span className="text-primary">Links</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -212,7 +212,7 @@ export default function About() {
               ].map((domain) => (
                 <div
                   key={domain}
-                  className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm"
+                  className="flex items-center gap-2 rounded-xl border border-border bg-surface-raised px-3 py-2 text-sm"
                 >
                   <Globe className="h-3.5 w-3.5 shrink-0 text-primary" />
                   <span className="font-mono text-xs">{domain}</span>
@@ -231,17 +231,17 @@ export default function About() {
       <section className="tp-container py-16 md:py-20">
         <div className="mx-auto max-w-4xl">
           <motion.div {...fadeUp}>
-            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
               <span className="text-primary">Folder</span> Support &amp; <span className="text-primary">ZIP</span> Downloads
             </h2>
           </motion.div>
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="rounded-2xl border border-border bg-card p-6"
+              className="rounded-2xl border border-border bg-surface-raised p-6"
             >
               <FolderOpen className="mb-3 h-6 w-6 text-primary" />
               <h3 className="font-semibold">Folder Browser</h3>
@@ -257,11 +257,11 @@ export default function About() {
               </ul>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="rounded-2xl border border-border bg-card p-6"
+              className="rounded-2xl border border-border bg-surface-raised p-6"
             >
               <Archive className="mb-3 h-6 w-6 text-primary" />
               <h3 className="font-semibold">ZIP Downloads</h3>
@@ -281,7 +281,7 @@ export default function About() {
       </section>
 
       {/* Privacy */}
-      <section className="border-y border-border/40 bg-secondary/30">
+      <section className="border-y border-border/40 bg-surface-overlay/30">
         <div className="tp-container py-16 md:py-20">
           <motion.div {...fadeUp} className="mx-auto max-w-4xl">
             <div className="flex items-start gap-4">
@@ -289,7 +289,7 @@ export default function About() {
                 <Lock className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+                <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
                   Privacy-<span className="text-primary">First</span> Approach
                 </h2>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground">
@@ -316,7 +316,7 @@ export default function About() {
       {/* Roadmap */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl">
-          <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
             What's <span className="text-primary">Next</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
@@ -327,11 +327,11 @@ export default function About() {
             {roadmap.map((phase) => (
               <motion.div
                 key={phase.quarter}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4 }}
-                className="rounded-2xl border border-border bg-card p-5"
+                className="rounded-2xl border border-border bg-surface-raised p-5"
               >
                 <div className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                   {phase.quarter}
@@ -360,7 +360,7 @@ export default function About() {
             transition={{ duration: 0.5 }}
             className="mx-auto max-w-2xl"
           >
-            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
               Ready to try it?
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -377,10 +377,10 @@ export default function About() {
       </section>
 
       {/* Disclaimer */}
-      <footer className="border-t border-border/40 bg-card/50">
+      <footer className="border-t border-border/40 bg-surface-raised/50">
         <div className="tp-container py-10">
           <div className="mx-auto max-w-4xl">
-            <div className="flex items-start gap-3 rounded-2xl border border-border/60 bg-secondary/20 p-5">
+            <div className="flex items-start gap-3 rounded-2xl border border-border/60 bg-surface-overlay/20 p-5">
               <ExternalLink className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm leading-relaxed text-muted-foreground">

@@ -14,8 +14,8 @@ import Header from "../components/Header";
 import { Button } from "../components/ui/button";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
+  initial: { opacity: 0, scale: 0.97 },
+  whileInView: { opacity: 1, scale: 1 },
   viewport: { once: true, margin: "-60px" },
   transition: { duration: 0.5, ease: "easeOut" },
 };
@@ -69,24 +69,24 @@ export default function Contact() {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-void">
       <Header />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
           className="tp-container py-16 md:py-24"
         >
           <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted-foreground">
               <Mail className="h-3.5 w-3.5 text-primary" />
               Get in touch
             </div>
-            <h1 className="font-display text-4xl font-bold tracking-tighter sm:text-5xl lg:text-6xl">
+            <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl lg:text-6xl">
               Contact <span className="text-primary">Us</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
@@ -103,11 +103,11 @@ export default function Contact() {
             {contactMethods.map((method, i) => (
               <motion.div
                 key={method.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.08 * i }}
-                className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+                className="group rounded-2xl border border-border bg-surface-raised p-6 transition-[border-color,box-shadow,brightness] duration-300 ease-out hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:brightness-110"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
                   <method.icon className="h-6 w-6 text-primary" strokeWidth={1.75} />
@@ -130,13 +130,13 @@ export default function Contact() {
       </section>
 
       {/* Direct Email */}
-      <section className="border-y border-border/40 bg-secondary/30">
+      <section className="border-y border-border/40 bg-surface-overlay/30">
         <div className="tp-container py-16 md:py-20">
           <motion.div {...fadeUp} className="mx-auto max-w-2xl text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15">
               <Send className="h-7 w-7 text-primary" />
             </div>
-            <h2 className="mt-5 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="mt-5 font-display font-bold text-2xl tracking-tight sm:text-3xl">
               Prefer to write <span className="text-primary">directly?</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -155,7 +155,7 @@ export default function Contact() {
       {/* FAQ */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-3xl">
-          <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
             Frequently Asked <span className="text-primary">Questions</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
@@ -166,11 +166,11 @@ export default function Contact() {
             {faqs.map((faq, i) => (
               <motion.div
                 key={faq.q}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: 0.05 * i }}
-                className="rounded-2xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30"
+                className="rounded-2xl border border-border bg-surface-raised p-5 transition-[border-color,brightness] duration-300 ease-out hover:border-primary/30 hover:brightness-105"
               >
                 <h3 className="flex items-start gap-2 text-sm font-semibold">
                   <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -184,7 +184,7 @@ export default function Contact() {
       </section>
 
       {/* Social / Footer */}
-      <footer className="border-t border-border/40 bg-card/50">
+      <footer className="border-t border-border/40 bg-surface-raised/50">
         <div className="tp-container py-10">
           <div className="mx-auto max-w-4xl">
             <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">

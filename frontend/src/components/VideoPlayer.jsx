@@ -194,7 +194,7 @@ export default function VideoPlayer({ src, poster, title }) {
   return (
     <div
       ref={wrapRef}
-      className="group relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-2xl shadow-primary/10"
+      className="group relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-black shadow-2xl shadow-primary/5"
       onMouseMove={revealControls}
       onMouseLeave={() => playing && setShowControls(false)}
       data-testid="video-player"
@@ -221,7 +221,7 @@ export default function VideoPlayer({ src, poster, title }) {
         <button
           onClick={togglePlay}
           data-testid="center-play-btn"
-          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 hover:scale-110 sm:h-20 sm:w-20"
+          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 ease-out hover:scale-110 sm:h-20 sm:w-20"
           aria-label="Play"
         >
           <Play className="h-6 w-6 fill-white sm:h-8 sm:w-8" strokeWidth={0} />
@@ -363,7 +363,7 @@ export default function VideoPlayer({ src, poster, title }) {
         {/* progress fill overlay */}
         <div
           className="pointer-events-none absolute inset-x-3 top-8 h-1 rounded-full bg-white/10 sm:inset-x-5"
-          aria-hidden
+          aria-hidden="true"
         >
           <div
             className="h-full rounded-full bg-primary"

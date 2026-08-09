@@ -92,10 +92,10 @@ export default function DownloadPanel({ url, filename, sizeHint, onClose }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="rounded-2xl border border-border bg-card p-5 shadow-lg"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-2xl border border-border bg-surface-raised p-5 shadow-lg"
       data-testid="download-panel"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

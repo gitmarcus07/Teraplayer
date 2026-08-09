@@ -70,6 +70,7 @@ function SignInForm({ onSuccess }) {
           onChange={(e) => setEmail(e.target.value)}
           required
           data-testid="signin-email-input"
+          className="h-10"
         />
       </div>
       <div className="space-y-2">
@@ -82,6 +83,7 @@ function SignInForm({ onSuccess }) {
           onChange={(e) => setPassword(e.target.value)}
           required
           data-testid="signin-password-input"
+          className="h-10"
         />
       </div>
       <Button
@@ -150,6 +152,7 @@ function SignUpForm({ onSuccess }) {
           onChange={(e) => setName(e.target.value)}
           required
           data-testid="signup-name-input"
+          className="h-10"
         />
       </div>
       <div className="space-y-2">
@@ -162,6 +165,7 @@ function SignUpForm({ onSuccess }) {
           onChange={(e) => setEmail(e.target.value)}
           required
           data-testid="signup-email-input"
+          className="h-10"
         />
       </div>
       <div className="space-y-2">
@@ -175,6 +179,7 @@ function SignUpForm({ onSuccess }) {
           required
           minLength={6}
           data-testid="signup-password-input"
+          className="h-10"
         />
       </div>
       <Button
@@ -280,7 +285,7 @@ export function AuthModal({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" data-testid="auth-modal">
+      <DialogContent className="sm:max-w-md bg-surface-raised border-border" data-testid="auth-modal">
         <DialogHeader>
           <DialogTitle>Welcome to TeraPlayer</DialogTitle>
           <DialogDescription>

@@ -14,7 +14,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Header() {
@@ -25,20 +25,33 @@ export default function Header() {
   const ThemeIcon = mode === "dark" ? Moon : mode === "light" ? Sun : Monitor;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   return (
     <>
       <header
-        className="sticky top-0 z-40 border-b border-border/60 glass"
+        className="sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-xl"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
         data-testid="app-header"
       >
-        <div className="tp-container flex h-16 items-center justify-between">
+        <div className="tp-container flex h-12 sm:h-14 items-center justify-between">
           <Link to="/" data-testid="brand-link" className="group flex items-center gap-2.5">
             <img
               src={logo}
               alt="TeraPlayer"
-              className="h-16 md:h-18 w-auto"
+              className="h-10 w-auto sm:h-12"
             />
           </Link>
 
@@ -58,7 +71,7 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden rounded-xl"
+              className="md:hidden h-10 w-10 rounded-xl"
               data-testid="mobile-menu-btn"
               aria-label="Open menu"
               onClick={() => setMobileMenuOpen(true)}
@@ -72,7 +85,7 @@ export default function Header() {
                   variant="ghost"
                   size="icon"
                   data-testid="theme-toggle"
-                  className="rounded-lg text-muted-foreground hover:text-foreground"
+                  className="h-10 w-10 rounded-lg text-muted-foreground hover:text-foreground"
                   aria-label="Toggle theme"
                 >
                   <ThemeIcon className="h-4 w-4" />
@@ -97,7 +110,7 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="ml-1 rounded-full ring-1 ring-border transition-transform duration-200 hover:-translate-y-0.5"
+                    className="rounded-full ring-1 ring-border transition-transform duration-300 ease-out hover:scale-105"
                     data-testid="user-menu-btn"
                     aria-label="Account menu"
                   >
@@ -136,7 +149,7 @@ export default function Header() {
                   onClick={() => setAuthModalOpen(true)}
                   variant="outline"
                   size="icon"
-                  className="ml-1 sm:hidden"
+                  className="ml-1 h-10 w-10 sm:hidden"
                   data-testid="mobile-login-btn"
                   aria-label="Sign in"
                 >
@@ -153,125 +166,101 @@ export default function Header() {
           <>
             {/* Background Overlay */}
             <motion.div
-              className="fixed inset-0 z-40 bg-black/60 md:hidden"
+              className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
             />
 
-            {/* Drawer */}
+            {/* Cinematic Drawer */}
             <motion.div
-              className="fixed top-0 right-0 z-50 h-screen w-80 max-w-[85vw] bg-background border-l border-border shadow-2xl md:hidden"
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.25 }}
+              className="fixed top-0 right-0 z-50 h-screen w-[85vw] max-w-sm bg-surface-raised/95 backdrop-blur-2xl border-l border-border/60 md:hidden"
+              style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+              initial={{ x: "100%", opacity: 0.5 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0.5 }}
+              transition={{ type: "spring", damping: 28, stiffness: 280, mass: 0.8 }}
             >
-              <div className="relative border-b border-border/50 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-5 py-5">
+              <div className="flex flex-col h-full">
 
-                <div className="flex items-center justify-between">
-
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
                   <Link
                     to="/"
                     onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3"
                   >
                     <img
                       src={logo}
                       alt="TeraPlayer"
-                      className="h-20 w-auto"
+                      className="h-9 w-auto"
                     />
                   </Link>
 
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-xl"
+                    className="h-10 w-10 rounded-xl"
                     onClick={() => setMobileMenuOpen(false)}
+                    aria-label="Close menu"
                   >
                     <X className="h-5 w-5" />
                   </Button>
-
                 </div>
 
-              </div>
+                <div className="flex-1 flex flex-col gap-1 p-4 overflow-y-auto">
+                  <DrawerLink to="/" onClick={() => setMobileMenuOpen(false)} icon={Home} testId="mobile-nav-home">
+                    Home
+                  </DrawerLink>
+                  <DrawerLink to="/about" onClick={() => setMobileMenuOpen(false)} icon={Info} testId="mobile-nav-about">
+                    About
+                  </DrawerLink>
+                  <DrawerLink to="/contact" onClick={() => setMobileMenuOpen(false)} icon={Mail} testId="mobile-nav-contact">
+                    Contact
+                  </DrawerLink>
 
-              <div className="flex flex-col gap-2 p-4">
-                <div className="border-b border-border/50 p-4">
-
-                  {isAuthed ? (
-                    <div className="flex items-center gap-3">
-
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={user?.picture} />
-                        <AvatarFallback>
-                          {(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">
-                          {user?.name}
-                        </p>
-
-                        <p className="truncate text-xs text-muted-foreground">
-                          {user?.email}
-                        </p>
+                  <div className="mt-4 pt-4 border-t border-border/50">
+                    {isAuthed ? (
+                      <div className="flex items-center gap-3 px-3 py-2">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={user?.picture} />
+                          <AvatarFallback>
+                            {(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
+                            {user?.name}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {user?.email}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={logout}
+                          className="h-10 w-10"
+                          data-testid="mobile-logout-btn"
+                        >
+                          <LogOut className="h-5 w-5" />
+                        </Button>
                       </div>
-
+                    ) : (
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={logout}
+                        onClick={() => {
+                          setAuthModalOpen(true);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full h-11 rounded-xl"
+                        data-testid="mobile-signin-btn"
                       >
-                        <LogOut className="h-5 w-5" />
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Sign In
                       </Button>
-
-                    </div>
-                  ) : (
-                  <Button
-                    onClick={() => setAuthModalOpen(true)}
-                    className="w-full h-11 rounded-xl"
-                  >
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign in
-                  </Button>
-                  )}
-
+                    )}
+                  </div>
                 </div>
-
-                <Link
-                  to="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-4 py-3 hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-3">
-                    <Home className="h-5 w-5" />
-                    <span>Home</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/about"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-4 py-3 hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-3">
-                    <Info className="h-5 w-5" />
-                    <span>About</span>
-                  </div>
-                </Link>
-
-                <Link
-                  to="/contact"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-4 py-3 hover:bg-secondary"
-                >
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5" />
-                    <span>Contact</span>
-                  </div>
-                </Link>
               </div>
             </motion.div>
           </>
@@ -287,11 +276,23 @@ const NavLink = ({ to, active, children, testId }) => (
   <Link
     to={to}
     data-testid={testId}
-    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${active
-      ? "bg-secondary text-foreground"
+    className={`relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${active
+      ? "text-foreground after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-[2px] after:w-3/4 after:bg-primary after:rounded-full"
       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
       }`}
   >
+    {children}
+  </Link>
+);
+
+const DrawerLink = ({ to, onClick, icon: Icon, children, testId }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    data-testid={testId}
+     className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-foreground/80 transition-colors duration-200 hover:bg-surface-overlay hover:text-foreground hover:scale-105 active:scale-[0.98]"
+  >
+    <Icon className="h-5 w-5 text-muted-foreground" />
     {children}
   </Link>
 );

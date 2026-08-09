@@ -163,13 +163,13 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
   const currentSort = SORTS.find((s) => s.id === sortId) || SORTS[0];
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 sm:p-4 md:p-6" data-testid="folder-browser">
+    <div className="rounded-2xl border border-border bg-surface-raised p-3 sm:p-4 md:p-6" data-testid="folder-browser">
       {/* Breadcrumbs */}
       <nav className="mb-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground sm:mb-4 sm:text-xs" aria-label="Breadcrumb">
         <HomeIcon className="h-3.5 w-3.5" />
         <span className="font-medium text-foreground">TeraBox</span>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="line-clamp-1 max-w-[150px] font-medium text-foreground sm:max-w-none">{folderName || "Shared folder"}</span>
+        <span className="line-clamp-1 max-w-[150px] font-medium text-foreground sm:max-w-none" title={folderName || "Shared folder"}>{folderName || "Shared folder"}</span>
         <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs">
           {files.length} items
         </Badge>
@@ -287,17 +287,17 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                 data-testid="folder-item"
                 className={`group relative overflow-hidden rounded-xl border ${
                   isSel ? "border-primary" : "border-border"
-                } bg-secondary/40 transition-colors duration-200 hover:border-primary/60`}
+                 } bg-surface-overlay/50 transition-[border-color,brightness] duration-200 hover:border-primary/60 hover:brightness-115`}
               >
                 <button
                   onClick={() => toggle(f._idx)}
-                  className="absolute left-2 top-2 z-10 rounded-md bg-black/40 p-1 text-white backdrop-blur-md"
+                  className="absolute left-2 top-2 z-10 rounded-md bg-black/50 p-1 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110"
                   aria-label="Select"
                   data-testid="folder-select-btn"
                 >
                   {isSel ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
                 </button>
-                <div className="relative aspect-video w-full bg-secondary">
+                <div className="relative aspect-video w-full bg-surface-overlay">
                   {f.thumbnail ? (
                     <img src={f.thumbnail} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -308,22 +308,22 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                   {canPlay && (
                     <button
                       onClick={() => onPlayFile?.(f)}
-                      className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors duration-200 hover:bg-black/40 hover:opacity-100"
+                      className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-[background-color,opacity] duration-200 hover:bg-black/40 hover:opacity-100"
                       aria-label="Play"
                     >
-                      <span className="rounded-full bg-white/20 p-3 backdrop-blur-md">
+                      <span className="rounded-full bg-white/20 p-3 backdrop-blur-md transition-transform duration-200 hover:scale-110">
                         <Play className="h-5 w-5 fill-white text-white" strokeWidth={0} />
                       </span>
                     </button>
                   )}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                    <div className="line-clamp-1 text-xs font-medium text-white">{f.name || "Untitled"}</div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 p-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="line-clamp-1 text-sm font-medium">{f.name || "Untitled"}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {f.size_str || "—"}
-                      {f.file_type ? ` · ${f.file_type}` : ""}
-                    </div>
+                <div className="flex items-center justify-between gap-2 p-3">
+                  <div className="text-xs text-muted-foreground">
+                    {f.size_str || "—"}
+                    {f.file_type ? ` · ${f.file_type}` : ""}
                   </div>
                   <Button
                     size="icon"
@@ -349,7 +349,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                 key={f._idx}
                 data-testid="folder-item"
                 className={`flex items-center gap-3 p-3 transition-colors duration-200 ${
-                  isSel ? "bg-primary/5" : "hover:bg-secondary/40"
+                  isSel ? "bg-primary/5" : "hover:bg-surface-overlay/40"
                 }`}
               >
                 <button onClick={() => toggle(f._idx)} data-testid="folder-select-btn" aria-label="Select">
@@ -359,7 +359,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                     <Square className="h-4 w-4 text-muted-foreground" />
                   )}
                 </button>
-                <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-secondary">
+                <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-surface-overlay">
                   {f.thumbnail ? (
                     <img src={f.thumbnail} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -373,7 +373,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                   className="min-w-0 flex-1 text-left"
                   data-testid="folder-open-btn"
                 >
-                  <div className="line-clamp-1 text-sm font-medium">{f.name || "Untitled"}</div>
+                  <div className="line-clamp-1 text-sm font-medium" title={f.name || "Untitled"}>{f.name || "Untitled"}</div>
                   <div className="text-xs text-muted-foreground">
                     {f.size_str || "—"}
                     {f.file_type ? ` · ${f.file_type}` : ""}
