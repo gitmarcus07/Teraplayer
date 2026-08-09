@@ -1,6 +1,7 @@
 import "@/App.css";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AnimatePresence, motion } from "framer-motion";
@@ -43,20 +44,46 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="App noise">
-          <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white">
-            Skip to content
-          </a>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-          <Toaster
-            position="bottom-right"
-            richColors
-            theme="system"
-            toastOptions={{ style: { fontFamily: "Inter, sans-serif" } }}
-          />
-        </div>
+        <HelmetProvider>
+          <div className="App noise">
+            <Helmet>
+              <script type="application/ld+json">
+                {JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "WebSite",
+                  name: "TeraPlayer",
+                  url: "https://teraplayer.in/",
+                  description: "Watch, stream and download TeraBox videos online for free.",
+                  inLanguage: "en",
+                })}
+              </script>
+              <script type="application/ld+json">
+                {JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "WebApplication",
+                  name: "TeraPlayer",
+                  url: "https://teraplayer.in/",
+                  applicationCategory: "MultimediaApplication",
+                  operatingSystem: "All",
+                  browserRequirements: "Requires JavaScript",
+                  description: "Free online TeraBox video player and downloader.",
+                })}
+              </script>
+            </Helmet>
+            <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white">
+              Skip to content
+            </a>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+            <Toaster
+              position="bottom-right"
+              richColors
+              theme="system"
+              toastOptions={{ style: { fontFamily: "Inter, sans-serif" } }}
+            />
+          </div>
+        </HelmetProvider>
       </AuthProvider>
     </ThemeProvider>
   );

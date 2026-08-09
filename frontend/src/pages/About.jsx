@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import {
   Film,
   Eye,
@@ -83,8 +84,23 @@ export default function About() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border/40">
+      <Helmet>
+        <title>About TeraPlayer — TeraBox Video Player &amp; Downloader</title>
+        <meta name="description" content="TeraPlayer is a free, privacy-first web app that lets you watch and download public TeraBox links instantly. No signup required." />
+        <link rel="canonical" href="https://teraplayer.in/about" />
+        <meta property="og:title" content="About TeraPlayer — TeraBox Video Player &amp; Downloader" />
+        <meta property="og:description" content="Learn how TeraPlayer works — a privacy-first TeraBox video player and downloader with instant streaming." />
+        <meta property="og:url" content="https://teraplayer.in/about" />
+        <meta property="og:image" content="/logo.png" />
+        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
+        <meta name="twitter:title" content="About TeraPlayer — TeraBox Video Player &amp; Downloader" />
+        <meta name="twitter:description" content="Learn how TeraPlayer works — a privacy-first TeraBox video player and downloader with instant streaming." />
+        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
+      </Helmet>
+
+      <main>
+        {/* Hero */}
+        <section className="relative overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
@@ -375,6 +391,8 @@ export default function About() {
           </motion.div>
         </div>
       </section>
+
+      </main>
 
       {/* Disclaimer */}
       <footer className="border-t border-border/40 bg-surface-raised/50">

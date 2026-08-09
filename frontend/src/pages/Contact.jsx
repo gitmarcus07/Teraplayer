@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import {
   Mail,
   MessageSquare,
@@ -72,8 +73,37 @@ export default function Contact() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border/40">
+      <Helmet>
+        <title>Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries</title>
+        <meta name="description" content="Questions, bug reports, or business inquiries? Contact TeraPlayer support. We respond quickly to all messages." />
+        <link rel="canonical" href="https://teraplayer.in/contact" />
+        <meta property="og:title" content="Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries" />
+        <meta property="og:description" content="Contact TeraPlayer for support, bug reports, feedback, or business inquiries." />
+        <meta property="og:url" content="https://teraplayer.in/contact" />
+        <meta property="og:image" content="/logo.png" />
+        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
+        <meta name="twitter:title" content="Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries" />
+        <meta name="twitter:description" content="Contact TeraPlayer for support, bug reports, feedback, or business inquiries." />
+        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.q,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.a,
+              },
+            })),
+          })}
+        </script>
+      </Helmet>
+
+      <main>
+        {/* Hero */}
+        <section className="relative overflow-hidden border-b border-border/40">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
@@ -182,6 +212,8 @@ export default function Contact() {
           </div>
         </motion.div>
       </section>
+
+      </main>
 
       {/* Social / Footer */}
       <footer className="border-t border-border/40 bg-surface-raised/50">
