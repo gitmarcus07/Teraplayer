@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -225,6 +225,24 @@ export default function Home() {
                 <ShieldCheck className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
                 No Login Required
               </span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+              className="mx-auto mt-6 flex flex-col items-center justify-center gap-2 text-center"
+            >
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                Need to{" "}
+                <Link
+                  to="/terabox-video-downloader"
+                  className="text-primary hover:underline"
+                >
+                  download TeraBox videos
+                </Link>
+                ?
+              </p>
             </motion.div>
           </div>
         </section>
