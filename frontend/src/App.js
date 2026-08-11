@@ -10,6 +10,7 @@ import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import TeraBoxVideoDownloader from "@/pages/TeraBoxVideoDownloader";
 import TeraBoxVideoPlayer from "@/pages/TeraBoxVideoPlayer";
+import HowToDownloadTeraBoxVideos from "@/pages/HowToDownloadTeraBoxVideos";
 
 function PageTransition({ children }) {
   return (
@@ -37,6 +38,7 @@ function AppRoutes() {
           <Route path="/contact" element={<Contact />} />
                 <Route path="/terabox-video-downloader" element={<TeraBoxVideoDownloader />} />
                 <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
+                <Route path="/how-to-download-terabox-videos" element={<HowToDownloadTeraBoxVideos />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </PageTransition>
