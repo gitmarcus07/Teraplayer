@@ -14,6 +14,10 @@ import HowToDownloadTeraBoxVideos from "@/pages/HowToDownloadTeraBoxVideos";
 import HowToWatchTeraBoxVideos from "@/pages/HowToWatchTeraBoxVideos";
 import TeraBoxVideoLinkNotWorking from "@/pages/TeraBoxVideoLinkNotWorking";
 import HowToDownloadTeraBoxFolder from "@/pages/HowToDownloadTeraBoxFolder";
+import TeraBoxZipDownload from "@/pages/TeraBoxZipDownload";
+import TeraBoxPublicLink from "@/pages/TeraBoxPublicLink";
+import TeraBoxDownloadMobile from "@/pages/TeraBoxDownloadMobile";
+import TeraBoxDownloadPC from "@/pages/TeraBoxDownloadPC";
 
 function PageTransition({ children }) {
   return (
@@ -45,6 +49,10 @@ function AppRoutes() {
                 <Route path="/how-to-watch-terabox-videos" element={<HowToWatchTeraBoxVideos />} />
                 <Route path="/terabox-video-link-not-working" element={<TeraBoxVideoLinkNotWorking />} />
                 <Route path="/how-to-download-terabox-folder" element={<HowToDownloadTeraBoxFolder />} />
+                <Route path="/terabox-zip-download" element={<TeraBoxZipDownload />} />
+                <Route path="/terabox-public-link" element={<TeraBoxPublicLink />} />
+                <Route path="/terabox-download-mobile" element={<TeraBoxDownloadMobile />} />
+                <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </PageTransition>
