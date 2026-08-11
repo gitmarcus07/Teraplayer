@@ -403,6 +403,10 @@ export default function TeraBoxVideoPlayer() {
         </section>
 
         <section className="max-w-4xl mx-auto px-4 py-10 border-t border-border/40">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center sm:text-left">
+            TeraBox Video Player — Watch TeraBox Videos Online
+          </h1>
+
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center sm:text-left">
             Online Browser Playback for Shared TeraBox Media
           </h2>
