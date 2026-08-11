@@ -130,14 +130,14 @@ export default function HowToDownloadTeraBoxFolder() {
           name="description"
           content="Learn how to work with supported TeraBox folder and file links using TeraPlayer. See how to download supported files and what to do when a folder link does not work."
         />
-        <link rel="canonical" href="https://teraplayer.in/how-to-download-terabox-folder" />
+        <link rel="canonical" href="https://www.teraplayer.in/how-to-download-terabox-folder" />
         <meta property="og:title" content="How to Download a TeraBox Folder | TeraPlayer" />
         <meta
           property="og:description"
           content="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
         />
-        <meta property="og:url" content="https://teraplayer.in/how-to-download-terabox-folder" />
-        <meta property="og:image" content="https://teraplayer.in/logo.png" />
+        <meta property="og:url" content="https://www.teraplayer.in/how-to-download-terabox-folder" />
+        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
         <meta property="og:image:alt" content="How to Download a TeraBox Folder - TeraPlayer" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="How to Download a TeraBox Folder | TeraPlayer" />
@@ -145,7 +145,7 @@ export default function HowToDownloadTeraBoxFolder() {
           name="twitter:description"
           content="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
         />
-        <meta name="twitter:image" content="https://teraplayer.in/logo.png" />
+        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
         <meta name="twitter:image:alt" content="How to Download a TeraBox Folder - TeraPlayer" />
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

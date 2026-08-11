@@ -121,14 +121,14 @@ export default function TeraBoxZipDownload() {
           name="description"
           content="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser, including how to select files and start a ZIP download."
         />
-        <link rel="canonical" href="https://teraplayer.in/terabox-zip-download" />
+        <link rel="canonical" href="https://www.teraplayer.in/terabox-zip-download" />
         <meta property="og:title" content="TeraBox ZIP Download: Download Multiple Files | TeraPlayer" />
         <meta
           property="og:description"
           content="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
         />
-        <meta property="og:url" content="https://teraplayer.in/terabox-zip-download" />
-        <meta property="og:image" content="https://teraplayer.in/logo.png" />
+        <meta property="og:url" content="https://www.teraplayer.in/terabox-zip-download" />
+        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
         <meta property="og:image:alt" content="TeraBox ZIP Download - TeraPlayer" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="TeraBox ZIP Download: Download Multiple Files | TeraPlayer" />
@@ -136,7 +136,7 @@ export default function TeraBoxZipDownload() {
           name="twitter:description"
           content="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
         />
-        <meta name="twitter:image" content="https://teraplayer.in/logo.png" />
+        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
         <meta name="twitter:image:alt" content="TeraBox ZIP Download - TeraPlayer" />
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

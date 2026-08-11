@@ -88,14 +88,14 @@ export default function TeraBoxPublicLink() {
           name="description"
           content="Learn what a public TeraBox share link is, how to use supported links with TeraPlayer, and what to do when a shared link is private, expired, restricted, or unsupported."
         />
-        <link rel="canonical" href="https://teraplayer.in/terabox-public-link" />
+        <link rel="canonical" href="https://www.teraplayer.in/terabox-public-link" />
         <meta property="og:title" content="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer" />
         <meta
           property="og:description"
           content="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
         />
-        <meta property="og:url" content="https://teraplayer.in/terabox-public-link" />
-        <meta property="og:image" content="https://teraplayer.in/logo.png" />
+        <meta property="og:url" content="https://www.teraplayer.in/terabox-public-link" />
+        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
         <meta property="og:image:alt" content="TeraBox Public Link Guide - TeraPlayer" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer" />
@@ -103,7 +103,7 @@ export default function TeraBoxPublicLink() {
           name="twitter:description"
           content="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
         />
-        <meta name="twitter:image" content="https://teraplayer.in/logo.png" />
+        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
         <meta name="twitter:image:alt" content="TeraBox Public Link Guide - TeraPlayer" />
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Helmet>

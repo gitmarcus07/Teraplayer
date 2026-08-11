@@ -178,10 +178,10 @@ export default function TeraBoxVideoDownloader() {
       <Helmet>
         <title>TeraBox Video Downloader | Download TeraBox Videos - TeraPlayer</title>
         <meta name="description" content="Download supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview, watch and download videos directly from your browser." />
-        <link rel="canonical" href="https://teraplayer.in/terabox-video-downloader" />
+        <link rel="canonical" href="https://www.teraplayer.in/terabox-video-downloader" />
         <meta property="og:title" content="TeraBox Video Downloader | TeraPlayer" />
         <meta property="og:description" content="Download supported TeraBox videos online with TeraPlayer. Preview and download videos directly from your browser." />
-        <meta property="og:url" content="https://teraplayer.in/terabox-video-downloader" />
+        <meta property="og:url" content="https://www.teraplayer.in/terabox-video-downloader" />
         <meta property="og:image" content="/logo.png" />
         <meta property="og:image:alt" content="TeraBox Video Downloader - TeraPlayer" />
         <meta name="twitter:title" content="TeraBox Video Downloader | TeraPlayer" />
@@ -192,7 +192,7 @@ export default function TeraBoxVideoDownloader() {
             "@context": "https://schema.org",
             "@type": "WebApplication",
             name: "TeraPlayer",
-            url: "https://teraplayer.in/terabox-video-downloader",
+            url: "https://www.teraplayer.in/terabox-video-downloader",
             applicationCategory: "MultimediaApplication",
             operatingSystem: "All",
             browserRequirements: "Requires JavaScript",

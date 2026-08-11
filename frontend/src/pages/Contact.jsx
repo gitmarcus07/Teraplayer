@@ -76,10 +76,10 @@ export default function Contact() {
       <Helmet>
         <title>Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries</title>
         <meta name="description" content="Questions, bug reports, or business inquiries? Contact TeraPlayer support. We respond quickly to all messages." />
-        <link rel="canonical" href="https://teraplayer.in/contact" />
+        <link rel="canonical" href="https://www.teraplayer.in/contact" />
         <meta property="og:title" content="Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries" />
         <meta property="og:description" content="Contact TeraPlayer for support, bug reports, feedback, or business inquiries." />
-        <meta property="og:url" content="https://teraplayer.in/contact" />
+        <meta property="og:url" content="https://www.teraplayer.in/contact" />
         <meta property="og:image" content="/logo.png" />
         <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
         <meta name="twitter:title" content="Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries" />

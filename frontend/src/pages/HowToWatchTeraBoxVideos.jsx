@@ -153,14 +153,14 @@ export default function HowToWatchTeraBoxVideos() {
           name="description"
           content="Learn how to watch supported TeraBox videos online with TeraPlayer. Follow a simple guide to open a public TeraBox share link and stream videos in your browser."
         />
-        <link rel="canonical" href="https://teraplayer.in/how-to-watch-terabox-videos" />
+        <link rel="canonical" href="https://www.teraplayer.in/how-to-watch-terabox-videos" />
         <meta property="og:title" content="How to Watch TeraBox Videos Online | TeraPlayer" />
         <meta
           property="og:description"
           content="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
         />
-        <meta property="og:url" content="https://teraplayer.in/how-to-watch-terabox-videos" />
-        <meta property="og:image" content="https://teraplayer.in/logo.png" />
+        <meta property="og:url" content="https://www.teraplayer.in/how-to-watch-terabox-videos" />
+        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
         <meta property="og:image:alt" content="How to Watch TeraBox Videos Online - TeraPlayer" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="How to Watch TeraBox Videos Online | TeraPlayer" />
@@ -168,7 +168,7 @@ export default function HowToWatchTeraBoxVideos() {
           name="twitter:description"
           content="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
         />
-        <meta name="twitter:image" content="https://teraplayer.in/logo.png" />
+        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
         <meta name="twitter:image:alt" content="How to Watch TeraBox Videos Online - TeraPlayer" />
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

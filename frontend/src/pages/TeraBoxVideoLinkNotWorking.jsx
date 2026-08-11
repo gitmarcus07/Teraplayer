@@ -129,14 +129,14 @@ export default function TeraBoxVideoLinkNotWorking() {
           name="description"
           content="Is your TeraBox link not working? Learn how to troubleshoot incomplete, private, unavailable and unsupported TeraBox video links with TeraPlayer."
         />
-        <link rel="canonical" href="https://teraplayer.in/terabox-video-link-not-working" />
+        <link rel="canonical" href="https://www.teraplayer.in/terabox-video-link-not-working" />
         <meta property="og:title" content="TeraBox Link Not Working? Common Fixes | TeraPlayer" />
         <meta
           property="og:description"
           content="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
         />
-        <meta property="og:url" content="https://teraplayer.in/terabox-video-link-not-working" />
-        <meta property="og:image" content="https://teraplayer.in/logo.png" />
+        <meta property="og:url" content="https://www.teraplayer.in/terabox-video-link-not-working" />
+        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
         <meta property="og:image:alt" content="TeraBox Link Not Working - TeraPlayer" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="TeraBox Link Not Working? Common Fixes | TeraPlayer" />
@@ -144,7 +144,7 @@ export default function TeraBoxVideoLinkNotWorking() {
           name="twitter:description"
           content="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
         />
-        <meta name="twitter:image" content="https://teraplayer.in/logo.png" />
+        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
         <meta name="twitter:image:alt" content="TeraBox Link Not Working - TeraPlayer" />
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

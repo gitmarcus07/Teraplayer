@@ -146,10 +146,10 @@ export default function Home() {
       <Helmet>
         <title>TeraPlayer | TeraBox Video Downloader, Player &amp; Streaming</title>
         <meta name="description" content="Watch, stream and download TeraBox videos online for free with TeraPlayer. Fast HD streaming, folder support, ZIP downloads and no login required." />
-        <link rel="canonical" href="https://teraplayer.in/" />
+        <link rel="canonical" href="https://www.teraplayer.in/" />
         <meta property="og:title" content="TeraPlayer - Watch &amp; Download TeraBox Videos" />
         <meta property="og:description" content="Watch, stream and download TeraBox videos instantly with TeraPlayer. Fast HD streaming and folder support." />
-        <meta property="og:url" content="https://teraplayer.in/" />
+        <meta property="og:url" content="https://www.teraplayer.in/" />
         <meta property="og:image" content="/logo.png" />
         <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
         <meta name="twitter:title" content="TeraPlayer - Watch &amp; Download TeraBox Videos" />

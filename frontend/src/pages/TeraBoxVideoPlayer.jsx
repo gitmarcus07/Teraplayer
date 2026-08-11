@@ -192,7 +192,7 @@ export default function TeraBoxVideoPlayer() {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "TeraBox Video Player - TeraPlayer",
-    url: "https://teraplayer.in/terabox-video-player",
+    url: "https://www.teraplayer.in/terabox-video-player",
     applicationCategory: "MultimediaApplication",
     operatingSystem: "All",
     description:
@@ -213,7 +213,7 @@ export default function TeraBoxVideoPlayer() {
 
         <link
           rel="canonical"
-          href="https://teraplayer.in/terabox-video-player"
+          href="https://www.teraplayer.in/terabox-video-player"
         />
 
         <meta
@@ -228,14 +228,14 @@ export default function TeraBoxVideoPlayer() {
 
         <meta
           property="og:url"
-          content="https://teraplayer.in/terabox-video-player"
+          content="https://www.teraplayer.in/terabox-video-player"
         />
 
         <meta property="og:type" content="website" />
 
         <meta
           property="og:image"
-          content="https://teraplayer.in/logo.png"
+          content="https://www.teraplayer.in/logo.png"
         />
 
         <meta
@@ -257,7 +257,7 @@ export default function TeraBoxVideoPlayer() {
 
         <meta
           name="twitter:image"
-          content="https://teraplayer.in/logo.png"
+          content="https://www.teraplayer.in/logo.png"
         />
 
         <meta

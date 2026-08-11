@@ -1,39 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://teraplayer.in/</loc>
+    <loc>https://www.teraplayer.in/</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/terabox-video-downloader</loc>
+    <loc>https://www.teraplayer.in/terabox-video-downloader</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/about</loc>
+    <loc>https://www.teraplayer.in/terabox-video-player</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/contact</loc>
+    <loc>https://www.teraplayer.in/about</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/how-to-download-terabox-videos</loc>
+    <loc>https://www.teraplayer.in/contact</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/how-to-watch-terabox-videos</loc>
+    <loc>https://www.teraplayer.in/how-to-download-terabox-videos</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/terabox-video-link-not-working</loc>
+    <loc>https://www.teraplayer.in/how-to-watch-terabox-videos</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/how-to-download-terabox-folder</loc>
+    <loc>https://www.teraplayer.in/terabox-video-link-not-working</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/terabox-zip-download</loc>
+    <loc>https://www.teraplayer.in/how-to-download-terabox-folder</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/terabox-public-link</loc>
+    <loc>https://www.teraplayer.in/terabox-zip-download</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/terabox-download-mobile</loc>
+    <loc>https://www.teraplayer.in/terabox-public-link</loc>
   </url>
   <url>
-    <loc>https://teraplayer.in/terabox-download-pc</loc>
+    <loc>https://www.teraplayer.in/terabox-download-mobile</loc>
+  </url>
+  <url>
+    <loc>https://www.teraplayer.in/terabox-download-pc</loc>
   </url>
 </urlset>

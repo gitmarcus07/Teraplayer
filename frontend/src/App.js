@@ -72,7 +72,7 @@ function App() {
                   "@context": "https://schema.org",
                   "@type": "WebSite",
                   name: "TeraPlayer",
-                  url: "https://teraplayer.in/",
+                  url: "https://www.teraplayer.in/",
                   description: "Watch, stream and download TeraBox videos online for free.",
                   inLanguage: "en",
                 })}
@@ -82,7 +82,7 @@ function App() {
                   "@context": "https://schema.org",
                   "@type": "WebApplication",
                   name: "TeraPlayer",
-                  url: "https://teraplayer.in/",
+                  url: "https://www.teraplayer.in/",
                   applicationCategory: "MultimediaApplication",
                   operatingSystem: "All",
                   browserRequirements: "Requires JavaScript",

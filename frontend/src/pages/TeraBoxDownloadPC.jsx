@@ -121,14 +121,14 @@ export default function TeraBoxDownloadPC() {
           name="description"
           content="Learn how to use TeraPlayer on a PC or desktop browser to open supported public TeraBox links, stream videos, download files, and create ZIP downloads from selected files."
         />
-        <link rel="canonical" href="https://teraplayer.in/terabox-download-pc" />
+        <link rel="canonical" href="https://www.teraplayer.in/terabox-download-pc" />
         <meta property="og:title" content="TeraBox Downloader for PC: Download Videos on Desktop | TeraPlayer" />
         <meta
           property="og:description"
           content="Learn how to use TeraPlayer on a PC or desktop browser to watch videos, download files, and create ZIP downloads from supported public TeraBox links."
         />
-        <meta property="og:url" content="https://teraplayer.in/terabox-download-pc" />
-        <meta property="og:image" content="https://teraplayer.in/logo.png" />
+        <meta property="og:url" content="https://www.teraplayer.in/terabox-download-pc" />
+        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
         <meta property="og:image:alt" content="TeraBox Downloader for PC - TeraPlayer" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="TeraBox Downloader for PC: Download Videos on Desktop | TeraPlayer" />
@@ -136,7 +136,7 @@ export default function TeraBoxDownloadPC() {
           name="twitter:description"
           content="Learn how to use TeraPlayer on a PC or desktop browser to watch videos, download files, and create ZIP downloads from supported public TeraBox links."
         />
-        <meta name="twitter:image" content="https://teraplayer.in/logo.png" />
+        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
         <meta name="twitter:image:alt" content="TeraBox Downloader for PC - TeraPlayer" />
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
