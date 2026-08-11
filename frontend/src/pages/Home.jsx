@@ -193,7 +193,7 @@ export default function Home() {
               <p className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:text-base">
                 Stream, preview and download public TeraBox links in seconds.{" "}
                 <br className="hidden sm:block" />
-                No login • HD Streaming • Folder Support
+                No login · HD Streaming · Folder Support
               </p>
             </motion.div>
 
@@ -245,6 +245,105 @@ export default function Home() {
               </p>
             </motion.div>
           </div>
+
+          <section
+            aria-labelledby="terabox-guides-heading"
+            className="mx-auto mt-10 max-w-4xl px-5"
+          >
+            <h2
+              id="terabox-guides-heading"
+              className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:text-sm"
+            >
+              TeraBox Guides
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-2xl text-center text-xs text-muted-foreground sm:text-sm">
+              Learn more about watching, downloading, sharing, and troubleshooting TeraBox links with TeraPlayer.
+            </p>
+
+            <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <li>
+                <Link
+                  to="/terabox-video-downloader"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox Video Downloader
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terabox-video-player"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox Video Player
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/how-to-download-terabox-videos"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  How to Download TeraBox Videos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/how-to-watch-terabox-videos"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  How to Watch TeraBox Videos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terabox-video-link-not-working"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox Link Troubleshooting
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/how-to-download-terabox-folder"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  How to Download a TeraBox Folder
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terabox-zip-download"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox ZIP Download
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terabox-public-link"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox Public Link Guide
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terabox-download-mobile"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox Download on Mobile
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terabox-download-pc"
+                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                >
+                  TeraBox Downloader for PC
+                </Link>
+              </li>
+            </ul>
+          </section>
         </section>
 
         {loading && <LoadingSkeleton />}
