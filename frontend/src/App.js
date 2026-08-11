@@ -12,6 +12,7 @@ import TeraBoxVideoDownloader from "@/pages/TeraBoxVideoDownloader";
 import TeraBoxVideoPlayer from "@/pages/TeraBoxVideoPlayer";
 import HowToDownloadTeraBoxVideos from "@/pages/HowToDownloadTeraBoxVideos";
 import HowToWatchTeraBoxVideos from "@/pages/HowToWatchTeraBoxVideos";
+import TeraBoxVideoLinkNotWorking from "@/pages/TeraBoxVideoLinkNotWorking";
 
 function PageTransition({ children }) {
   return (
@@ -41,6 +42,7 @@ function AppRoutes() {
                 <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
                 <Route path="/how-to-download-terabox-videos" element={<HowToDownloadTeraBoxVideos />} />
                 <Route path="/how-to-watch-terabox-videos" element={<HowToWatchTeraBoxVideos />} />
+                <Route path="/terabox-video-link-not-working" element={<TeraBoxVideoLinkNotWorking />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </PageTransition>
