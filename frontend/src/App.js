@@ -18,6 +18,7 @@ import TeraBoxZipDownload from "@/pages/TeraBoxZipDownload";
 import TeraBoxPublicLink from "@/pages/TeraBoxPublicLink";
 import TeraBoxDownloadMobile from "@/pages/TeraBoxDownloadMobile";
 import TeraBoxDownloadPC from "@/pages/TeraBoxDownloadPC";
+import Premium from "@/pages/Premium";
 
 function PageTransition({ children }) {
   return (
@@ -53,6 +54,7 @@ function AppRoutes() {
                 <Route path="/terabox-public-link" element={<TeraBoxPublicLink />} />
                 <Route path="/terabox-download-mobile" element={<TeraBoxDownloadMobile />} />
                 <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
+                <Route path="/premium" element={<Premium />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </PageTransition>

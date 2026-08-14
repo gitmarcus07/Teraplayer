@@ -1,6 +1,6 @@
 import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
-import { Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, } from "lucide-react";
+import { Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, Crown, } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
@@ -64,6 +64,9 @@ export default function Header() {
             </NavLink>
             <NavLink to="/contact" active={location.pathname === "/contact"} testId="nav-contact">
               Contact
+            </NavLink>
+            <NavLink to="/premium" active={location.pathname === "/premium"} testId="nav-premium">
+              Premium
             </NavLink>
           </nav>
 
@@ -217,6 +220,9 @@ export default function Header() {
                   </DrawerLink>
                   <DrawerLink to="/contact" onClick={() => setMobileMenuOpen(false)} icon={Mail} testId="mobile-nav-contact">
                     Contact
+                  </DrawerLink>
+                  <DrawerLink to="/premium" onClick={() => setMobileMenuOpen(false)} icon={Crown} testId="mobile-nav-premium">
+                    Premium
                   </DrawerLink>
 
                   <div className="mt-4 pt-4 border-t border-border/50">
