@@ -31,6 +31,8 @@ from urllib.parse import urlparse, parse_qs
 
 import httpx
 
+from .xapiverse import extract_via_xapiverse
+
 logger = logging.getLogger(__name__)
 
 CF_WORKER_URL = os.environ.get("TERABOX_WORKER_URL", "")
@@ -543,6 +545,9 @@ async def _extract_via_cf_worker(url: str, client: httpx.AsyncClient, password: 
 
 
 EXTRACTORS = [
+    # xAPIverse is the PRIMARY extractor: it resolves links through the
+    # xapiverse.com API and does NOT require a personal TeraBox ndus cookie.
+    ("xapiverse", extract_via_xapiverse),
     ("playwright", _extract_via_playwright),
     ("cf_worker", _extract_via_cf_worker),
     ("hnn", _extract_via_hnn),

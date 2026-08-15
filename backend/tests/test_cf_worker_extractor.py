@@ -161,9 +161,10 @@ class TestCfWorkerExtractor:
 
 
 class TestFallbackChain:
-    def test_cf_worker_is_first_extractor(self):
+    def test_cf_worker_is_in_chain(self):
         names = [name for name, _ in extractors.EXTRACTORS]
-        assert names[0] == "playwright", f"Expected playwright first, got {names}"
+        # xAPIverse is the primary extractor; playwright/cf_worker remain fallbacks
+        assert names[0] == "xapiverse", f"Expected xapiverse first, got {names}"
         assert "cf_worker" in names
         assert "hnn" in names
         assert "teradl" in names

@@ -136,8 +136,10 @@ async def get_preview(url: str, password: str = "") -> dict[str, Any]:
         await _set_cached(cache_key, data)
         return data
 
-    # If all community extractors failed, try native extraction as final fallback
-    if not data.get("ok") and not data.get("password_required"):
+    # If all community extractors failed, try native TeraBox API extraction as a
+    # final fallback — but ONLY when an ndus cookie is configured. Production uses
+    # the xAPIverse API as the primary path and must NOT require a personal cookie.
+    if not data.get("ok") and not data.get("password_required") and COOKIE_JSON:
         logger.info("Community extractors failed, trying native TeraBox API extraction...")
         try:
             native = await extract_native(url, password=password, cookie_json=COOKIE_JSON)
@@ -151,15 +153,6 @@ async def get_preview(url: str, password: str = "") -> dict[str, Any]:
         except Exception as exc:
             logger.warning("Native extractor failed: %s", exc)
             data["error"] = f"{data.get('error', '')}; native: {exc}"
-
-    # Append cookie setup hint to error if COOKIE_JSON is not configured
-    pw_cookie = os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS")
-    if not pw_cookie and data.get("error"):
-        data["error"] += (
-            " | TeraBox now requires an authenticated session. "
-            "Set COOKIE_JSON in your .env file with your ndus cookie "
-            "(see .env.example for instructions)."
-        )
 
     return data
 
