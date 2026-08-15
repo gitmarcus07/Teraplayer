@@ -325,19 +325,6 @@ export default function Home() {
                   {preview.error ||
                     "The link may be private, expired, or the extractor mirrors are temporarily unavailable."}
                 </p>
-                <Button
-                  className="mt-3"
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    runBrowserExtraction(preview.sourceUrl || searchParams.get("url") || "")
-                  }
-                  disabled={extRunning}
-                  data-testid="extract-with-browser-btn"
-                >
-                  <Puzzle className="mr-1.5 h-4 w-4" />
-                  Extract with Browser
-                </Button>
               </div>
             </div>
           </motion.div>
