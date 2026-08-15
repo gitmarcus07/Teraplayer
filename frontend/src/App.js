@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
+import MeetTheDev from "@/pages/MeetTheDev";
 import TeraBoxVideoDownloader from "@/pages/TeraBoxVideoDownloader";
 import TeraBoxVideoPlayer from "@/pages/TeraBoxVideoPlayer";
 import HowToDownloadTeraBoxVideos from "@/pages/HowToDownloadTeraBoxVideos";
@@ -44,6 +45,7 @@ function AppRoutes() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/meet-the-dev" element={<MeetTheDev />} />
                 <Route path="/terabox-video-downloader" element={<TeraBoxVideoDownloader />} />
                 <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
                 <Route path="/how-to-download-terabox-videos" element={<HowToDownloadTeraBoxVideos />} />
