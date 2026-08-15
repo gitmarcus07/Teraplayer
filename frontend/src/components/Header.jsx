@@ -1,7 +1,6 @@
 import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
-import { Sun, Moon, Monitor, LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, Crown, Code2, } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
+import { LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, Crown, Code2, } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
 import {
@@ -18,11 +17,8 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Header() {
-  const { mode, setTheme } = useTheme();
   const { user, isAuthed, logout } = useAuth();
   const location = useLocation();
-
-  const ThemeIcon = mode === "dark" ? Moon : mode === "light" ? Sun : Monitor;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -59,17 +55,17 @@ export default function Header() {
             <NavLink to="/" active={location.pathname === "/"} testId="nav-home">
               Home
             </NavLink>
-            <NavLink to="/about" active={location.pathname === "/about"} testId="nav-about">
-              About
-            </NavLink>
-            <NavLink to="/contact" active={location.pathname === "/contact"} testId="nav-contact">
-              Contact
-            </NavLink>
             <NavLink to="/premium" active={location.pathname === "/premium"} testId="nav-premium">
               Premium
             </NavLink>
             <NavLink to="/meet-the-dev" active={location.pathname === "/meet-the-dev"} testId="nav-meet-the-dev">
               Meet the Dev
+            </NavLink>
+            <NavLink to="/contact" active={location.pathname === "/contact"} testId="nav-contact">
+              Contact
+            </NavLink>
+            <NavLink to="/about" active={location.pathname === "/about"} testId="nav-about">
+              About
             </NavLink>
           </nav>
 
@@ -84,33 +80,6 @@ export default function Header() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  data-testid="theme-toggle"
-                  className="h-10 w-10 rounded-lg text-muted-foreground hover:text-foreground"
-                  aria-label="Toggle theme"
-                >
-                  <ThemeIcon className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" data-testid="theme-menu">
-                <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem data-testid="theme-light" onClick={() => setTheme("light")}>
-                  <Sun className="mr-2 h-4 w-4" /> Light
-                </DropdownMenuItem>
-                <DropdownMenuItem data-testid="theme-dark" onClick={() => setTheme("dark")}>
-                  <Moon className="mr-2 h-4 w-4" /> Dark
-                </DropdownMenuItem>
-                <DropdownMenuItem data-testid="theme-system" onClick={() => setTheme("system")}>
-                  <Monitor className="mr-2 h-4 w-4" /> System
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             {isAuthed ? (
               <DropdownMenu>
@@ -219,18 +188,17 @@ export default function Header() {
                   <DrawerLink to="/" onClick={() => setMobileMenuOpen(false)} icon={Home} testId="mobile-nav-home">
                     Home
                   </DrawerLink>
-                  <DrawerLink to="/about" onClick={() => setMobileMenuOpen(false)} icon={Info} testId="mobile-nav-about">
-                    About
+                  <DrawerLink to="/premium" onClick={() => setMobileMenuOpen(false)} icon={Crown} testId="mobile-nav-premium">
+                    Premium
+                  </DrawerLink>
+                  <DrawerLink to="/meet-the-dev" onClick={() => setMobileMenuOpen(false)} icon={Code2} testId="mobile-nav-meet-the-dev">
+                    Meet the Dev
                   </DrawerLink>
                   <DrawerLink to="/contact" onClick={() => setMobileMenuOpen(false)} icon={Mail} testId="mobile-nav-contact">
                     Contact
                   </DrawerLink>
-                  <DrawerLink to="/premium" onClick={() => setMobileMenuOpen(false)} icon={Crown} testId="mobile-nav-premium">
-                    Premium
-                  </DrawerLink>
-
-                  <DrawerLink to="/meet-the-dev" onClick={() => setMobileMenuOpen(false)} icon={Code2} testId="mobile-nav-meet-the-dev">
-                    Meet the Dev
+                  <DrawerLink to="/about" onClick={() => setMobileMenuOpen(false)} icon={Info} testId="mobile-nav-about">
+                    About
                   </DrawerLink>
 
                   <div className="mt-4 pt-4 border-t border-border/50">
