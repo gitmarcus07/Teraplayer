@@ -79,6 +79,11 @@ function App() {
         <HelmetProvider>
           <div className="App noise">
             <Helmet>
+              <script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1829462522713040"
+                crossOrigin="anonymous"
+              />
               <script type="application/ld+json">
                 {JSON.stringify({
                   "@context": "https://schema.org",
