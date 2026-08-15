@@ -186,8 +186,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             await ensure_extension_jobs_indexes(db)
             await ensure_admin_indexes(db)
             await bootstrap_super_admin(db)
-            await _set_cache_db(db)
-            await _set_extension_jobs_db(db)
+            _set_cache_db(db)
+            _set_extension_jobs_db(db)
             logger.info("MongoDB indexes ready")
         except Exception as exc:
             logger.warning("Index setup failed (non-fatal)", exc_info=exc)
