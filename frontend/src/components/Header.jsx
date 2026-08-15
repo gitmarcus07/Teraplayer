@@ -47,13 +47,13 @@ export default function Header() {
         data-testid="app-header"
       >
         <div className="tp-container flex h-12 sm:h-14 items-center justify-between">
-          <Link to="/" data-testid="brand-link" className="group flex items-center gap-2.5">
+          <a href="/" data-testid="brand-link" aria-label="TeraPlayer Home" className="group flex items-center gap-2.5">
             <img
               src={logo}
               alt="TeraPlayer"
               className="h-10 w-auto sm:h-12"
             />
-          </Link>
+          </a>
 
           <nav className="hidden items-center gap-1 md:flex">
             <NavLink to="/" active={location.pathname === "/"} testId="nav-home">
@@ -188,8 +188,9 @@ export default function Header() {
               <div className="flex flex-col h-full">
 
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
-                  <Link
-                    to="/"
+                  <a
+                    href="/"
+                    aria-label="TeraPlayer Home"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3"
                   >
@@ -198,7 +199,7 @@ export default function Header() {
                       alt="TeraPlayer"
                       className="h-9 w-auto"
                     />
-                  </Link>
+                  </a>
 
                   <Button
                     variant="ghost"
