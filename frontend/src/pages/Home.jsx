@@ -215,7 +215,7 @@ export default function Home() {
       <Header />
 
       <main id="main" className="tp-container">
-        <section className="relative flex min-h-[calc(100vh-3rem)] flex-col items-center justify-start pt-10 pb-4 md:min-h-0 md:pt-8 md:pb-6">
+        <section className="relative flex flex-col items-center justify-start pt-10 pb-4 md:min-h-0 md:pt-8 md:pb-6">
           <div className="mx-auto w-full max-w-3xl px-5">
 
             <motion.div
@@ -609,7 +609,7 @@ const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 g
 );
 
 const LoadingSkeleton = () => (
-  <div className="mx-auto mt-8 max-w-[650px] sm:mt-12">
+  <div className="mx-auto mt-4 max-w-[650px] sm:mt-12">
     <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
       <div className="md:col-span-7">
         <div className="aspect-video w-full animate-pulse rounded-2xl bg-secondary shimmer" />
