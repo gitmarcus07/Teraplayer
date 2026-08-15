@@ -62,7 +62,7 @@ export default function PreviewCard({
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-3 sm:p-5">
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-3 sm:p-4">
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             <Badge
               variant="secondary"
@@ -85,28 +85,25 @@ export default function PreviewCard({
             <button
               onClick={onWatch}
               data-testid="thumbnail-play-btn"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-300 ease-out hover:scale-110 hover:bg-white/20 sm:h-16 sm:w-16"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-300 ease-out hover:scale-110 hover:bg-white/20 sm:h-14 sm:w-14"
               aria-label="Play video"
             >
-              <Play className="h-5 w-5 fill-white sm:h-6 sm:w-6" strokeWidth={0} />
+              <Play className="h-5 w-5 fill-white sm:h-5 sm:w-5" strokeWidth={0} />
             </button>
           )}
         </div>
       </div>
 
       {/* Metadata & Actions */}
-      <div className="p-4 sm:p-5 md:p-6">
-        <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground sm:text-xs">
-          TeraBox · via {data.source}
-        </div>
+      <div className="p-3.5">
         <h2
-          className="font-display text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl"
+          className="font-display text-lg font-bold leading-tight tracking-tight break-words"
           data-testid="preview-title"
         >
           {data.title}
         </h2>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <Meta icon={HardDrive} label="Size" value={data.size_str || "—"} testId="meta-size" />
           <Meta
             icon={Clock}
@@ -118,37 +115,37 @@ export default function PreviewCard({
           <Meta icon={Icon} label="Type" value={data.file_type || "file"} testId="meta-type" />
         </div>
 
-        <div className="mt-5 flex flex-col gap-2">
+        <div className="mt-3 flex flex-col gap-2">
           <div className="flex flex-col gap-2 sm:flex-row">
             {canWatch && (
               <Button
                 onClick={onWatch}
                 data-testid="watch-now-btn"
-                className="w-full text-white sm:flex-1"
                 size="lg"
+                className="h-11 w-full text-white sm:flex-1"
               >
-                <Play className="mr-2 h-4 w-4 fill-current" strokeWidth={0} /> Watch Now
+                <Play className="mr-1.5 h-4 w-4 fill-current" strokeWidth={0} /> Watch Now
               </Button>
             )}
             <Button
               onClick={onDownload}
               data-testid="download-btn"
               variant={canWatch ? "secondary" : "default"}
-              className="w-full sm:flex-1"
               size="lg"
+              className="h-11 w-full sm:flex-1"
             >
-              <Download className="mr-2 h-4 w-4" /> Download
+              <Download className="mr-1.5 h-4 w-4" /> Download
             </Button>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button
               onClick={onCopy}
               data-testid="copy-link-btn"
               variant="outline"
               size="sm"
-              className="text-xs sm:text-sm"
+              className="text-xs"
             >
-              <Copy className="h-3.5 w-3.5 sm:mr-2" />
+              <Copy className="h-3.5 w-3.5 sm:mr-1.5" />
               <span className="hidden sm:inline">Copy</span>
             </Button>
             <Button
@@ -156,9 +153,9 @@ export default function PreviewCard({
               data-testid="share-btn"
               variant="outline"
               size="sm"
-              className="text-xs sm:text-sm"
+              className="text-xs"
             >
-              <Share2 className="h-3.5 w-3.5 sm:mr-2" />
+              <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
               <span className="hidden sm:inline">Share</span>
             </Button>
           </div>
@@ -170,13 +167,13 @@ export default function PreviewCard({
 
 const Meta = ({ icon: Icon, label, value, testId }) => (
   <div
-    className="rounded-xl border border-border bg-surface-overlay/50 p-2.5 sm:p-3"
+    className="rounded-lg border border-border bg-surface-overlay/50 p-2"
     data-testid={testId}
   >
     <div className="mb-1 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">
       <Icon className="h-3 w-3" /> {label}
     </div>
-    <div className="line-clamp-1 text-xs font-medium text-foreground sm:text-sm">{value}</div>
+    <div className="line-clamp-1 text-xs font-medium text-foreground">{value}</div>
   </div>
 );
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import Hls from "hls.js";
 import {
   Play,
   Pause,
@@ -113,6 +114,9 @@ export default function VideoPlayer({ src, poster, title }) {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+
+    let hls = null;
+
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
     const onTime = () => setCurrent(v.currentTime);
@@ -122,12 +126,57 @@ export default function VideoPlayer({ src, poster, title }) {
     };
     const onWait = () => setBuffering(true);
     const onCanPlay = () => setBuffering(false);
+
+    // xAPiverse returns HLS manifests from /fast_stream without a .m3u8
+    // filename extension, so detect both normal HLS URLs and that endpoint.
+    const isHls =
+      typeof src === "string" &&
+      (/\.m3u8(?:$|[?#])/i.test(src) || /\/fast_stream(?:[/?#]|$)/i.test(src));
+
+    if (isHls && Hls.isSupported()) {
+      hls = new Hls({
+        enableWorker: true,
+      });
+
+      hls.loadSource(src);
+      hls.attachMedia(v);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setBuffering(false);
+      });
+
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (!data?.fatal) return;
+
+        console.error("HLS playback error:", data);
+
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            hls.startLoad();
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            hls.recoverMediaError();
+            break;
+          default:
+            hls.destroy();
+            hls = null;
+            setBuffering(false);
+            break;
+        }
+      });
+    } else if (isHls && v.canPlayType("application/vnd.apple.mpegurl")) {
+      v.src = src;
+    } else {
+      v.src = src || "";
+    }
+
     v.addEventListener("play", onPlay);
     v.addEventListener("pause", onPause);
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("loadedmetadata", onLoaded);
     v.addEventListener("waiting", onWait);
     v.addEventListener("canplay", onCanPlay);
+
     return () => {
       v.removeEventListener("play", onPlay);
       v.removeEventListener("pause", onPause);
@@ -135,6 +184,14 @@ export default function VideoPlayer({ src, poster, title }) {
       v.removeEventListener("loadedmetadata", onLoaded);
       v.removeEventListener("waiting", onWait);
       v.removeEventListener("canplay", onCanPlay);
+
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+
+      v.removeAttribute("src");
+      v.load();
     };
   }, [src]);
 
@@ -201,7 +258,6 @@ export default function VideoPlayer({ src, poster, title }) {
     >
       <video
         ref={videoRef}
-        src={src}
         poster={poster}
         className="h-full w-full object-contain"
         playsInline
@@ -260,6 +316,9 @@ export default function VideoPlayer({ src, poster, title }) {
             v.currentTime = Number(e.target.value);
           }}
           className="tp-range w-full"
+          style={{
+            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${progressPct}%, hsl(var(--foreground) / 0.15) ${progressPct}%, hsl(var(--foreground) / 0.15) 100%)`,
+          }}
           aria-label="Seek"
         />
 
@@ -358,17 +417,6 @@ export default function VideoPlayer({ src, poster, title }) {
               {fullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
             </button>
           </div>
-        </div>
-
-        {/* progress fill overlay */}
-        <div
-          className="pointer-events-none absolute inset-x-3 top-8 h-1 rounded-full bg-white/10 sm:inset-x-5"
-          aria-hidden="true"
-        >
-          <div
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${progressPct}%` }}
-          />
         </div>
       </div>
     </div>

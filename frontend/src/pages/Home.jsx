@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
   KeyRound,
   Film,
   FolderOpen,
+  Puzzle,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -23,12 +24,14 @@ import DownloadPanel from "../components/DownloadPanel";
 import PasswordDialog from "../components/PasswordDialog";
 import QualityPicker from "../components/QualityPicker";
 import FolderBrowser from "../components/FolderBrowser";
+import ExtensionStatus from "../components/ExtensionStatus";
 import { Button } from "../components/ui/button";
 
 import {
   postPreview,
   streamProxyUrl,
 } from "../services/api";
+import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 
 // Detect if the file collection looks like alternate resolutions of the same asset.
 function buildQualityOptions(preview) {
@@ -60,6 +63,10 @@ export default function Home() {
   const [pwdDialog, setPwdDialog] = useState({ open: false, url: "", incorrect: false });
   const [selectedQualityId, setSelectedQualityId] = useState("");
   const [activeFile, setActiveFile] = useState(null);
+  const [extStatus, setExtStatus] = useState(null);
+  const [extRunning, setExtRunning] = useState(false);
+  const [extRetrying, setExtRetrying] = useState(false);
+  const extLastRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const submit = useCallback(
@@ -95,6 +102,55 @@ export default function Home() {
     },
     [setSearchParams]
   );
+
+  const runBrowserExtraction = useCallback(
+    async (url, password = "") => {
+      if (!url) return;
+      extLastRef.current = { url, password };
+      setLoading(false);
+      setPreview(null);
+      setWatching(false);
+      setDownloading(false);
+      setActiveFile(null);
+      setSelectedQualityId("");
+      setExtRetrying(false);
+      setExtRunning(true);
+      setExtStatus({ state: EXT_STATUS.CREATING, message: "Preparing browser extraction…" });
+      setSearchParams({ url });
+
+      const res = await runExtensionExtraction({
+        url,
+        password,
+        onStatus: (state, message) => setExtStatus({ state, message }),
+      });
+
+      if (res.status === EXT_STATUS.DONE && res.preview) {
+        const enriched = { ...res.preview, sourceUrl: url, usedPassword: password };
+        setPreview(enriched);
+        setExtStatus(null);
+        if (res.preview.ok) {
+          toast.success("Link resolved via browser");
+        } else if (res.preview.password_required) {
+          setPwdDialog({
+            open: true,
+            url,
+            incorrect: !!res.preview.password_incorrect,
+          });
+        } else {
+          toast.error(res.preview.error || "Could not extract this link via browser.");
+        }
+      }
+      setExtRunning(false);
+    },
+    [setSearchParams]
+  );
+
+  const retryBrowserExtraction = useCallback(() => {
+    const last = extLastRef.current;
+    if (!last) return;
+    setExtRetrying(true);
+    runBrowserExtraction(last.url, last.password);
+  }, [runBrowserExtraction]);
 
   useEffect(() => {
     const q = searchParams.get("url");
@@ -159,7 +215,7 @@ export default function Home() {
       <Header />
 
       <main id="main" className="tp-container">
-        <section className="relative flex min-h-[calc(100vh-3rem)] flex-col items-center justify-start pt-12 pb-4 md:min-h-[calc(100vh-4rem)] md:pt-16 md:pb-6">
+        <section className="relative flex min-h-[calc(100vh-3rem)] flex-col items-center justify-start pt-10 pb-4 md:min-h-0 md:pt-8 md:pb-6">
           <div className="mx-auto w-full max-w-3xl px-5">
 
             <motion.div
@@ -168,7 +224,7 @@ export default function Home() {
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="text-center"
             >
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-3 sm:px-3 sm:py-1 sm:text-xs">
                 <Sparkles className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
                 <span className="hidden sm:inline">
                   Now with folders, quality picker &amp; ZIP downloads
@@ -179,8 +235,7 @@ export default function Home() {
               </div>
 
               <h1
-                className="font-display font-black leading-[0.95] tracking-tighter sm:leading-[0.9]"
-                style={{ fontSize: "clamp(2.5rem, 8vw, 7.5rem)" }}
+                className="font-display text-[2.5rem] font-black leading-[0.95] tracking-tighter sm:text-5xl sm:leading-[0.9]"
                 data-testid="hero-title"
               >
                 Watch &amp; Download
@@ -190,14 +245,14 @@ export default function Home() {
                 Instantly.
               </h1>
 
-              <p className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base md:mt-3">
                 Stream, preview and download public TeraBox links in seconds.{" "}
                 <br className="hidden sm:block" />
                 No login · HD Streaming · Folder Support
               </p>
             </motion.div>
 
-            <div className="mt-8">
+            <div className="mt-6 md:mt-5">
               <HeroInput
                 onSubmit={submit}
                 loading={loading}
@@ -205,11 +260,26 @@ export default function Home() {
               />
             </div>
 
+            {!loading && !preview && searchParams.get("url") && (
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => runBrowserExtraction(searchParams.get("url"))}
+                  disabled={extRunning}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-primary hover:underline"
+                  data-testid="browser-extraction-link"
+                >
+                  <Puzzle className="h-3 w-3" />
+                  Link not resolving? Extract with Browser
+                </button>
+              </div>
+            )}
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mx-auto mt-6 flex max-w-sm flex-wrap items-center justify-center gap-2 sm:max-w-xl sm:gap-3"
+              className="mx-auto mt-5 flex max-w-sm flex-wrap items-center justify-center gap-2 sm:max-w-xl sm:gap-3 md:mt-4"
             >
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
                 <Film className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
@@ -226,127 +296,19 @@ export default function Home() {
                 No Login Required
               </span>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.45 }}
-              className="mx-auto mt-6 flex flex-col items-center justify-center gap-2 text-center"
-            >
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                Need to{" "}
-                <Link
-                  to="/terabox-video-downloader"
-                  className="text-primary hover:underline"
-                >
-                  download TeraBox videos
-                </Link>
-                ?
-              </p>
-            </motion.div>
           </div>
-
-          <section
-            aria-labelledby="terabox-guides-heading"
-            className="mx-auto mt-10 max-w-4xl px-5"
-          >
-            <h2
-              id="terabox-guides-heading"
-              className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:text-sm"
-            >
-              TeraBox Guides
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-2xl text-center text-xs text-muted-foreground sm:text-sm">
-              Learn more about watching, downloading, sharing, and troubleshooting TeraBox links with TeraPlayer.
-            </p>
-
-            <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <li>
-                <Link
-                  to="/terabox-video-downloader"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox Video Downloader
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terabox-video-player"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox Video Player
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/how-to-download-terabox-videos"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  How to Download TeraBox Videos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/how-to-watch-terabox-videos"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  How to Watch TeraBox Videos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terabox-video-link-not-working"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox Link Troubleshooting
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/how-to-download-terabox-folder"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  How to Download a TeraBox Folder
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terabox-zip-download"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox ZIP Download
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terabox-public-link"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox Public Link Guide
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terabox-download-mobile"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox Download on Mobile
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terabox-download-pc"
-                  className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
-                >
-                  TeraBox Downloader for PC
-                </Link>
-              </li>
-            </ul>
-          </section>
         </section>
 
         {loading && <LoadingSkeleton />}
+
+        {extStatus && (
+          <ExtensionStatus
+            status={extStatus.state}
+            message={extStatus.message}
+            onRetry={retryBrowserExtraction}
+            retrying={extRetrying}
+          />
+        )}
 
         {!loading && preview && preview.ok === false && !preview.password_required && (
           <motion.div
@@ -363,6 +325,19 @@ export default function Home() {
                   {preview.error ||
                     "The link may be private, expired, or the extractor mirrors are temporarily unavailable."}
                 </p>
+                <Button
+                  className="mt-3"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    runBrowserExtraction(preview.sourceUrl || searchParams.get("url") || "")
+                  }
+                  disabled={extRunning}
+                  data-testid="extract-with-browser-btn"
+                >
+                  <Puzzle className="mr-1.5 h-4 w-4" />
+                  Extract with Browser
+                </Button>
               </div>
             </div>
           </motion.div>
@@ -396,7 +371,7 @@ export default function Home() {
         )}
 
         {!loading && preview && preview.ok && (
-          <div className="mx-auto mb-6 max-w-5xl space-y-4 sm:mb-10 sm:space-y-6">
+          <div className="mx-auto mb-6 max-w-[650px] space-y-3 sm:mb-8 sm:space-y-4">
             {watching && streamViaProxy ? (
               <div className="space-y-3">
                 <VideoPlayer
@@ -419,19 +394,21 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <PreviewCard
-                data={{ ...preview, ...(selectedQuality?.file || {}) }}
-                onWatch={() => {
-                  if (!streamViaProxy) {
-                    toast.error("No stream URL available");
-                    return;
-                  }
-                  setWatching(true);
-                }}
-                onDownload={() => setDownloading(true)}
-                onCopy={copyLink}
-                onShare={share}
-              />
+              <div className="md:mx-auto md:max-w-[470px]">
+                <PreviewCard
+                  data={{ ...preview, ...(selectedQuality?.file || {}) }}
+                  onWatch={() => {
+                    if (!streamViaProxy) {
+                      toast.error("No stream URL available");
+                      return;
+                    }
+                    setWatching(true);
+                  }}
+                  onDownload={() => setDownloading(true)}
+                  onCopy={copyLink}
+                  onShare={share}
+                />
+              </div>
             )}
 
             {qualityOptions.length > 1 && !watching && (
@@ -465,6 +442,118 @@ export default function Home() {
             )}
           </div>
         )}
+
+        <div className="mx-auto mt-8 flex flex-col items-center justify-center gap-2 text-center md:mt-10">
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            Need to{" "}
+            <Link
+              to="/terabox-video-downloader"
+              className="text-primary hover:underline"
+            >
+              download TeraBox videos
+            </Link>
+            ?
+          </p>
+        </div>
+
+        <section
+          aria-labelledby="terabox-guides-heading"
+          className="mx-auto mt-10 max-w-4xl px-5 md:mt-8"
+        >
+          <h2
+            id="terabox-guides-heading"
+            className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:text-sm"
+          >
+            TeraBox Guides
+          </h2>
+
+          <p className="mx-auto mt-2 max-w-2xl text-center text-xs text-muted-foreground sm:text-sm">
+            Learn more about watching, downloading, sharing, and troubleshooting TeraBox links with TeraPlayer.
+          </p>
+
+          <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <li>
+              <Link
+                to="/terabox-video-downloader"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox Video Downloader
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terabox-video-player"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox Video Player
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/how-to-download-terabox-videos"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                How to Download TeraBox Videos
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/how-to-watch-terabox-videos"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                How to Watch TeraBox Videos
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terabox-video-link-not-working"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox Link Troubleshooting
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/how-to-download-terabox-folder"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                How to Download a TeraBox Folder
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terabox-zip-download"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox ZIP Download
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terabox-public-link"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox Public Link Guide
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terabox-download-mobile"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox Download on Mobile
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/terabox-download-pc"
+                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+              >
+                TeraBox Downloader for PC
+              </Link>
+            </li>
+          </ul>
+        </section>
       </main>
 
       <footer className="border-t border-border/80 py-5 sm:py-8">
@@ -520,7 +609,7 @@ const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 g
 );
 
 const LoadingSkeleton = () => (
-  <div className="mt-8 sm:mt-12">
+  <div className="mx-auto mt-8 max-w-[650px] sm:mt-12">
     <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
       <div className="md:col-span-7">
         <div className="aspect-video w-full animate-pulse rounded-2xl bg-secondary shimmer" />
