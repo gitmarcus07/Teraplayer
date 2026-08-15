@@ -10,6 +10,7 @@ import contextvars
 import json
 import logging
 import os
+import platform
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -19,7 +20,7 @@ from typing import Any, AsyncIterator, Optional
 import httpx
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException, Request, Response, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from pymongo import ASCENDING, IndexModel
@@ -34,7 +35,19 @@ from models.terabox import (
     PreviewResponse,
 )
 from models.auth import UserCreate, UserLogin, GoogleAuthRequest
+from models.admin import AdminLogin, AdminCreate, AdminUpdate, AdminPasswordUpdate
 from services.terabox import get_preview, _set_db as _set_cache_db
+from services.extractors import is_terabox_url, EXTRACTORS
+from services.extension_jobs import (
+    create_job,
+    get_job,
+    submit_job,
+    _set_db as _set_extension_jobs_db,
+    ensure_indexes as ensure_extension_jobs_indexes,
+    JobNotFoundError,
+    InvalidTokenError,
+    PreviewValidationError,
+)
 from services.auth import (
     signup_user,
     login_user,
@@ -43,6 +56,26 @@ from services.auth import (
     logout as auth_logout,
 )
 from services.rate_limit import check_rate_limit, ensure_indexes as ensure_rl_indexes
+from services.admin_auth import (
+    authenticate_admin,
+    create_session,
+    delete_session,
+    get_current_admin,
+    require_admin,
+    require_super_admin,
+    require_csrf_header,
+    list_admins,
+    create_admin,
+    update_admin,
+    set_admin_password,
+    delete_admin,
+    ensure_indexes as ensure_admin_indexes,
+    bootstrap_super_admin,
+    ADMIN_SESSION_COOKIE,
+)
+from services.audit_log import record_audit, list_audit
+from services.site_settings import get_site_status, set_site_status
+from services.metrics import record_metric, dashboard_summary, analytics_series
 
 # ---------------------------------------------------------------------------
 # Logging — structured JSON for production
@@ -150,7 +183,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         try:
             await ensure_rl_indexes(db)
             await _ensure_session_ttl_index(db)
+            await ensure_extension_jobs_indexes(db)
+            await ensure_admin_indexes(db)
+            await bootstrap_super_admin(db)
             await _set_cache_db(db)
+            await _set_extension_jobs_db(db)
             logger.info("MongoDB indexes ready")
         except Exception as exc:
             logger.warning("Index setup failed (non-fatal)", exc_info=exc)
@@ -216,6 +253,23 @@ api = APIRouter(prefix="/api")
 class PreviewRequestWithPwd(BaseModel):
     url: str
     password: Optional[str] = None
+
+
+class ExtensionCreateRequest(BaseModel):
+    """Body for POST /api/extension/create — create a browser-extension job."""
+    url: str
+    password: Optional[str] = None
+
+
+class ExtensionSubmitRequest(BaseModel):
+    """Body for POST /api/extension/submit — extension hands back extraction result.
+
+    `preview` is validated against the shared PreviewResponse schema and capped
+    in size/file count inside services.extension_jobs.
+    """
+    job_id: str
+    token: str
+    preview: dict[str, Any]
 
 
 async def _get_db():
@@ -333,6 +387,22 @@ async def auth_logout_endpoint(request: Request, response: Response):
     return {"ok": True}
 
 
+def _client_ip(request: Request) -> str:
+    """Best-effort client IP for audit entries."""
+    xff = request.headers.get("x-forwarded-for") or ""
+    return (
+        xff.split(",")[0].strip()
+        or request.headers.get("x-real-ip")
+        or (request.client.host if request.client else "unknown")
+    )
+
+
+@api.get("/site/status")
+async def site_status() -> dict[str, Any]:
+    """Public endpoint so the frontend can render a maintenance screen."""
+    return await get_site_status(db)
+
+
 # ---------------------------------------------------------------------------
 # Preview / Watch / Download / Folder
 # ---------------------------------------------------------------------------
@@ -342,6 +412,7 @@ async def auth_logout_endpoint(request: Request, response: Response):
 async def preview(payload: PreviewRequestWithPwd, request: Request) -> PreviewResponse:
     await check_rate_limit(db, request, scope="preview")
     data = await get_preview(payload.url, password=payload.password or "")
+    await record_metric(db, "preview", bool(data.get("ok")))
     return PreviewResponse(**data)
 
 
@@ -349,6 +420,7 @@ async def preview(payload: PreviewRequestWithPwd, request: Request) -> PreviewRe
 async def watch(payload: PreviewRequestWithPwd, request: Request) -> PreviewResponse:
     await check_rate_limit(db, request, scope="preview")
     data = await get_preview(payload.url, password=payload.password or "")
+    await record_metric(db, "watch", bool(data.get("ok")))
     return PreviewResponse(**data)
 
 
@@ -356,6 +428,7 @@ async def watch(payload: PreviewRequestWithPwd, request: Request) -> PreviewResp
 async def download(payload: PreviewRequestWithPwd, request: Request) -> PreviewResponse:
     await check_rate_limit(db, request, scope="preview")
     data = await get_preview(payload.url, password=payload.password or "")
+    await record_metric(db, "download", bool(data.get("ok")))
     return PreviewResponse(**data)
 
 
@@ -363,7 +436,78 @@ async def download(payload: PreviewRequestWithPwd, request: Request) -> PreviewR
 async def folder(payload: PreviewRequestWithPwd, request: Request) -> PreviewResponse:
     await check_rate_limit(db, request, scope="preview")
     data = await get_preview(payload.url, password=payload.password or "")
+    await record_metric(db, "folder", bool(data.get("ok")))
     return PreviewResponse(**data)
+
+
+# ---------------------------------------------------------------------------
+# Browser-extension extraction bridge
+#
+# TeraBox blocks datacenter IPs, so extraction happens in the user's own
+# browser session on www.terabox.com via a browser extension. The frontend
+# creates a short-lived job (create), the extension submits the resolved
+# preview (submit), and the frontend polls for the result (result).
+# ---------------------------------------------------------------------------
+
+
+@api.post("/extension/create")
+async def extension_create(payload: ExtensionCreateRequest, request: Request) -> dict[str, Any]:
+    """Create a browser-extension extraction job.
+
+    Returns a short-lived job_id, an HMAC submit token bound to that job_id,
+    and the canonical terabox.com URL for the extension to open. The HMAC
+    secret itself is never exposed.
+    """
+    await check_rate_limit(db, request, scope="extension_create")
+    url = (payload.url or "").strip()
+
+    if not url:
+        raise HTTPException(status_code=400, detail="url is required")
+
+    if not is_terabox_url(url):
+        raise HTTPException(
+            status_code=400,
+            detail="Not a valid TeraBox link. Please paste a link from terabox.com or a supported mirror.",
+        )
+
+    result = await create_job(url, password=payload.password or "")
+    await record_metric(db, "extension_create", True)
+    return result
+
+
+@api.post("/extension/submit")
+async def extension_submit(payload: ExtensionSubmitRequest, request: Request) -> dict[str, Any]:
+    """Accept an extraction result from the browser extension.
+
+    Verifies the HMAC submit token, rejects missing/expired jobs, validates the
+    preview against the shared PreviewResponse schema, and caps payload size.
+    """
+    await check_rate_limit(db, request, scope="extension_submit")
+    try:
+        result = await submit_job(payload.job_id, payload.token, payload.preview)
+        await record_metric(db, "extension_submit", True)
+        return result
+    except JobNotFoundError:
+        raise HTTPException(status_code=404, detail="Extension job not found or expired.")
+    except InvalidTokenError:
+        raise HTTPException(status_code=403, detail="Invalid submit token.")
+    except PreviewValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@api.get("/extension/result/{job_id}")
+async def extension_result(job_id: str, request: Request) -> dict[str, Any]:
+    """Fetch the current state of a job: {status: pending|done, preview?}.
+
+    Returns 404 once the job is missing or expired so the frontend can stop
+    polling and offer to create a fresh job.
+    """
+    await check_rate_limit(db, request, scope="extension_result")
+    result = await get_job(job_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Extension job not found or expired.")
+    await record_metric(db, "extension_result", True)
+    return result
 
 
 TRUSTED_CDN_DOMAINS = (
@@ -462,6 +606,8 @@ async def stream(request: Request, url: str = Query(...)):
             resp_headers[h] = req.headers[h]
     resp_headers.setdefault("accept-ranges", "bytes")
 
+    await record_metric(db, "stream", req.status_code < 400)
+
     return StreamingResponse(
         _iter(),
         status_code=req.status_code,
@@ -471,19 +617,234 @@ async def stream(request: Request, url: str = Query(...)):
 
 
 # ---------------------------------------------------------------------------
-# Middleware: CORS, request ID, security headers
+# Admin (private premium control center)
 # ---------------------------------------------------------------------------
+
+admin_router = APIRouter(prefix="/api/admin")
+
+
+def _extractor_status() -> list[dict[str, Any]]:
+    """Extractor names + enabled/configured flags. Values of secrets never leak."""
+    _config_checks = {
+        "xapiverse": lambda: bool(os.environ.get("XAPIVERSE_API_KEY")),
+        "playwright": lambda: bool(os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS")),
+        "cf_worker": lambda: bool(os.environ.get("TERABOX_WORKER_URL")),
+        "hnn": lambda: True,
+        "teradl": lambda: True,
+    }
+    return [
+        {
+            "name": name,
+            "enabled": True,
+            "configured": bool(_config_checks.get(name, lambda: False)()),
+        }
+        for name, _ in EXTRACTORS
+    ]
+
+
+@admin_router.post("/login")
+async def admin_login(payload: AdminLogin, request: Request, response: Response) -> dict[str, Any]:
+    if db is None:
+        raise HTTPException(status_code=503, detail="MongoDB not configured")
+    await check_rate_limit(db, request, scope="admin_login")
+    admin = await authenticate_admin(db, payload.email, payload.password)
+    token = await create_session(db, admin.admin_id)
+    response.set_cookie(
+        key=ADMIN_SESSION_COOKIE,
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 3600,
+    )
+    await record_audit(db, admin, "login", ip=_client_ip(request))
+    return {"admin": admin.model_dump(), "session_token": token}
+
+
+@admin_router.post("/logout")
+async def admin_logout(request: Request, response: Response) -> dict[str, Any]:
+    if db is not None:
+        admin = await get_current_admin(request, db)
+        await delete_session(db, request.cookies.get(ADMIN_SESSION_COOKIE))
+        if admin:
+            await record_audit(db, admin, "logout", ip=_client_ip(request))
+    response.delete_cookie(key=ADMIN_SESSION_COOKIE, path="/", samesite="none", secure=True)
+    return {"ok": True}
+
+
+@admin_router.get("/me")
+async def admin_me(request: Request) -> dict[str, Any]:
+    admin = await require_admin(request, db)
+    return admin.model_dump()
+
+
+@admin_router.get("/dashboard")
+async def admin_dashboard(request: Request) -> dict[str, Any]:
+    await require_admin(request, db)
+    return {
+        "metrics": await dashboard_summary(db),
+        "recent_activity": await list_audit(db, limit=10),
+        "admin_count": await db.admins.count_documents({}),
+        "extractors": _extractor_status(),
+    }
+
+
+@admin_router.get("/analytics")
+async def admin_analytics(request: Request, days: int = Query(14, ge=1, le=90)) -> dict[str, Any]:
+    await require_admin(request, db)
+    return {
+        "days": days,
+        "series": await analytics_series(db, days=days),
+        "summary": await dashboard_summary(db),
+    }
+
+
+@admin_router.get("/extraction")
+async def admin_extraction(request: Request) -> dict[str, Any]:
+    await require_admin(request, db)
+    return {"extractors": _extractor_status()}
+
+
+@admin_router.get("/system")
+async def admin_system(request: Request) -> dict[str, Any]:
+    await require_admin(request, db)
+    mongo_status = "not_configured"
+    if db is not None:
+        try:
+            await db.command("ping")
+            mongo_status = "connected"
+        except Exception:  # noqa: BLE001
+            mongo_status = "degraded"
+    return {
+        "mongo": mongo_status,
+        "db_name": os.environ.get("DB_NAME", "teraplayer"),
+        "version": "2.0.0",
+        "python": platform.python_version(),
+        "secret_vars": {
+            "XAPIVERSE_API_KEY": bool(os.environ.get("XAPIVERSE_API_KEY")),
+            "TERABOX_WORKER_URL": bool(os.environ.get("TERABOX_WORKER_URL")),
+            "COOKIE_JSON": bool(os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS")),
+            "EXTENSION_HMAC_SECRET": bool(os.environ.get("EXTENSION_HMAC_SECRET")),
+        },
+    }
+
+
+@admin_router.get("/activity")
+async def admin_activity(request: Request, limit: int = Query(100, ge=1, le=500)) -> dict[str, Any]:
+    await require_admin(request, db)
+    return {"entries": await list_audit(db, limit=limit)}
+
+
+@admin_router.get("/admins")
+async def admin_list_admins(request: Request) -> dict[str, Any]:
+    await require_admin(request, db)
+    admins = await list_admins(db)
+    return {"admins": [a.model_dump() for a in admins]}
+
+
+@admin_router.post("/admins")
+async def admin_create_admin(payload: AdminCreate, request: Request) -> dict[str, Any]:
+    acting = await require_super_admin(request, db)
+    require_csrf_header(request)
+    created = await create_admin(db, payload)
+    await record_audit(db, acting, "create_admin", target=created.email, detail=f"role={created.role}", ip=_client_ip(request))
+    return {"admin": created.model_dump()}
+
+
+@admin_router.patch("/admins/{admin_id}")
+async def admin_update_admin(admin_id: str, payload: AdminUpdate, request: Request) -> dict[str, Any]:
+    acting = await require_super_admin(request, db)
+    require_csrf_header(request)
+    updated = await update_admin(db, admin_id, payload, acting)
+    await record_audit(db, acting, "update_admin", target=admin_id, detail=str(payload.model_dump()), ip=_client_ip(request))
+    return {"admin": updated.model_dump()}
+
+
+@admin_router.post("/admins/{admin_id}/password")
+async def admin_set_admin_password(admin_id: str, payload: AdminPasswordUpdate, request: Request) -> dict[str, Any]:
+    acting = await require_super_admin(request, db)
+    require_csrf_header(request)
+    await set_admin_password(db, admin_id, payload.new_password)
+    await record_audit(db, acting, "set_admin_password", target=admin_id, ip=_client_ip(request))
+    return {"ok": True}
+
+
+@admin_router.delete("/admins/{admin_id}")
+async def admin_delete_admin(admin_id: str, request: Request) -> dict[str, Any]:
+    acting = await require_super_admin(request, db)
+    require_csrf_header(request)
+    await delete_admin(db, admin_id, acting)
+    await record_audit(db, acting, "delete_admin", target=admin_id, ip=_client_ip(request))
+    return {"ok": True}
+
+
+@admin_router.get("/site")
+async def admin_site_get(request: Request) -> dict[str, Any]:
+    await require_admin(request, db)
+    return await get_site_status(db)
+
+
+@admin_router.patch("/site")
+async def admin_site_update(request: Request, body: dict[str, Any]) -> dict[str, Any]:
+    acting = await require_admin(request, db)
+    require_csrf_header(request)
+    status = await set_site_status(db, **body)
+    await record_audit(db, acting, "update_site", detail=str(status), ip=_client_ip(request))
+    return status
+
+
+# ---------------------------------------------------------------------------
+# Middleware: CORS, request ID, maintenance, security headers
+# ---------------------------------------------------------------------------
+
+# Production frontend origins. CORS_ORIGINS may override; an unset value must
+# NEVER fall back to "*", because credentialed admin requests would then be
+# allowed from any origin. As defense-in-depth, any "*" entry is also stripped.
+_DEFAULT_CORS_ORIGINS = "https://teraplayer.in,https://www.teraplayer.in"
+_cors_origins = [
+    o.strip()
+    for o in os.environ.get("CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(",")
+    if o.strip() and o.strip() != "*"
+]
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
 
 app.add_middleware(RequestIDMiddleware)
+
+
+async def maintenance_dispatch(request: Request, call_next):
+    """Block all non-admin API traffic while maintenance mode is enabled.
+
+    The admin API and the public /api/site/status (used by the frontend to
+    render the maintenance screen) and /api/health (platform probes) stay up.
+    """
+    path = request.url.path
+    if db is not None and path.startswith("/api") and not path.startswith("/api/admin"):
+        if path not in ("/api/site/status", "/api/health"):
+            try:
+                status = await get_site_status(db)
+                if status.get("maintenance_mode"):
+                    return JSONResponse(
+                        status_code=503,
+                        content={
+                            "detail": "TeraPlayer is under maintenance. Please try again later.",
+                            "maintenance": True,
+                        },
+                    )
+            except Exception:  # noqa: BLE001
+                pass
+    return await call_next(request)
+
+
+app.add_middleware(BaseHTTPMiddleware, dispatch=maintenance_dispatch)
 
 
 @app.middleware("http")
@@ -500,3 +861,4 @@ async def add_security_headers(request: Request, call_next):
     return response
 
 app.include_router(api)
+app.include_router(admin_router)

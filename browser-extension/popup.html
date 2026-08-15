@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TeraPlayer Extraction Helper</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 16px;
+        width: 320px;
+        font-size: 13px;
+        color: #111;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { color: #eee; }
+      }
+      h1 {
+        font-size: 15px;
+        margin: 0 0 4px;
+      }
+      .subtitle {
+        opacity: 0.65;
+        margin-bottom: 14px;
+      }
+      .status {
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: rgba(0, 0, 0, 0.06);
+        margin-bottom: 12px;
+        word-break: break-word;
+      }
+      @media (prefers-color-scheme: dark) {
+        .status { background: rgba(255, 255, 255, 0.08); }
+      }
+      .status .state {
+        font-weight: 600;
+        text-transform: capitalize;
+        margin-bottom: 2px;
+      }
+      .status .message {
+        opacity: 0.8;
+      }
+      .status.verification_required,
+      .status.password_required,
+      .status.error {
+        border: 1px solid #d97706;
+        background: rgba(217, 119, 6, 0.12);
+      }
+      .status.done {
+        border: 1px solid #16a34a;
+        background: rgba(22, 163, 74, 0.12);
+      }
+      button {
+        width: 100%;
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        background: #2563eb;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover { background: #1d4ed8; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .hint {
+        margin-top: 12px;
+        opacity: 0.65;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>TeraPlayer Extraction Helper</h1>
+    <div class="subtitle">Extension installed and ready.</div>
+
+    <div id="status" class="status">
+      <div class="state">Idle</div>
+      <div class="message">Waiting for a link from TeraPlayer.</div>
+    </div>
+
+    <button id="retry" disabled>Retry Extraction</button>
+
+    <div class="hint">
+      Paste a TeraBox link on teraplayer.in and the extension resolves it using
+      your TeraBox session. If TeraBox asks for verification or a password,
+      complete it in the open TeraBox tab, then click Retry.
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

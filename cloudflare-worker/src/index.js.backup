@@ -15,10 +15,6 @@ const TERABOX_DOMAINS = [
   "mirrobox.com",
   "momerybox.com",
   "1024tera.com",
-  "dm.terabox.app",
-  "dm.1024tera.com",
-  "teraboxcdn.com",
-  "terabox.app",
 ];
 
 const APP_ID = "250528";
@@ -51,7 +47,7 @@ const PASSWORD_PHRASES = [
 const PWD_ERRNO_DEFINITIVE = new Set([-130]);
 const PWD_ERRNO_AMBIGUOUS = new Set([-9, 105]);
 
-const VERIFY_ERRNO = new Set([400141, 4000020]);
+const VERIFY_ERRNO = new Set([400141]);
 const VERIFY_PHRASES = [
   "need verify",
   "verify required",
@@ -173,46 +169,6 @@ function mergeCookieHeaders(cookieHeader, setCookieHeader) {
   return [...map.values()].join("; ");
 }
 
-const MAX_REDIRECTS = 5;
-
-async function fetchWithManualRedirects(startUrl, startCookie, headers, maxRedirects = MAX_REDIRECTS) {
-  let currentUrl = startUrl;
-  let mergedCookie = startCookie || "";
-  let resp = null;
-
-  for (let hop = 0; hop <= maxRedirects; hop++) {
-    const cookieHeaders = mergedCookie ? { Cookie: mergedCookie } : {};
-    resp = await fetch(currentUrl, {
-      headers: { ...headers, ...cookieHeaders },
-      redirect: "manual",
-    });
-
-    const setCookie = resp.headers.get("set-cookie");
-    if (setCookie) {
-      mergedCookie = mergeCookieHeaders(mergedCookie, setCookie);
-    }
-
-    if (resp.status >= 300 && resp.status < 400) {
-      const location = resp.headers.get("location");
-      if (!location) {
-        break;
-      }
-      currentUrl = new URL(location, currentUrl).toString();
-      continue;
-    }
-
-    break;
-  }
-
-  const html = resp ? await resp.text().catch(() => "") : "";
-  return {
-    finalUrl: currentUrl,
-    html,
-    mergedCookie,
-    status: resp ? resp.status : 0,
-  };
-}
-
 function redactTokenLike(text) {
   return String(text)
     .replace(/(csrfToken|browserid|TSID|ndus|pcftoken|bdstoken|sign|timestamp|shareid|rand|dp-logid|yjs_nuo[^=]*)\s*=\s*["']?[^"'\s;&<,]+/gi, "$1=REDACTED")
@@ -261,6 +217,7 @@ function logResponse(label, url, status, data, opts = {}) {
 
 async function fetchSharePage(surl, password, cookieHeader) {
   const pwdParam = password ? `&pwd=${encodeURIComponent(password)}` : "";
+  const cookieHeaders = cookieHeader ? { Cookie: cookieHeader } : {};
 
   const SIGN_PATTERNS = [
     /[?&](?:amp;)?sign=([^&"'\s<>]+)/i,
@@ -310,56 +267,27 @@ async function fetchSharePage(surl, password, cookieHeader) {
       for (const url of urls) {
         try {
           logRequest("fetch_share_page", url);
+          const resp = await fetch(url, {
+            headers: { ...DEFAULT_HEADERS, ...cookieHeaders },
+            redirect: "follow",
+          });
+          logResponse("fetch_share_page", resp.url, resp.status, {});
+          const pageCookie = resp.headers.get("set-cookie") || null;
 
-          const hopOne = await fetchWithManualRedirects(url, cookieHeader, { ...DEFAULT_HEADERS });
-          const hopTwo = await fetchWithManualRedirects(hopOne.finalUrl, hopOne.mergedCookie, { ...DEFAULT_HEADERS });
+          if (resp.status !== 200) continue;
+          const html = await resp.text();
+          const finalUrl = resp.url;
 
-          logResponse("fetch_share_page", hopTwo.finalUrl, hopTwo.status, {});
-          const pageCookie = hopTwo.mergedCookie || null;
-
-          if (hopTwo.status !== 200) continue;
-          const html = hopTwo.html;
-          const finalUrl = hopTwo.finalUrl;
-
-          // jsToken extraction — reference-consistent (tbx-proxy/src/utils.js extractJsToken).
-          // Legacy precedence is kept ONLY as a fallback; no token values are ever logged.
-          const referenceJsTokenRegex = /fn(?:%28|\()(?:%22|%27|["'])([^%'"\(\)]+)(?:%22|%27|["'])(?:%29|\))/;
-
-          const extractJsTokenLegacy = (htmlText) => {
-            let t = extractStr(htmlText, "fn%28%22", "%22%29");
-            if (!t) t = extractStr(htmlText, "fn(", '"');
-            if (!t) {
-              const m2 = htmlText.match(/window\.jsToken[^=]*=\s*fn\s*\(\s*["']([^"']+)["']/);
-              if (m2) t = m2[1];
-            }
-            if (!t) {
-              const m2 = htmlText.match(referenceJsTokenRegex);
-              if (m2) t = m2[1];
-            }
-            return t;
-          };
-
-          const extractJsTokenReference = (htmlText) => {
-            const candidates = [];
-            const re = new RegExp(referenceJsTokenRegex.source, "g");
-            let m;
-            while ((m = re.exec(htmlText)) !== null) candidates.push(m[1]);
-            return candidates;
-          };
-
-          const legacyToken = extractJsTokenLegacy(html);
-          const referenceCandidates = extractJsTokenReference(html);
-          const referenceToken = referenceCandidates[0] || null;
-          const jsToken = referenceToken || legacyToken;
-
-          console.log(JSON.stringify({
-            event: "jsToken_extraction_compare",
-            currentFound: !!legacyToken,
-            referenceCandidateCount: referenceCandidates.length,
-            currentLength: legacyToken ? legacyToken.length : 0,
-            candidateLengths: referenceCandidates.map((c) => c.length),
-            sameSelection: !!legacyToken && legacyToken === referenceToken,
-          }));
+          let jsToken = extractStr(html, "fn%28%22", "%22%29");
+          if (!jsToken) jsToken = extractStr(html, "fn(", '"');
+          if (!jsToken) {
+            const m = html.match(/window\.jsToken[^=]*=\s*fn\s*\(\s*["']([^"']+)["']/);
+            if (m) jsToken = m[1];
+          }
+          if (!jsToken) {
+            const m = html.match(/fn(?:%28|\()(?:%22|%27|["'])([^%'"()]+)(?:%22|%27|["'])(?:%29|\))/);
+            if (m) jsToken = m[1];
+          }
 
           // Extract modern TeraBox tokens
           const sign = extractToken(html, SIGN_PATTERNS);
@@ -419,7 +347,7 @@ async function fetchSharePage(surl, password, cookieHeader) {
             console.log(JSON.stringify({
               event: "fetch_share_page_no_jsToken",
               responseUrl: finalUrl,
-              status: hopTwo.status,
+              status: resp.status,
               htmlLength: html.length,
               containsJsToken: html.includes("jsToken"),
               containsFnEncoded: html.includes("fn%28%22"),
@@ -447,9 +375,8 @@ async function fetchSharePage(surl, password, cookieHeader) {
           console.log(JSON.stringify({
             event: "tokens_extracted",
             domain,
-            hasJsToken: !!jsToken,
-            jsTokenLength: jsToken ? jsToken.length : 0,
-            hasSign: !!sign,
+            jsToken: jsToken.slice(0, 20) + "...",
+            sign: sign ? sign.slice(0, 10) + "..." : null,
             shareid,
             uk,
             timestamp,
@@ -481,252 +408,142 @@ async function fetchSharePage(surl, password, cookieHeader) {
   return null;
 }
 
-const MAX_UNKNOWN_ERROR_BODY = 3000;
-
-function sanitizeDiagnosticBody(text) {
-  let out = String(text);
-  const secretKeys = [
-    "jsToken", "ndus", "bdstoken", "browserid", "TSID", "csrfToken",
-    "ndut_fmt", "ndut_fmv", "uk", "sign", "timestamp", "shareid",
-    "dp-logid", "authorization", "cookies",
-  ];
-  for (const key of secretKeys) {
-    const re = new RegExp(
-      `([^a-zA-Z0-9_]|^)(?:["']?)${key}(?:["']?)\\s*[:=]\\s*["']?[^"',;&\\s}<]+`,
-      "gi"
-    );
-    out = out.replace(re, `$1${key}=REDACTED`);
-  }
-  out = out.replace(/eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g, "REDACTED");
-  return redactTokenLike(out);
-}
-
-function logShareListUnknownError({ variant, domain, status, errno, errmsg, bodyText, isJson, parsedBody }) {
-  const bodyStr = String(bodyText || "");
-  const responseKeys =
-    isJson && parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody)
-      ? Object.keys(parsedBody)
-      : [];
-  console.log(JSON.stringify({
-    event: "share_list_unknown_error",
-    variant,
-    domain,
-    status,
-    errno,
-    errmsg: errmsg || null,
-    responseType: isJson ? "json" : "text",
-    responseLength: bodyStr.length,
-    responseKeys,
-    sanitizedBody: sanitizeDiagnosticBody(bodyStr.slice(0, MAX_UNKNOWN_ERROR_BODY)),
-  }));
-}
-
 async function callShareList(tokens, cookieHeader, cookieNamesSet) {
   const hasCookie = !!cookieHeader;
   const hasJsToken = !!tokens.jsToken;
   const hasDpLogid = !!tokens.dpLogid;
   const cookieNames = cookieNamesSet || new Set();
 
-  const endpoint = "https://dm.terabox.app/share/list";
+  const params = new URLSearchParams({
+    app_id: APP_ID,
+    web: "1",
+    channel: "dubox",
+    clienttype: "5",
+    clientfrom: "h5",
+    psign: "0",
+    jsToken: tokens.jsToken,
+    shorturl: tokens.surl,
+    root: "1",
+    page: "1",
+    num: "20",
+    by: "ctime",
+    order: "desc",
+    version: "0",
+    devuid: "0",
+    cuid: "0",
+    lang: "en",
+    site_referer: "",
+  });
 
-  const buildParams = () => {
-    const params = new URLSearchParams();
-    params.set("jsToken", tokens.jsToken);
-    params.set("shorturl", tokens.surl);
-    params.set("root", "1");
-    return params;
-  };
+  // Add modern tokens if available
+  if (tokens.sign) params.set("sign", tokens.sign);
+  if (tokens.timestamp) params.set("timestamp", tokens.timestamp);
+  if (tokens.shareid) params.set("shareid", tokens.shareid);
+  if (tokens.uk) params.set("uk", tokens.uk);
+  if (tokens.bdstoken) params.set("bdstoken", tokens.bdstoken);
+  if (tokens.dpLogid) params.set("dp-logid", tokens.dpLogid);
 
-  const buildHeaders = (withCookie) => {
-    const headers = {
-      "User-Agent": DEFAULT_HEADERS["User-Agent"],
-      Accept: "application/json",
-      Referer: "https://terabox.com/",
-    };
-    if (withCookie && cookieHeader) headers.Cookie = cookieHeader;
-    return headers;
-  };
+  const cookieHeaders = hasCookie ? { Cookie: cookieHeader } : {};
+
+  const apiDomains = [
+    `https://${tokens.domain}/share/list`,
+    "https://www.terabox.com/share/list",
+    "https://www.1024tera.com/share/list",
+    "https://dm.terabox.app/share/list",
+    "https://www.terabox.app/share/list",
+  ];
 
   let lastErrno = null;
   let lastErrmsg = null;
   let lastStatus = null;
   let listIsArray = false;
   let listLength = 0;
-  let anonymousRetried = false;
-  let anonymousErrno = null;
-  let anonymousErrmsg = null;
 
-  async function attempt(label, withCookie) {
-    const params = buildParams();
-    logRequest("share_list", endpoint, { variant: label, params: params.toString() });
-    const resp = await fetch(`${endpoint}?${params.toString()}`, {
-      headers: buildHeaders(withCookie),
-    });
-    lastStatus = resp.status;
-
-    if (resp.status !== 200) {
-      logResponse("share_list", resp.url, resp.status, { http_status: resp.status });
-      console.log(JSON.stringify({
-        event: "share_list_variant",
-        variant: label,
-        domain: endpoint,
-        status: resp.status,
-        errno: null,
-        errmsg: null,
-        listPresent: false,
-        listLength: null,
-      }));
-      return { errno: null, errmsg: null, httpStatus: resp.status };
-    }
-
-    let data;
-    let rawText;
-    let bodyIsJson = false;
-    try { rawText = await resp.text(); } catch { return { errno: null, errmsg: null, httpStatus: resp.status }; }
-    try { data = JSON.parse(rawText); bodyIsJson = true; } catch { data = null; }
-
-    if (!bodyIsJson) {
-      logShareListUnknownError({
-        variant: label,
-        domain: endpoint,
-        status: resp.status,
-        errno: null,
-        errmsg: null,
-        bodyText: rawText,
-        isJson: false,
-        parsedBody: null,
+  for (const domain of apiDomains) {
+    try {
+      logRequest("share_list", domain, { params: params.toString() });
+      const resp = await fetch(`${domain}?${params.toString()}`, {
+        headers: {
+          ...DEFAULT_HEADERS,
+          "X-Requested-With": "XMLHttpRequest",
+          Referer: `https://${tokens.domain}/wap/share/filelist?surl=${tokens.surl}`,
+          ...cookieHeaders,
+        },
       });
-      return { errno: null, errmsg: null, httpStatus: resp.status };
+      lastStatus = resp.status;
+
+      if (resp.status !== 200) {
+        logResponse("share_list", resp.url, resp.status, { http_status: resp.status });
+        continue;
+      }
+      let data;
+      try { data = await resp.json(); } catch { continue; }
+      if (normalizeErrno(data.errno) === 140) { console.log("ERRNO_140_FULL:", JSON.stringify(data)); }
+      if (normalizeErrno(data.errno) === 140) { console.log("ERRNO_140_FULL:", JSON.stringify(data)); }
+
+      logResponse("share_list", resp.url, resp.status, data, { logRaw: true });
+
+      const en = normalizeErrno(data.errno);
+      const errmsg = data.errmsg || data.error_msg || "";
+
+      if (en === 0) {
+        if (data.list && data.list.length) {
+          listIsArray = Array.isArray(data.list);
+          listLength = data.list.length;
+          return { data };
+        }
+        lastErrno = 0;
+        lastErrmsg = "empty list";
+        continue;
+      }
+
+      if (VERIFY_ERRNO.has(en) || isVerificationErrorText(errmsg)) {
+        return { error: "verification_required", verification_required: true, errno: en, errmsg };
+      }
+
+      if (PWD_ERRNO_DEFINITIVE.has(en)) {
+        return { error: "password_required", password_required: true, errno: en, errmsg };
+      }
+
+      if (PWD_ERRNO_AMBIGUOUS.has(en)) {
+        if (isPasswordErrorText(errmsg)) {
+          return { error: "password_required", password_required: true, errno: en, errmsg };
+        }
+        lastErrno = en;
+        lastErrmsg = errmsg || "unknown error";
+        continue;
+      }
+
+      lastErrno = en;
+      lastErrmsg = errmsg || "unknown error";
+      continue;
+    } catch (err) {
+      logResponse("share_list", domain, 0, { error: err.message });
+      continue;
     }
-
-    const en = normalizeErrno(data.errno);
-    const errmsg = data.errmsg || data.error_msg || "";
-    const listPresent = Array.isArray(data.list) && data.list.length > 0;
-
-    console.log(JSON.stringify({
-      event: "share_list_variant",
-      variant: label,
-      domain: endpoint,
-      status: resp.status,
-      errno: en,
-      errmsg: errmsg || null,
-      listPresent,
-      listLength: Array.isArray(data.list) ? data.list.length : null,
-    }));
-
-    if (en === 0 && listPresent) {
-      listIsArray = Array.isArray(data.list);
-      listLength = data.list.length;
-      return { data };
-    }
-
-    if (en === 0) {
-      return { errno: 0, errmsg: "empty list" };
-    }
-
-    if (VERIFY_ERRNO.has(en) || isVerificationErrorText(errmsg)) {
-      return { error: "verification_required", verification_required: true, errno: en, errmsg };
-    }
-
-    if (PWD_ERRNO_DEFINITIVE.has(en)) {
-      return { error: "password_required", password_required: true, errno: en, errmsg };
-    }
-
-    if (PWD_ERRNO_AMBIGUOUS.has(en) && isPasswordErrorText(errmsg)) {
-      return { error: "password_required", password_required: true, errno: en, errmsg };
-    }
-
-    logShareListUnknownError({
-      variant: label,
-      domain: endpoint,
-      status: resp.status,
-      errno: en,
-      errmsg: errmsg || "unknown error",
-      bodyText: rawText,
-      isJson: true,
-      parsedBody: data,
-    });
-
-    return { errno: en, errmsg: errmsg || "unknown error" };
   }
 
-  const buildDiag = () => ({
-    domain: endpoint,
+  const diag = {
+    domain: tokens.domain,
     hasCookie,
     hasJsToken,
     hasDpLogid,
-    referer: "https://terabox.com/",
-    hasXRequestedWith: false,
+    clienttype: "5",
+    page: "1",
+    num: "20",
+    by: "ctime",
+    order: "desc",
+    refererPath: `/wap/share/filelist?surl=${tokens.surl}`,
+    hasXRequestedWith: true,
     status: lastStatus,
     errno: lastErrno,
     listIsArray,
     listLength,
     cookieCount: cookieNames.size,
     cookieNames: Array.from(cookieNames),
-    anonymousRetried,
-    anonymousErrno,
-    anonymousErrmsg,
-  });
+  };
 
-  try {
-    const primary = await attempt("minimal", true);
-
-    if (primary?.data) return primary;
-    if (primary?.error === "verification_required" || primary?.error === "password_required") return primary;
-
-    const primaryErrno = normalizeErrno(primary?.errno);
-
-    if (primaryErrno === 140) {
-      anonymousRetried = true;
-      console.log(JSON.stringify({
-        event: "share_list_anonymous_retry",
-        reason: "errno=140",
-        cookieRemoved: true,
-      }));
-
-      const anon = await attempt("minimal-anonymous", false);
-      if (anon?.data) return anon;
-      if (anon?.error === "verification_required" || anon?.error === "password_required") return anon;
-
-      anonymousErrno = normalizeErrno(anon?.errno) ?? null;
-      anonymousErrmsg = anon?.errmsg ?? null;
-      lastErrno = anon.errno != null ? anon.errno : primaryErrno;
-      lastErrmsg = anon.errmsg || primary.errmsg || "unknown error";
-    } else if (primaryErrno === 0) {
-      lastErrno = 0;
-      lastErrmsg = "empty list";
-    } else if (primaryErrno != null) {
-      lastErrno = primaryErrno;
-      lastErrmsg = primary.errmsg || "unknown error";
-    } else {
-      lastErrmsg = "share/list request failed";
-    }
-  } catch (err) {
-    logResponse("share_list", endpoint, 0, { error: err.message });
-    return { error: "api_error", errno: lastErrno, errmsg: err.message, _diagnostic: buildDiag() };
-  }
-
-  return { error: "api_error", errno: lastErrno, errmsg: lastErrmsg || "share/list request failed", _diagnostic: buildDiag() };
-}
-
-async function callShareListWithVerificationRetry(tokens, cookieHeader, cookieNamesSet) {
-  let result = await callShareList(tokens, cookieHeader, cookieNamesSet);
-
-  const errno = normalizeErrno(result?.errno);
-  const verificationDetected =
-    result?.verification_required === true ||
-    (errno != null && VERIFY_ERRNO.has(errno));
-
-  if (verificationDetected) {
-    console.log(JSON.stringify({
-      event: "share_list_verification_retry",
-      reason: result?.verification_required ? "verification_required" : `errno=${errno}`,
-      cookieRemoved: true,
-    }));
-    result = await callShareList(tokens, "", new Set());
-  }
-
-  return result;
+  return { error: "api_error", errno: lastErrno, errmsg: lastErrmsg || "all share/list domains failed", _diagnostic: diag };
 }
 
 async function callGetInfo(tokens, cookieHeader) {
@@ -1002,7 +819,7 @@ async function handleExtract(url, password, cookieJson) {
     cookieHeader = mergeCookieHeaders(cookieHeader, tokens.pageCookie);
   }
 
-  let apiResult = await callShareListWithVerificationRetry(tokens, cookieHeader, cookieNames);
+  let apiResult = await callShareList(tokens, cookieHeader, cookieNames);
 
   // If share/list returns empty, try get_info fallback
   if (apiResult?.data && (!apiResult.data.list || !apiResult.data.list.length)) {
@@ -1180,7 +997,7 @@ async function handleResolve(surl, password, cookieJson) {
     cookieHeader = mergeCookieHeaders(cookieHeader, tokens.pageCookie);
   }
 
-  let apiResult = await callShareListWithVerificationRetry(tokens, cookieHeader, cookieNames);
+  let apiResult = await callShareList(tokens, cookieHeader, cookieNames);
 
   if (apiResult?.data && (!apiResult.data.list || !apiResult.data.list.length)) {
     const fallback = await callGetInfo(tokens, cookieHeader);

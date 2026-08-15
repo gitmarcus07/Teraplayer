@@ -34,7 +34,7 @@ services:
       - key: DB_NAME
         value: teraplayer
       - key: CORS_ORIGINS
-        value: https://teraplayer.netlify.app  # Replace with your frontend URL
+        value: https://teraplayer.in,https://www.teraplayer.in  # Production frontend origins only
       - key: LOG_LEVEL
         value: INFO
       - key: RATE_LIMIT_MAX

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import {
   Zap,
   Smartphone,
   ChevronRight,
+  Puzzle,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -21,9 +22,11 @@ import DownloadPanel from "../components/DownloadPanel";
 import PasswordDialog from "../components/PasswordDialog";
 import QualityPicker from "../components/QualityPicker";
 import FolderBrowser from "../components/FolderBrowser";
+import ExtensionStatus from "../components/ExtensionStatus";
 import { Button } from "../components/ui/button";
 
 import { postPreview, streamProxyUrl } from "../services/api";
+import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 
 const faqItems = [
   {
@@ -84,6 +87,10 @@ export default function TeraBoxVideoDownloader() {
   const [pwdDialog, setPwdDialog] = useState({ open: false, url: "", incorrect: false });
   const [selectedQualityId, setSelectedQualityId] = useState("");
   const [activeFile, setActiveFile] = useState(null);
+  const [extStatus, setExtStatus] = useState(null);
+  const [extRunning, setExtRunning] = useState(false);
+  const [extRetrying, setExtRetrying] = useState(false);
+  const extLastRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -123,6 +130,55 @@ export default function TeraBoxVideoDownloader() {
     },
     [setSearchParams]
   );
+
+  const runBrowserExtraction = useCallback(
+    async (url, password = "") => {
+      if (!url) return;
+      extLastRef.current = { url, password };
+      setLoading(false);
+      setPreview(null);
+      setWatching(false);
+      setDownloading(false);
+      setActiveFile(null);
+      setSelectedQualityId("");
+      setExtRetrying(false);
+      setExtRunning(true);
+      setExtStatus({ state: EXT_STATUS.CREATING, message: "Preparing browser extraction…" });
+      setSearchParams({ url });
+
+      const res = await runExtensionExtraction({
+        url,
+        password,
+        onStatus: (state, message) => setExtStatus({ state, message }),
+      });
+
+      if (res.status === EXT_STATUS.DONE && res.preview) {
+        const enriched = { ...res.preview, sourceUrl: url, usedPassword: password };
+        setPreview(enriched);
+        setExtStatus(null);
+        if (res.preview.ok) {
+          toast.success("Link resolved via browser");
+        } else if (res.preview.password_required) {
+          setPwdDialog({
+            open: true,
+            url,
+            incorrect: !!res.preview.password_incorrect,
+          });
+        } else {
+          toast.error(res.preview.error || "Could not extract this link via browser.");
+        }
+      }
+      setExtRunning(false);
+    },
+    [setSearchParams]
+  );
+
+  const retryBrowserExtraction = useCallback(() => {
+    const last = extLastRef.current;
+    if (!last) return;
+    setExtRetrying(true);
+    runBrowserExtraction(last.url, last.password);
+  }, [runBrowserExtraction]);
 
   useEffect(() => {
     const q = searchParams.get("url");
@@ -250,6 +306,21 @@ export default function TeraBoxVideoDownloader() {
               />
             </div>
 
+            {!loading && !preview && searchParams.get("url") && (
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => runBrowserExtraction(searchParams.get("url"))}
+                  disabled={extRunning}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-primary hover:underline"
+                  data-testid="browser-extraction-link"
+                >
+                  <Puzzle className="h-3 w-3" />
+                  Link not resolving? Extract with Browser
+                </button>
+              </div>
+            )}
+
             {!preview && !loading && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -279,6 +350,49 @@ export default function TeraBoxVideoDownloader() {
         </section>
 
         {/* RESULTS / PREVIEW */}
+        {extStatus && (
+          <div className="tp-container pb-2">
+            <div className="mx-auto max-w-3xl px-5">
+              <ExtensionStatus
+                status={extStatus.state}
+                message={extStatus.message}
+                onRetry={retryBrowserExtraction}
+                retrying={extRetrying}
+              />
+            </div>
+          </div>
+        )}
+
+        {preview && preview.ok === false && !preview.password_required && (
+          <div className="tp-container pb-4">
+            <div className="mx-auto max-w-3xl px-5 rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-destructive sm:p-6">
+              <div className="flex items-start gap-3">
+                <Puzzle className="mt-0.5 h-5 w-5 shrink-0" />
+                <div>
+                  <div className="font-semibold">We couldn't extract this link</div>
+                  <p className="mt-1 text-sm opacity-90">
+                    {preview.error ||
+                      "The link may be private, expired, or the extractor mirrors are temporarily unavailable."}
+                  </p>
+                  <Button
+                    className="mt-3"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      runBrowserExtraction(preview.sourceUrl || searchParams.get("url") || "")
+                    }
+                    disabled={extRunning}
+                    data-testid="extract-with-browser-btn"
+                  >
+                    <Puzzle className="mr-1.5 h-4 w-4" />
+                    Extract with Browser
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {preview && (
           <motion.section
             id="results"

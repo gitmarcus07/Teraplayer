@@ -1,23 +1,11 @@
 import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
-import { LogIn, LogOut, User as UserIcon, Menu, X, Home, Info, Mail, Crown, Code2, } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import AuthModal from "./AuthModal";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
+import { Menu, X, Home, Info, Mail, Crown, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Header() {
-  const { user, isAuthed, logout } = useAuth();
   const location = useLocation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,8 +20,6 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
-
-  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   return (
     <>
@@ -80,57 +66,6 @@ export default function Header() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-
-            {isAuthed ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="rounded-full ring-1 ring-border transition-transform duration-300 ease-out hover:scale-105"
-                    data-testid="user-menu-btn"
-                    aria-label="Account menu"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.picture} alt={user?.name || user?.email} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" data-testid="user-menu">
-                  <DropdownMenuLabel>
-                    <div className="line-clamp-1 text-sm font-medium">{user?.name || "Signed in"}</div>
-                    <div className="line-clamp-1 text-xs text-muted-foreground">{user?.email}</div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} data-testid="logout-btn">
-                    <LogOut className="mr-2 h-4 w-4" /> Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                onClick={() => setAuthModalOpen(true)}
-                variant="outline"
-                size="sm"
-                className="ml-1 hidden sm:inline-flex"
-                data-testid="login-btn"
-              >
-                <LogIn className="mr-1.5 h-4 w-4" /> Sign in
-              </Button>
-            )}
-              {!isAuthed && (
-                <Button
-                  onClick={() => setAuthModalOpen(true)}
-                  variant="outline"
-                  size="icon"
-                  className="ml-1 h-10 w-10 sm:hidden"
-                  data-testid="mobile-login-btn"
-                  aria-label="Sign in"
-                >
-                  <UserIcon className="h-4 w-4" />
-                </Button>
-              )}
           </div>
         </div>
 
@@ -200,56 +135,12 @@ export default function Header() {
                   <DrawerLink to="/about" onClick={() => setMobileMenuOpen(false)} icon={Info} testId="mobile-nav-about">
                     About
                   </DrawerLink>
-
-                  <div className="mt-4 pt-4 border-t border-border/50">
-                    {isAuthed ? (
-                      <div className="flex items-center gap-3 px-3 py-2">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={user?.picture} />
-                          <AvatarFallback>
-                            {(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">
-                            {user?.name}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {user?.email}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={logout}
-                          className="h-10 w-10"
-                          data-testid="mobile-logout-btn"
-                        >
-                          <LogOut className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          setAuthModalOpen(true);
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full h-11 rounded-xl"
-                        data-testid="mobile-signin-btn"
-                      >
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Sign In
-                      </Button>
-                    )}
-                  </div>
                 </div>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-
-      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </>
   );
 }

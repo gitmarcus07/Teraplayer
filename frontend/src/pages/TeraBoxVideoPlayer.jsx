@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -18,6 +18,7 @@ import {
   Sliders,
   CheckCircle2,
   ArrowRight,
+  Puzzle,
 } from "lucide-react";
 
 import HeroInput from "../components/HeroInput";
@@ -27,8 +28,10 @@ import DownloadPanel from "../components/DownloadPanel";
 import PasswordDialog from "../components/PasswordDialog";
 import QualityPicker from "../components/QualityPicker";
 import FolderBrowser from "../components/FolderBrowser";
+import ExtensionStatus from "../components/ExtensionStatus";
 import { Button } from "../components/ui/button";
-import { postPreview } from "../services/api";
+import { postPreview, streamProxyUrl } from "../services/api";
+import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 
 function buildQualityOptions(preview) {
   if (!preview?.files || preview.files.length < 2) return [];
@@ -105,6 +108,10 @@ export default function TeraBoxVideoPlayer() {
   });
   const [selectedQualityId, setSelectedQualityId] = useState("");
   const [activeFile, setActiveFile] = useState(null);
+  const [extStatus, setExtStatus] = useState(null);
+  const [extRunning, setExtRunning] = useState(false);
+  const [extRetrying, setExtRetrying] = useState(false);
+  const extLastRef = useRef(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -158,6 +165,55 @@ export default function TeraBoxVideoPlayer() {
     [setSearchParams]
   );
 
+  const runBrowserExtraction = useCallback(
+    async (url, password = "") => {
+      if (!url) return;
+      extLastRef.current = { url, password };
+      setLoading(false);
+      setPreview(null);
+      setWatching(false);
+      setDownloading(false);
+      setActiveFile(null);
+      setSelectedQualityId("");
+      setExtRetrying(false);
+      setExtRunning(true);
+      setExtStatus({ state: EXT_STATUS.CREATING, message: "Preparing browser extraction…" });
+      setSearchParams({ url });
+
+      const res = await runExtensionExtraction({
+        url,
+        password,
+        onStatus: (state, message) => setExtStatus({ state, message }),
+      });
+
+      if (res.status === EXT_STATUS.DONE && res.preview) {
+        const enriched = { ...res.preview, sourceUrl: url, usedPassword: password };
+        setPreview(enriched);
+        setExtStatus(null);
+        if (res.preview.ok) {
+          toast.success("Link resolved via browser");
+        } else if (res.preview.password_required) {
+          setPwdDialog({
+            open: true,
+            url,
+            incorrect: !!res.preview.password_incorrect,
+          });
+        } else {
+          toast.error(res.preview.error || "Could not extract this link via browser.");
+        }
+      }
+      setExtRunning(false);
+    },
+    [setSearchParams]
+  );
+
+  const retryBrowserExtraction = useCallback(() => {
+    const last = extLastRef.current;
+    if (!last) return;
+    setExtRetrying(true);
+    runBrowserExtraction(last.url, last.password);
+  }, [runBrowserExtraction]);
+
   useEffect(() => {
     const q = searchParams.get("url");
 
@@ -174,6 +230,9 @@ export default function TeraBoxVideoPlayer() {
       ? qualityOptions.find((q) => q.id === selectedQualityId)?.file
       : null) ||
     preview?.files?.[0];
+
+  const streamUrl = effectiveFile?.stream_url || effectiveFile?.download_url;
+  const streamViaProxy = streamUrl ? streamProxyUrl(streamUrl) : null;
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -377,12 +436,18 @@ export default function TeraBoxVideoPlayer() {
                     />
                   )}
 
-                  {watching && effectiveFile && (
+                  {watching && effectiveFile && streamViaProxy && (
                     <VideoPlayer
-                      file={effectiveFile}
-                      sourceUrl={preview.sourceUrl}
-                      password={preview.usedPassword}
+                      src={streamViaProxy}
+                      poster={effectiveFile?.thumbnail || preview.thumbnail}
+                      title={effectiveFile?.name || preview.title}
                     />
+                  )}
+
+                  {watching && effectiveFile && !streamViaProxy && (
+                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
+                      No playable stream URL available for this file.
+                    </div>
                   )}
 
                   {downloading && effectiveFile && (
@@ -396,8 +461,35 @@ export default function TeraBoxVideoPlayer() {
                 <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
                   {preview.error ||
                     "Unable to resolve this TeraBox link."}
+                  <div className="mt-3 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        runBrowserExtraction(
+                          preview.sourceUrl || searchParams.get("url") || ""
+                        )
+                      }
+                      disabled={extRunning}
+                      data-testid="extract-with-browser-btn"
+                    >
+                      <Puzzle className="mr-1.5 h-4 w-4" />
+                      Extract with Browser
+                    </Button>
+                  </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {extStatus && (
+            <div className="mt-6 max-w-2xl mx-auto">
+              <ExtensionStatus
+                status={extStatus.state}
+                message={extStatus.message}
+                onRetry={retryBrowserExtraction}
+                retrying={extRetrying}
+              />
             </div>
           )}
         </section>
