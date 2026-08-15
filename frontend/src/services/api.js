@@ -28,6 +28,19 @@ export async function postDownload(url, password) {
   return data;
 }
 
+// Browser-extension extraction bridge
+// POST /api/extension/create  -> { job_id, submit_token, terabox_url, status }
+export async function createExtensionJob(url, password) {
+  const { data } = await api.post("/extension/create", { url, password });
+  return data;
+}
+
+// GET /api/extension/result/{job_id} -> { job_id, status: "pending"|"done", preview? }
+export async function getExtensionJobResult(jobId) {
+  const { data } = await api.get(`/extension/result/${encodeURIComponent(jobId)}`);
+  return data;
+}
+
 
 // Auth
 export async function signupApi({ email, password, name }) {
