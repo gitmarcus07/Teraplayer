@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import Header from "../components/Header";
+import { FooterLegalLinks } from "../components/Footer";
 import HeroInput from "../components/HeroInput";
 import PreviewCard from "../components/PreviewCard";
 import VideoPlayer from "../components/VideoPlayer";
@@ -544,16 +545,20 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border/80 py-5 sm:py-8">
-        <div className="tp-container flex flex-col items-center justify-between gap-2 text-center text-[10px] text-muted-foreground sm:flex-row sm:gap-3 sm:text-left sm:text-sm">
-          <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-2">
-            <span className="font-display text-sm font-semibold text-foreground sm:text-lg">
-              Tera<span className="text-primary">Player</span>
-            </span>
-            <span className="hidden sm:inline">·</span>
-            <span className="text-[10px] sm:text-sm">Free to use — no account required</span>
-          </div>            <div className="text-[9px] opacity-70 sm:text-sm">
-            Only supports public TeraBox links<span className="hidden sm:inline">. Respect the original owners</span>.
+        <div className="tp-container">
+          <div className="flex flex-col items-center justify-between gap-2 text-center text-[10px] text-muted-foreground sm:flex-row sm:gap-3 sm:text-left sm:text-sm">
+            <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <span className="font-display text-sm font-semibold text-foreground sm:text-lg">
+                Tera<span className="text-primary">Player</span>
+              </span>
+              <span className="hidden sm:inline">·</span>
+              <span className="text-[10px] sm:text-sm">Free to use — no account required</span>
+            </div>
+            <div className="text-[9px] opacity-70 sm:text-sm">
+              Only supports public TeraBox links<span className="hidden sm:inline">. Respect the original owners</span>.
+            </div>
           </div>
+          <FooterLegalLinks />
         </div>
       </footer>
 

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
+import { FooterLegalLinks } from "../components/Footer";
 import { Button } from "../components/ui/button";
 
 const fadeUp = {
@@ -240,6 +241,9 @@ export default function Contact() {
                 </Link>
               </div>
             </div>
+
+            <FooterLegalLinks />
+
             <div className="mt-6 text-center text-xs text-muted-foreground opacity-70">
               Only supports public TeraBox links. Respect the original owners.
             </div>

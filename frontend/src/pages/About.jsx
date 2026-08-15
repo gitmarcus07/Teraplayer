@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
+import { FooterLegalLinks } from "../components/Footer";
 import { Button } from "../components/ui/button";
 
 const fadeUp = {
@@ -410,19 +411,21 @@ export default function About() {
                 </p>
               </div>
             </div>
-            <div className="mt-6 flex flex-col items-center justify-between gap-3 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
-              <div className="flex items-center gap-2">
-                <span className="font-display text-base font-semibold text-foreground">
-                  Tera<span className="text-primary">Player</span>
-                </span>
-                <span>·</span>
-                <span>Free to use · no account required</span>
+<div className="mt-6 flex flex-col items-center justify-between gap-3 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-base font-semibold text-foreground">
+                    Tera<span className="text-primary">Player</span>
+                  </span>
+                  <span>·</span>
+                  <span>Free to use · no account required</span>
+                </div>
+                <div className="opacity-70">
+                  Only supports public TeraBox links. Respect the original owners.
+                </div>
               </div>
-              <div className="opacity-70">
-                Only supports public TeraBox links. Respect the original owners.
-              </div>
+
+              <FooterLegalLinks />
             </div>
-          </div>
         </div>
       </footer>
     </div>
