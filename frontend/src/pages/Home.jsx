@@ -28,7 +28,6 @@ import FolderBrowser from "../components/FolderBrowser";
 import ExtensionStatus from "../components/ExtensionStatus";
 import ExtractionStatus from "../components/ExtractionStatus";
 import ExtractionError from "../components/ExtractionError";
-import RecentLinks from "../components/RecentLinks";
 import { Button } from "../components/ui/button";
 
 import {
@@ -38,7 +37,6 @@ import {
 import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 import { classifyPreviewError } from "../utils/errorHandling";
 import { track } from "../lib/analytics";
-import { loadHistory, buildHistoryEntry, addHistoryEntry, removeHistoryEntry, clearHistory } from "../utils/history";
 
 // VideoPlayer pulls in hls.js, so it is split out and loaded only when a user
 // actually starts watching. Everything above the fold stays in the main chunk.
@@ -100,25 +98,6 @@ export default function Home() {
   const heroInputRef = useRef(null);
   const folderBrowserRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [history, setHistory] = useState(loadHistory);
-
-  const recordHistory = useCallback((url, preview) => {
-    if (!preview || !preview.ok || !url) return;
-    const isFolderResult =
-      Array.isArray(preview.files) && preview.files.length > 1 && buildQualityOptions(preview).length === 0;
-    setHistory((prev) =>
-      addHistoryEntry(
-        prev,
-        buildHistoryEntry({
-          url,
-          title: preview.title || (preview.files && preview.files[0] && preview.files[0].name) || "",
-          thumbnail: preview.thumbnail || "",
-          type: isFolderResult ? "folder" : preview.file_type || "file",
-          size_str: preview.size_str || "",
-        })
-      )
-    );
-  }, []);
 
   const submit = useCallback(
     async (url, password = "") => {
@@ -149,7 +128,6 @@ export default function Home() {
           track("core_extraction_success");
           track("result_viewed");
           toast.success("Link resolved");
-          recordHistory(url, data);
         }
         setSearchParams({ url });
       } catch (e) {
@@ -161,7 +139,7 @@ export default function Home() {
         submittingRef.current = false;
       }
     },
-    [setSearchParams, recordHistory]
+    [setSearchParams]
   );
 
   const retry = useCallback(() => {
@@ -207,7 +185,6 @@ export default function Home() {
           track("core_extraction_success");
           track("result_viewed");
           toast.success("Link resolved via browser");
-          recordHistory(url, res.preview);
         } else if (res.preview.password_required) {
           setPwdDialog({
             open: true,
@@ -221,7 +198,7 @@ export default function Home() {
       }
       setExtRunning(false);
     },
-    [setSearchParams, recordHistory]
+    [setSearchParams]
   );
 
   const retryBrowserExtraction = useCallback(() => {
@@ -314,24 +291,6 @@ export default function Home() {
     setSearchParams({});
     heroInputRef.current?.focus();
   }, [setSearchParams]);
-
-  const openRecent = useCallback(
-    (url) => {
-      track("recent_link_opened");
-      submit(url);
-    },
-    [submit]
-  );
-
-  const removeRecent = useCallback((url) => {
-    track("recent_link_removed");
-    setHistory((prev) => removeHistoryEntry(prev, url));
-  }, []);
-
-  const clearRecent = useCallback(() => {
-    track("recent_history_cleared");
-    setHistory(clearHistory());
-  }, []);
 
   return (
     <div className="App noise min-h-screen">
@@ -435,15 +394,6 @@ export default function Home() {
             </motion.div>
           </div>
 </section>
-
-        {history.length > 0 && (
-          <RecentLinks
-            items={history}
-            onOpen={openRecent}
-            onRemove={removeRecent}
-            onClearAll={clearRecent}
-          />
-        )}
 
         {loading && <ExtractionStatus />}
 
