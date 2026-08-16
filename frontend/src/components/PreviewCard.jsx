@@ -33,6 +33,16 @@ const TYPE_ICON = {
   file: FileIcon,
 };
 
+const TYPE_LABELS = {
+  video: "Video",
+  image: "Image",
+  audio: "Audio",
+  document: "Document",
+  archive: "Archive",
+  folder: "Folder",
+  file: "File",
+};
+
 export default function PreviewCard({
   data,
   onWatch,
@@ -66,7 +76,9 @@ export default function PreviewCard({
 
   const isFolder = Array.isArray(data.files) && data.files.length > 1;
   const Icon = TYPE_ICON[data.file_type || "file"] || FileIcon;
+  const typeLabel = isFolder ? "Folder" : TYPE_LABELS[data.file_type] || "File";
   const canWatch = data.file_type === "video" && (data.stream_url || data.download_url);
+  const hasDownloadSource = !!downloadUrl || !!data.download_url || !!data.stream_url;
 
   const handleCopy = async () => {
     try {
@@ -92,7 +104,7 @@ export default function PreviewCard({
         data.size_str && { icon: HardDrive, label: "Size", value: data.size_str, testId: "meta-size" },
         data.duration && { icon: Clock, label: "Duration", value: formatDuration(data.duration), testId: "meta-duration" },
         data.resolution && { icon: Layers, label: "Resolution", value: data.resolution, testId: "meta-resolution" },
-        { icon: Icon, label: "Type", value: data.file_type || "file", testId: "meta-type" },
+        { icon: Icon, label: "Type", value: typeLabel, testId: "meta-type" },
       ].filter(Boolean);
 
   return (
@@ -129,7 +141,7 @@ export default function PreviewCard({
               data-testid="preview-type-badge"
             >
               {isFolder ? <FolderOpen className="mr-1 h-3 w-3" /> : <Icon className="mr-1 h-3 w-3" />}{" "}
-              {isFolder ? "folder" : data.file_type || "file"}
+              {typeLabel}
             </Badge>
             {data.size_str && !isFolder && (
               <Badge
@@ -222,6 +234,13 @@ export default function PreviewCard({
                   >
                     <XCircle className="mr-1.5 h-4 w-4" /> Retry
                   </Button>
+                ) : !hasDownloadSource ? (
+                  <div
+                    className="flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-border px-3 text-center text-xs text-muted-foreground sm:flex-1"
+                    data-testid="download-unavailable"
+                  >
+                    Download isn't available for this file
+                  </div>
                 ) : (
                   <Button
                     onClick={handleDownload}

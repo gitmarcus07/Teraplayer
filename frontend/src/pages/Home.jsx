@@ -28,6 +28,7 @@ import FolderBrowser from "../components/FolderBrowser";
 import ExtensionStatus from "../components/ExtensionStatus";
 import ExtractionStatus from "../components/ExtractionStatus";
 import ExtractionError from "../components/ExtractionError";
+import RecentLinks from "../components/RecentLinks";
 import { Button } from "../components/ui/button";
 
 import {
@@ -37,6 +38,7 @@ import {
 import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 import { classifyPreviewError } from "../utils/errorHandling";
 import { track } from "../lib/analytics";
+import { loadHistory, buildHistoryEntry, addHistoryEntry, removeHistoryEntry, clearHistory } from "../utils/history";
 
 // Detect if the file collection looks like alternate resolutions of the same asset.
 function buildQualityOptions(preview) {
@@ -77,6 +79,25 @@ export default function Home() {
   const heroInputRef = useRef(null);
   const folderBrowserRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [history, setHistory] = useState(loadHistory);
+
+  const recordHistory = useCallback((url, preview) => {
+    if (!preview || !preview.ok || !url) return;
+    const isFolderResult =
+      Array.isArray(preview.files) && preview.files.length > 1 && buildQualityOptions(preview).length === 0;
+    setHistory((prev) =>
+      addHistoryEntry(
+        prev,
+        buildHistoryEntry({
+          url,
+          title: preview.title || (preview.files && preview.files[0] && preview.files[0].name) || "",
+          thumbnail: preview.thumbnail || "",
+          type: isFolderResult ? "folder" : preview.file_type || "file",
+          size_str: preview.size_str || "",
+        })
+      )
+    );
+  }, []);
 
   const submit = useCallback(
     async (url, password = "") => {
@@ -107,6 +128,7 @@ export default function Home() {
           track("core_extraction_success");
           track("result_viewed");
           toast.success("Link resolved");
+          recordHistory(url, data);
         }
         setSearchParams({ url });
       } catch (e) {
@@ -118,7 +140,7 @@ export default function Home() {
         submittingRef.current = false;
       }
     },
-    [setSearchParams]
+    [setSearchParams, recordHistory]
   );
 
   const retry = useCallback(() => {
@@ -157,6 +179,7 @@ export default function Home() {
           track("core_extraction_success");
           track("result_viewed");
           toast.success("Link resolved via browser");
+          recordHistory(url, res.preview);
         } else if (res.preview.password_required) {
           setPwdDialog({
             open: true,
@@ -170,7 +193,7 @@ export default function Home() {
       }
       setExtRunning(false);
     },
-    [setSearchParams]
+    [setSearchParams, recordHistory]
   );
 
   const retryBrowserExtraction = useCallback(() => {
@@ -204,6 +227,7 @@ export default function Home() {
       if (navigator.share) await navigator.share({ title: preview.title, url: shareUrl });
       else {
         await navigator.clipboard.writeText(shareUrl);
+        track("share_fallback_used");
         toast.success("Shareable link copied");
       }
     } catch {
@@ -258,6 +282,24 @@ export default function Home() {
     setSearchParams({});
     heroInputRef.current?.focus();
   }, [setSearchParams]);
+
+  const openRecent = useCallback(
+    (url) => {
+      track("recent_link_opened");
+      submit(url);
+    },
+    [submit]
+  );
+
+  const removeRecent = useCallback((url) => {
+    track("recent_link_removed");
+    setHistory((prev) => removeHistoryEntry(prev, url));
+  }, []);
+
+  const clearRecent = useCallback(() => {
+    track("recent_history_cleared");
+    setHistory(clearHistory());
+  }, []);
 
   return (
     <div className="App noise min-h-screen">
@@ -360,7 +402,16 @@ export default function Home() {
               </span>
             </motion.div>
           </div>
-        </section>
+</section>
+
+        {history.length > 0 && (
+          <RecentLinks
+            items={history}
+            onOpen={openRecent}
+            onRemove={removeRecent}
+            onClearAll={clearRecent}
+          />
+        )}
 
         {loading && <ExtractionStatus />}
 
@@ -378,6 +429,7 @@ export default function Home() {
             error={errorInfo}
             onRetry={retry}
             onCheckLink={() => heroInputRef.current?.focus()}
+            onProcessAnother={processAnother}
           />
         )}
 
@@ -493,13 +545,13 @@ export default function Home() {
 
             <div className="flex flex-col items-center gap-2 pt-1">
               <Button
-                variant="outline"
-                size="sm"
+                variant="secondary"
+                size="default"
                 onClick={processAnother}
                 data-testid="process-another-btn"
-                className="text-xs sm:text-sm"
+                className="h-11 w-full max-w-xs text-sm sm:text-sm"
               >
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Process another link
+                <RefreshCw className="mr-2 h-4 w-4" /> Process another link
               </Button>
               <p className="text-center text-[11px] text-muted-foreground sm:text-xs">
                 Your link is processed to retrieve the requested content. No account required.

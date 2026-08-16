@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { AlertTriangle, Link2, RotateCw } from "lucide-react";
+import { AlertTriangle, Link2, RotateCw, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
 import { ERROR_CATEGORIES, ERROR_COPY } from "../utils/errorHandling";
 
@@ -8,7 +8,7 @@ import { ERROR_CATEGORIES, ERROR_COPY } from "../utils/errorHandling";
 // `error` is the object produced by classifyPreviewError() in utils/errorHandling.js.
 // The original URL is never cleared by this component — retry re-uses the same
 // sanitized URL passed by the parent.
-export default function ExtractionError({ error, onRetry, onCheckLink }) {
+export default function ExtractionError({ error, onRetry, onCheckLink, onProcessAnother }) {
   const copy = (error && ERROR_COPY[error.category]) || ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
   const isInvalid = error && error.category === ERROR_CATEGORIES.INVALID_LINK;
   const handleAction = isInvalid ? onCheckLink : onRetry;
@@ -30,25 +30,38 @@ export default function ExtractionError({ error, onRetry, onCheckLink }) {
           <p className="mt-1 text-sm opacity-90">
             {isInvalid && error.showRaw && error.raw ? error.raw : copy.description}
           </p>
-          <Button
-            className="mt-3"
-            size="sm"
-            variant="outline"
-            onClick={handleAction}
-            data-testid="extraction-error-action"
-          >
-            {isInvalid ? (
-              <>
-                <Link2 className="mr-1.5 h-4 w-4" />
-                {copy.actionLabel}
-              </>
-            ) : (
-              <>
-                <RotateCw className="mr-1.5 h-4 w-4" />
-                {copy.actionLabel}
-              </>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAction}
+              data-testid="extraction-error-action"
+            >
+              {isInvalid ? (
+                <>
+                  <Link2 className="mr-1.5 h-4 w-4" />
+                  {copy.actionLabel}
+                </>
+              ) : (
+                <>
+                  <RotateCw className="mr-1.5 h-4 w-4" />
+                  {copy.actionLabel}
+                </>
+              )}
+            </Button>
+            {onProcessAnother && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onProcessAnother}
+                data-testid="extraction-error-process-another"
+                className="text-destructive"
+              >
+                <RefreshCw className="mr-1.5 h-4 w-4" />
+                Process another link
+              </Button>
             )}
-          </Button>
+          </div>
         </div>
       </div>
     </motion.div>

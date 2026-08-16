@@ -17,11 +17,13 @@ import {
   CheckSquare,
   Square,
   Loader2,
+  FolderOpen,
 } from "lucide-react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import { streamProxyUrl } from "../services/api";
+import { track } from "../lib/analytics";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -41,6 +43,16 @@ const ICONS = {
   document: FileText,
   archive: FileArchive,
   file: FileIcon,
+};
+
+const TYPE_LABELS = {
+  video: "Video",
+  image: "Image",
+  audio: "Audio",
+  document: "Document",
+  archive: "Archive",
+  folder: "Folder",
+  file: "File",
 };
 
 const SORTS = [
@@ -104,8 +116,18 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
   };
 
   const toggleAll = () => {
-    if (allSelected) setSelected(new Set());
-    else setSelected(new Set(filtered.map((f) => f._idx)));
+    if (allSelected) {
+      setSelected(new Set());
+      track("folder_selection_cleared");
+    } else {
+      setSelected(new Set(filtered.map((f) => f._idx)));
+      track("folder_select_all");
+    }
+  };
+
+  const clearSelection = () => {
+    setSelected(new Set());
+    track("folder_selection_cleared");
   };
 
   const downloadZip = async () => {
@@ -118,6 +140,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
       return;
     }
 
+    track("zip_download_started");
     setZipping(true);
     setZipProgress(0);
     const zip = new JSZip();
@@ -236,43 +259,75 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
       </div>
 
       {/* Bulk bar */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2">
-        <button
-          onClick={toggleAll}
-          className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
-          data-testid="select-all-btn"
-        >
-          {allSelected ? (
-            <CheckSquare className="h-4 w-4 text-primary" />
-          ) : someSelected ? (
-            <CheckSquare className="h-4 w-4 text-primary/50" />
-          ) : (
-            <Square className="h-4 w-4" />
-          )}
-          {selected.size > 0 ? `${selected.size} selected` : "Select all"}
-        </button>
-        <Button
-          size="sm"
-          disabled={selected.size === 0 || zipping}
-          onClick={downloadZip}
-          data-testid="download-zip-btn"
-          className="text-xs sm:text-sm"
-          aria-live="polite"
-        >
-          {zipping ? (
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2" data-testid="folder-bulk-bar">
+        <div className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          {selected.size > 0 ? (
             <>
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {zipProgress}%
+              <CheckSquare className="h-4 w-4 shrink-0 text-primary" />
+              <span className="truncate" data-testid="selected-count">
+                {selected.size} {selected.size === 1 ? "file" : "files"} selected
+              </span>
             </>
           ) : (
-            <>
-              <Download className="mr-1.5 h-4 w-4" /> ZIP
-            </>
+            <span>Select files to download as ZIP</span>
           )}
-        </Button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={toggleAll}
+            aria-pressed={allSelected}
+            data-testid="select-all-btn"
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {allSelected ? (
+              <CheckSquare className="h-4 w-4 text-primary" />
+            ) : someSelected ? (
+              <CheckSquare className="h-4 w-4 text-primary/50" />
+            ) : (
+              <Square className="h-4 w-4" />
+            )}
+            {allSelected ? "Deselect all" : "Select all"}
+          </button>
+          {selected.size > 0 && (
+            <button
+              onClick={clearSelection}
+              data-testid="clear-selection-btn"
+              className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Clear
+            </button>
+          )}
+          <Button
+            size="sm"
+            disabled={selected.size === 0 || zipping}
+            onClick={downloadZip}
+            data-testid="download-zip-btn"
+            className="text-xs sm:text-sm"
+            aria-live="polite"
+          >
+            {zipping ? (
+              <>
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {zipProgress}%
+              </>
+            ) : (
+              <>
+                <Download className="mr-1.5 h-4 w-4" /> ZIP
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Grid / list */}
-      {filtered.length === 0 ? (
+      {files.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
+          <FolderOpen className="mx-auto mb-2 h-8 w-8 text-muted-foreground" strokeWidth={1.25} />
+          <div className="text-sm font-medium">This folder is empty</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            No files were found in this shared folder.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           No files match your search.
         </div>
@@ -293,7 +348,8 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                 <button
                   onClick={() => toggle(f._idx)}
                   className="absolute left-2 top-2 z-10 rounded-md bg-black/50 p-1 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                  aria-label="Select"
+                  aria-label={isSel ? "Deselect file" : "Select file"}
+                  aria-pressed={isSel}
                   data-testid="folder-select-btn"
                 >
                   {isSel ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
@@ -324,7 +380,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                 <div className="flex items-center justify-between gap-2 p-3">
                   <div className="text-xs text-muted-foreground">
                     {f.size_str || "—"}
-                    {f.file_type ? ` · ${f.file_type}` : ""}
+                    {f.file_type ? ` · ${TYPE_LABELS[f.file_type] || f.file_type}` : ""}
                   </div>
                   <Button
                     size="icon"
@@ -353,7 +409,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                   isSel ? "bg-primary/5" : "hover:bg-surface-overlay/40"
                 }`}
               >
-                <button onClick={() => toggle(f._idx)} data-testid="folder-select-btn" aria-label="Select">
+                <button onClick={() => toggle(f._idx)} data-testid="folder-select-btn" aria-label={isSel ? "Deselect file" : "Select file"} aria-pressed={isSel}>
                   {isSel ? (
                     <CheckSquare className="h-4 w-4 text-primary" />
                   ) : (
@@ -377,7 +433,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                   <div className="line-clamp-1 text-sm font-medium" title={f.name || "Untitled"}>{f.name || "Untitled"}</div>
                   <div className="text-xs text-muted-foreground">
                     {f.size_str || "—"}
-                    {f.file_type ? ` · ${f.file_type}` : ""}
+                    {f.file_type ? ` · ${TYPE_LABELS[f.file_type] || f.file_type}` : ""}
                   </div>
                 </button>
                 <Button
