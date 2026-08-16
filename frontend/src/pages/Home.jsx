@@ -263,9 +263,22 @@ export default function Home() {
       setActiveFile(null);
       const opt = qualityOptions.find((q) => q.id === id);
       track("quality_selected", opt ? { quality: opt.label } : {});
+      track("quality_changed", opt ? { quality: opt.label } : {});
     },
     [qualityOptions]
   );
+
+  // If the selected quality disappears (e.g. a re-extracted preview), fall back
+  // to the first available option instead of holding a stale selection.
+  useEffect(() => {
+    if (qualityOptions.length === 0) {
+      setSelectedQualityId("");
+      return;
+    }
+    if (selectedQualityId && !qualityOptions.some((q) => q.id === selectedQualityId)) {
+      setSelectedQualityId(qualityOptions[0].id);
+    }
+  }, [qualityOptions, selectedQualityId]);
 
   const openFolder = useCallback(() => {
     folderBrowserRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -287,6 +300,9 @@ export default function Home() {
     setExtStatus(null);
     setExtRunning(false);
     setExtRetrying(false);
+    setPwdDialog({ open: false, url: "", incorrect: false });
+    submittedUrlRef.current = null;
+    extLastRef.current = null;
     extAbortRef.current?.abort();
     setSearchParams({});
     heroInputRef.current?.focus();
@@ -471,6 +487,8 @@ export default function Home() {
                     src={streamViaProxy}
                     poster={currentFile?.thumbnail || preview.thumbnail}
                     title={currentFile?.name || preview.title}
+                    onDownloadInstead={() => setWatching(false)}
+                    onProcessAnother={processAnother}
                   />
                 </Suspense>
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
@@ -523,6 +541,7 @@ export default function Home() {
                   files={preview.files}
                   folderName={preview.title}
                   onPlayFile={openFolderFile}
+                  activeIdx={activeFile?._idx}
                 />
               </div>
             )}

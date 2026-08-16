@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AdminProvider } from "@/context/AdminContext";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Home from "@/pages/Home";
@@ -172,7 +172,8 @@ function App() {
   return (
     <ThemeProvider>
       <HelmetProvider>
-        <div className="App noise">
+        <MotionConfig reducedMotion="user">
+          <div className="App noise">
           <Helmet>
             <script type="application/ld+json">
               {JSON.stringify({
@@ -212,7 +213,8 @@ function App() {
               toastOptions={{ style: { fontFamily: "Inter, sans-serif" } }}
             />
           </BrowserRouter>
-        </div>
+          </div>
+        </MotionConfig>
       </HelmetProvider>
     </ThemeProvider>
   );

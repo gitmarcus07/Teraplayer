@@ -74,7 +74,7 @@ function sizeToNum(entry) {
   return n * mult;
 }
 
-export default function FolderBrowser({ files, onPlayFile, folderName }) {
+export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx }) {
   const [view, setView] = useState("grid"); // grid | list
   const [query, setQuery] = useState("");
   const [sortId, setSortId] = useState("name-asc");
@@ -336,14 +336,19 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
           {filtered.map((f) => {
             const Icon = ICONS[f.file_type || "file"] || FileIcon;
             const isSel = selected.has(f._idx);
+            const isActive = activeIdx != null && f._idx === activeIdx;
             const canPlay = f.file_type === "video" && (f.stream_url || f.download_url);
             return (
               <div
                 key={f._idx}
                 data-testid="folder-item"
                 className={`group relative overflow-hidden rounded-xl border ${
-                  isSel ? "border-primary" : "border-border"
-                 } bg-surface-overlay/50 transition-[border-color,brightness] duration-200 hover:border-primary/60 hover:brightness-115`}
+                  isActive
+                    ? "border-primary ring-1 ring-primary"
+                    : isSel
+                      ? "border-primary"
+                      : "border-border"
+                } bg-surface-overlay/50 transition-[border-color,brightness] duration-200 hover:border-primary/60 hover:brightness-115`}
               >
                 <button
                   onClick={() => toggle(f._idx)}
@@ -373,8 +378,13 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                       </span>
                     </button>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent p-3">
                     <div className="line-clamp-1 text-xs font-medium text-white">{f.name || "Untitled"}</div>
+                    {isActive && (
+                      <span className="shrink-0 rounded bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                        Previewing
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2 p-3">
@@ -401,12 +411,13 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
           {filtered.map((f) => {
             const Icon = ICONS[f.file_type || "file"] || FileIcon;
             const isSel = selected.has(f._idx);
+            const isActive = activeIdx != null && f._idx === activeIdx;
             return (
               <div
                 key={f._idx}
                 data-testid="folder-item"
                 className={`flex items-center gap-3 p-3 transition-colors duration-200 ${
-                  isSel ? "bg-primary/5" : "hover:bg-surface-overlay/40"
+                  isActive ? "bg-primary/5 ring-1 ring-inset ring-primary" : isSel ? "bg-primary/5" : "hover:bg-surface-overlay/40"
                 }`}
               >
                 <button onClick={() => toggle(f._idx)} data-testid="folder-select-btn" aria-label={isSel ? "Deselect file" : "Select file"} aria-pressed={isSel}>
@@ -436,6 +447,11 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                     {f.file_type ? ` · ${TYPE_LABELS[f.file_type] || f.file_type}` : ""}
                   </div>
                 </button>
+                {isActive && (
+                  <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                    Previewing
+                  </span>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"

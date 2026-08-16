@@ -18,11 +18,13 @@ import {
   FolderOpen,
   Loader2,
   XCircle,
+  VideoOff,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { useDownload, humanBytes, humanSpeed } from "./DownloadPanel";
+import { truncateName } from "../utils/format";
 
 const TYPE_ICON = {
   video: FileVideo,
@@ -79,6 +81,8 @@ export default function PreviewCard({
   const typeLabel = isFolder ? "Folder" : TYPE_LABELS[data.file_type] || "File";
   const canWatch = data.file_type === "video" && (data.stream_url || data.download_url);
   const hasDownloadSource = !!downloadUrl || !!data.download_url || !!data.stream_url;
+  const videoUnavailable = data.file_type === "video" && !canWatch && hasDownloadSource;
+  const fullTitle = data.title || "TeraBox file";
 
   const handleCopy = async () => {
     try {
@@ -171,8 +175,9 @@ export default function PreviewCard({
         <h2
           className="font-display text-lg font-bold leading-tight tracking-tight break-words"
           data-testid="preview-title"
+          title={fullTitle}
         >
-          {data.title || "TeraBox file"}
+          {truncateName(fullTitle, 42)}
         </h2>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -182,6 +187,15 @@ export default function PreviewCard({
         </div>
 
         <div className="mt-3 flex flex-col gap-2">
+          {videoUnavailable && (
+            <div
+              className="flex items-center gap-1.5 text-xs text-muted-foreground"
+              data-testid="video-unavailable-note"
+            >
+              <VideoOff className="h-3.5 w-3.5 shrink-0" />
+              Video preview isn't available for this file.
+            </div>
+          )}
           <div className="flex flex-col gap-2 sm:flex-row">
             {isFolder && onOpenFolder ? (
               <Button
@@ -239,7 +253,7 @@ export default function PreviewCard({
                     className="flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-border px-3 text-center text-xs text-muted-foreground sm:flex-1"
                     data-testid="download-unavailable"
                   >
-                    Download isn't available for this file
+                    Download isn't available for this file.
                   </div>
                 ) : (
                   <Button

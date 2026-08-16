@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Layers } from "lucide-react";
+import { compactSize } from "../utils/format";
 
 /**
  * QualityPicker
@@ -14,6 +15,14 @@ import { Layers } from "lucide-react";
  */
 export default function QualityPicker({ options, value, onChange }) {
   if (!options || options.length < 2) return null;
+
+  const labelFor = (opt) => {
+    const size =
+      (typeof opt?.file?.size === "number" && opt.file.size > 0 && compactSize(opt.file.size)) ||
+      opt?.file?.size_str ||
+      "";
+    return size ? `${opt.label} · ~${size}` : opt.label;
+  };
 
   return (
     <div className="flex items-center gap-2" data-testid="quality-picker">
@@ -25,8 +34,8 @@ export default function QualityPicker({ options, value, onChange }) {
         </SelectTrigger>
         <SelectContent>
           {options.map((opt) => (
-            <SelectItem key={opt.id} value={opt.id} data-testid={`quality-option-${opt.id}`}>
-              {opt.label}
+            <SelectItem key={opt.id} value={opt.id} data-testid={`quality-option-${opt.id}`} title={opt.label}>
+              {labelFor(opt)}
             </SelectItem>
           ))}
         </SelectContent>

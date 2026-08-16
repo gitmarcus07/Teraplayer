@@ -12,6 +12,7 @@ import {
   PictureInPicture2,
   RotateCcw,
   RotateCw,
+  AlertCircle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,6 +22,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { track } from "../lib/analytics";
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -32,7 +35,15 @@ function fmt(sec) {
   return h > 0 ? `${h}:${m.toString().padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
-export default function VideoPlayer({ src, poster, title }) {
+// Small content hash so we can key resume positions without ever persisting
+// the (ephemeral, signed) stream URL itself.
+function hashStr(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i += 1) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
+export default function VideoPlayer({ src, poster, title, onDownloadInstead, onProcessAnother }) {
   const videoRef = useRef(null);
   const wrapRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -44,7 +55,68 @@ export default function VideoPlayer({ src, poster, title }) {
   const [fullscreen, setFullscreen] = useState(false);
   const [rate, setRate] = useState(1);
   const [showControls, setShowControls] = useState(true);
+  const [playbackError, setPlaybackError] = useState(null);
+  const [resumePos, setResumePos] = useState(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const hideTimer = useRef(null);
+  const retriesRef = useRef(0);
+  const playerStartedRef = useRef(false);
+  const errorTrackedRef = useRef(false);
+  const lastSaveRef = useRef(0);
+  const resumeKeyRef = useRef(null);
+
+  const saveResume = useCallback((pos) => {
+    if (!resumeKeyRef.current) return;
+    try {
+      sessionStorage.setItem(resumeKeyRef.current, JSON.stringify({ t: pos, d: Date.now() }));
+    } catch {
+      /* session storage is best-effort only */
+    }
+  }, []);
+
+  const clearResume = useCallback(() => {
+    if (!resumeKeyRef.current) return;
+    try {
+      sessionStorage.removeItem(resumeKeyRef.current);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const surfaceError = useCallback(() => {
+    setBuffering(false);
+    setPlaybackError("Video playback couldn't be started.");
+    if (!errorTrackedRef.current) {
+      errorTrackedRef.current = true;
+      track("playback_error");
+    }
+  }, []);
+
+  const tryAgain = useCallback(() => {
+    setPlaybackError(null);
+    setBuffering(true);
+    errorTrackedRef.current = false;
+    setReloadToken((t) => t + 1);
+  }, []);
+
+  const resume = useCallback(() => {
+    const v = videoRef.current;
+    if (!v || resumePos == null) return;
+    v.currentTime = resumePos;
+    setResumePos(null);
+    track("player_resume_clicked");
+    v.play().catch(() => {});
+  }, [resumePos]);
+
+  const startOver = useCallback(() => {
+    clearResume();
+    setResumePos(null);
+    track("player_restart_clicked");
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    v.play().catch(() => {});
+  }, [clearResume]);
 
   const togglePlay = useCallback(() => {
     const v = videoRef.current;
@@ -116,22 +188,79 @@ export default function VideoPlayer({ src, poster, title }) {
     if (!v) return;
 
     let hls = null;
-
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    const onTime = () => setCurrent(v.currentTime);
-    const onLoaded = () => {
-      setDuration(v.duration || 0);
-      setBuffering(false);
-    };
-    const onWait = () => setBuffering(true);
-    const onCanPlay = () => setBuffering(false);
+    resumeKeyRef.current = src ? `tp:resume:${hashStr(src)}` : null;
+    retriesRef.current = 0;
+    playerStartedRef.current = false;
+    errorTrackedRef.current = false;
+    lastSaveRef.current = 0;
+    setPlaybackError(null);
+    setResumePos(null);
 
     // xAPiverse returns HLS manifests from /fast_stream without a .m3u8
     // filename extension, so detect both normal HLS URLs and that endpoint.
     const isHls =
       typeof src === "string" &&
       (/\.m3u8(?:$|[?#])/i.test(src) || /\/fast_stream(?:[/?#]|$)/i.test(src));
+
+    const persist = () => {
+      if (v && !v.ended && Number.isFinite(v.currentTime) && v.currentTime > 5) {
+        saveResume(v.currentTime);
+      }
+    };
+
+    const onPlay = () => {
+      setPlaying(true);
+      if (!playerStartedRef.current) {
+        playerStartedRef.current = true;
+        track("player_started");
+      }
+    };
+    const onPause = () => {
+      setPlaying(false);
+      persist();
+    };
+    const onTime = () => {
+      setCurrent(v.currentTime);
+      const now = Date.now();
+      if (now - lastSaveRef.current > 4000) {
+        lastSaveRef.current = now;
+        persist();
+      }
+    };
+    const onLoaded = () => {
+      setDuration(v.duration || 0);
+      setBuffering(false);
+      // Offer a session-only resume when there's a meaningful saved position.
+      if (resumeKeyRef.current && Number.isFinite(v.duration)) {
+        try {
+          const raw = sessionStorage.getItem(resumeKeyRef.current);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            if (
+              saved &&
+              typeof saved.t === "number" &&
+              saved.t >= 10 &&
+              v.duration > 30 &&
+              saved.t < v.duration - 10
+            ) {
+              setResumePos(saved.t);
+            }
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+    const onEnded = () => {
+      setPlaying(false);
+      clearResume();
+    };
+    const onWait = () => setBuffering(true);
+    const onCanPlay = () => setBuffering(false);
+    const onNativeError = () => {
+      if (isHls) return;
+      surfaceError();
+    };
 
     if (isHls && Hls.isSupported()) {
       hls = new Hls({
@@ -148,8 +277,17 @@ export default function VideoPlayer({ src, poster, title }) {
       hls.on(Hls.Events.ERROR, (_event, data) => {
         if (!data?.fatal) return;
 
-        console.error("HLS playback error:", data);
+        // Recover at most twice, then surface a friendly message instead of
+        // looping retries forever against a broken stream.
+        if (retriesRef.current >= 2) {
+          console.error("HLS playback failed:", data?.type, data?.details);
+          hls?.destroy();
+          hls = null;
+          surfaceError();
+          return;
+        }
 
+        retriesRef.current += 1;
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             hls.startLoad();
@@ -158,9 +296,10 @@ export default function VideoPlayer({ src, poster, title }) {
             hls.recoverMediaError();
             break;
           default:
+            console.error("HLS playback failed:", data?.type, data?.details);
             hls.destroy();
             hls = null;
-            setBuffering(false);
+            surfaceError();
             break;
         }
       });
@@ -174,16 +313,21 @@ export default function VideoPlayer({ src, poster, title }) {
     v.addEventListener("pause", onPause);
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("loadedmetadata", onLoaded);
+    v.addEventListener("ended", onEnded);
     v.addEventListener("waiting", onWait);
     v.addEventListener("canplay", onCanPlay);
+    v.addEventListener("error", onNativeError);
 
     return () => {
+      persist();
       v.removeEventListener("play", onPlay);
       v.removeEventListener("pause", onPause);
       v.removeEventListener("timeupdate", onTime);
       v.removeEventListener("loadedmetadata", onLoaded);
+      v.removeEventListener("ended", onEnded);
       v.removeEventListener("waiting", onWait);
       v.removeEventListener("canplay", onCanPlay);
+      v.removeEventListener("error", onNativeError);
 
       if (hls) {
         hls.destroy();
@@ -193,7 +337,7 @@ export default function VideoPlayer({ src, poster, title }) {
       v.removeAttribute("src");
       v.load();
     };
-  }, [src]);
+  }, [src, reloadToken, saveResume, clearResume, surfaceError]);
 
   useEffect(() => {
     const onFs = () => setFullscreen(!!document.fullscreenElement);
@@ -206,7 +350,7 @@ export default function VideoPlayer({ src, poster, title }) {
     const onKey = (e) => {
       if (!wrapRef.current) return;
       const tag = document.activeElement?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || tag === "BUTTON") return;
       switch (e.key.toLowerCase()) {
         case " ":
         case "k":
@@ -266,14 +410,84 @@ export default function VideoPlayer({ src, poster, title }) {
       />
 
       {/* Loading spinner */}
-      {buffering && (
+      {buffering && !playbackError && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-white/80" />
         </div>
       )}
 
+      {/* Session-only resume prompt */}
+      {resumePos != null && !playbackError && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4"
+          data-testid="resume-prompt"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-surface-raised p-4 text-center shadow-2xl">
+            <div className="text-sm font-semibold text-foreground sm:text-base">
+              Resume from {fmt(resumePos)}?
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Continue where you left off.</p>
+            <div className="mt-3 flex gap-2">
+              <Button className="flex-1" onClick={resume} data-testid="resume-btn">
+                Resume
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={startOver}
+                data-testid="restart-btn"
+              >
+                Start over
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Friendly playback error with recovery actions */}
+      {playbackError && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4"
+          role="alert"
+          data-testid="player-error"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-surface-raised p-4 text-center shadow-2xl">
+            <AlertCircle className="mx-auto mb-2 h-7 w-7 text-destructive" />
+            <div className="text-sm font-semibold text-foreground sm:text-base">
+              Video playback couldn't be started.
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The stream didn't respond. You can try again or download the file instead.
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              <Button onClick={tryAgain} data-testid="player-retry-btn">
+                Try again
+              </Button>
+              {onDownloadInstead && (
+                <Button
+                  variant="secondary"
+                  onClick={onDownloadInstead}
+                  data-testid="player-download-btn"
+                >
+                  Download instead
+                </Button>
+              )}
+              {onProcessAnother && (
+                <Button
+                  variant="outline"
+                  onClick={onProcessAnother}
+                  data-testid="player-process-another-btn"
+                >
+                  Process another link
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Center play button */}
-      {!playing && !buffering && (
+      {!playing && !buffering && !playbackError && (
         <button
           onClick={togglePlay}
           data-testid="center-play-btn"
