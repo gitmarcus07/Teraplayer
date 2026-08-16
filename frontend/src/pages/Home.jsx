@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -15,13 +15,13 @@ import {
   Puzzle,
   RefreshCw,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 
 import Header from "../components/Header";
 import { FooterLegalLinks } from "../components/Footer";
 import HeroInput from "../components/HeroInput";
 import PreviewCard from "../components/PreviewCard";
-import VideoPlayer from "../components/VideoPlayer";
 import PasswordDialog from "../components/PasswordDialog";
 import QualityPicker from "../components/QualityPicker";
 import FolderBrowser from "../components/FolderBrowser";
@@ -39,6 +39,26 @@ import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 import { classifyPreviewError } from "../utils/errorHandling";
 import { track } from "../lib/analytics";
 import { loadHistory, buildHistoryEntry, addHistoryEntry, removeHistoryEntry, clearHistory } from "../utils/history";
+
+// VideoPlayer pulls in hls.js, so it is split out and loaded only when a user
+// actually starts watching. Everything above the fold stays in the main chunk.
+const VideoPlayer = lazy(() => import("../components/VideoPlayer"));
+
+function PlayerFallback() {
+  return (
+    <div
+      className="flex aspect-video w-full items-center justify-center rounded-2xl border border-border/60 bg-surface-overlay text-sm text-muted-foreground"
+      role="status"
+      aria-live="polite"
+      data-testid="video-player-fallback"
+    >
+      <span className="flex items-center gap-2">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        Preparing player…
+      </span>
+    </div>
+  );
+}
 
 // Detect if the file collection looks like alternate resolutions of the same asset.
 function buildQualityOptions(preview) {
@@ -76,6 +96,7 @@ export default function Home() {
   const extLastRef = useRef(null);
   const submittedUrlRef = useRef(null);
   const submittingRef = useRef(false);
+  const extAbortRef = useRef(null);
   const heroInputRef = useRef(null);
   const folderBrowserRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -132,7 +153,7 @@ export default function Home() {
         }
         setSearchParams({ url });
       } catch (e) {
-        console.error(e);
+        console.error(e.message);
         track("core_extraction_failure");
         setErrorInfo(classifyPreviewError(e, null));
       } finally {
@@ -165,9 +186,16 @@ export default function Home() {
       setExtStatus({ state: EXT_STATUS.CREATING, message: "Preparing browser extraction…" });
       setSearchParams({ url });
 
+      // Let the browser-extraction poll loop be cancelled if the user navigates
+      // away or processes another link, so it never keeps polling in the background.
+      const controller = new AbortController();
+      extAbortRef.current?.abort();
+      extAbortRef.current = controller;
+
       const res = await runExtensionExtraction({
         url,
         password,
+        signal: controller.signal,
         onStatus: (state, message) => setExtStatus({ state, message }),
       });
 
@@ -210,6 +238,9 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Stop any in-flight browser-extraction polling when Home unmounts.
+  useEffect(() => () => extAbortRef.current?.abort(), []);
 
   const copyLink = async () => {
     try {
@@ -279,6 +310,7 @@ export default function Home() {
     setExtStatus(null);
     setExtRunning(false);
     setExtRetrying(false);
+    extAbortRef.current?.abort();
     setSearchParams({});
     heroInputRef.current?.focus();
   }, [setSearchParams]);
@@ -484,11 +516,13 @@ export default function Home() {
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-3"
               >
-                <VideoPlayer
-                  src={streamViaProxy}
-                  poster={currentFile?.thumbnail || preview.thumbnail}
-                  title={currentFile?.name || preview.title}
-                />
+                <Suspense fallback={<PlayerFallback />}>
+                  <VideoPlayer
+                    src={streamViaProxy}
+                    poster={currentFile?.thumbnail || preview.thumbnail}
+                    title={currentFile?.name || preview.title}
+                  />
+                </Suspense>
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                   <Button variant="outline" size="sm" onClick={() => setWatching(false)} data-testid="close-player-btn">
                     ← Back

@@ -161,7 +161,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
       toast.success("ZIP ready");
       setSelected(new Set());
     } catch (e) {
-      console.error(e);
+      console.error(e.message || "ZIP failed");
       toast.error(e.message || "ZIP failed");
     } finally {
       setZipping(false);
@@ -356,7 +356,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                 </button>
                 <div className="relative aspect-video w-full bg-surface-overlay">
                   {f.thumbnail ? (
-                    <img src={f.thumbnail} alt="" className="h-full w-full object-cover" />
+                    <img src={f.thumbnail} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                       <Icon className="h-10 w-10" strokeWidth={1.25} />
@@ -418,7 +418,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                 </button>
                 <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-surface-overlay">
                   {f.thumbnail ? (
-                    <img src={f.thumbnail} alt="" className="h-full w-full object-cover" />
+                    <img src={f.thumbnail} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                       <Icon className="h-4 w-4" />

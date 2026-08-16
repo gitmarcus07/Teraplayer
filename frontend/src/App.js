@@ -6,37 +6,40 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { AdminProvider } from "@/context/AdminContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import Home from "@/pages/Home";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import MeetTheDev from "@/pages/MeetTheDev";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfService from "@/pages/TermsOfService";
-import AboutTeraPlayer from "@/pages/AboutTeraPlayer";
-import Copyright from "@/pages/Copyright";
-import TeraBoxVideoDownloader from "@/pages/TeraBoxVideoDownloader";
-import TeraBoxVideoPlayer from "@/pages/TeraBoxVideoPlayer";
-import HowToDownloadTeraBoxVideos from "@/pages/HowToDownloadTeraBoxVideos";
-import HowToWatchTeraBoxVideos from "@/pages/HowToWatchTeraBoxVideos";
-import TeraBoxVideoLinkNotWorking from "@/pages/TeraBoxVideoLinkNotWorking";
-import HowToDownloadTeraBoxFolder from "@/pages/HowToDownloadTeraBoxFolder";
-import TeraBoxZipDownload from "@/pages/TeraBoxZipDownload";
-import TeraBoxPublicLink from "@/pages/TeraBoxPublicLink";
-import TeraBoxDownloadMobile from "@/pages/TeraBoxDownloadMobile";
-import TeraBoxDownloadPC from "@/pages/TeraBoxDownloadPC";
-import Premium from "@/pages/Premium";
-import AdminRoute from "@/components/admin/AdminRoute";
-import AdminLogin from "@/pages/admin/AdminLogin";
-import AdminLayout from "@/pages/admin/AdminLayout";
-import Dashboard from "@/pages/admin/Dashboard";
-import Analytics from "@/pages/admin/Analytics";
-import Extraction from "@/pages/admin/Extraction";
-import Admins from "@/pages/admin/Admins";
-import Activity from "@/pages/admin/Activity";
-import System from "@/pages/admin/System";
-import Site from "@/pages/admin/Site";
 import { getSiteStatus } from "@/services/adminApi";
+
+// Non-critical pages and the entire admin shell are lazy-loaded so they never
+// delay the initial hero render. Home stays in the critical path.
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const MeetTheDev = lazy(() => import("@/pages/MeetTheDev"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
+const AboutTeraPlayer = lazy(() => import("@/pages/AboutTeraPlayer"));
+const Copyright = lazy(() => import("@/pages/Copyright"));
+const TeraBoxVideoDownloader = lazy(() => import("@/pages/TeraBoxVideoDownloader"));
+const TeraBoxVideoPlayer = lazy(() => import("@/pages/TeraBoxVideoPlayer"));
+const HowToDownloadTeraBoxVideos = lazy(() => import("@/pages/HowToDownloadTeraBoxVideos"));
+const HowToWatchTeraBoxVideos = lazy(() => import("@/pages/HowToWatchTeraBoxVideos"));
+const TeraBoxVideoLinkNotWorking = lazy(() => import("@/pages/TeraBoxVideoLinkNotWorking"));
+const HowToDownloadTeraBoxFolder = lazy(() => import("@/pages/HowToDownloadTeraBoxFolder"));
+const TeraBoxZipDownload = lazy(() => import("@/pages/TeraBoxZipDownload"));
+const TeraBoxPublicLink = lazy(() => import("@/pages/TeraBoxPublicLink"));
+const TeraBoxDownloadMobile = lazy(() => import("@/pages/TeraBoxDownloadMobile"));
+const TeraBoxDownloadPC = lazy(() => import("@/pages/TeraBoxDownloadPC"));
+const Premium = lazy(() => import("@/pages/Premium"));
+const AdminRoute = lazy(() => import("@/components/admin/AdminRoute"));
+const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
+const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
+const Dashboard = lazy(() => import("@/pages/admin/Dashboard"));
+const Analytics = lazy(() => import("@/pages/admin/Analytics"));
+const Extraction = lazy(() => import("@/pages/admin/Extraction"));
+const Admins = lazy(() => import("@/pages/admin/Admins"));
+const Activity = lazy(() => import("@/pages/admin/Activity"));
+const System = lazy(() => import("@/pages/admin/System"));
+const Site = lazy(() => import("@/pages/admin/Site"));
 
 function PageTransition({ children }) {
   return (
@@ -52,13 +55,30 @@ function PageTransition({ children }) {
   );
 }
 
+// Design-consistent fallback shown briefly while a lazy route chunk loads.
+function PageLoader() {
+  return (
+    <div className="mx-auto flex min-h-[40vh] w-full max-w-3xl items-center justify-center px-5">
+      <div
+        className="flex items-center gap-2 text-sm text-muted-foreground"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <span>Loading…</span>
+      </div>
+    </div>
+  );
+}
+
 function PublicShell() {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">
       <PageTransition key={location.pathname}>
-        <Routes location={location}>
+        <Suspense fallback={<PageLoader />}>
+          <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -79,7 +99,8 @@ function PublicShell() {
           <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
           <Route path="/premium" element={<Premium />} />
           <Route path="*" element={<Home />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </PageTransition>
     </AnimatePresence>
   );
@@ -116,15 +137,17 @@ function MaintenanceGate({ children }) {
     };
   }, []);
 
-  if (!status) return null;
-  if (status.maintenance_mode) return <MaintenanceScreen announcement={status.announcement} />;
+  // Render children immediately so the homepage is never blocked waiting on a
+  // network request; if maintenance is actually enabled we swap in the screen.
+  if (status?.maintenance_mode) return <MaintenanceScreen announcement={status.announcement} />;
   return children;
 }
 
 function AdminShell() {
   return (
     <AdminProvider>
-      <Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
         <Route path="login" element={<AdminLogin />} />
         <Route element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
@@ -139,7 +162,8 @@ function AdminShell() {
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="login" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </AdminProvider>
   );
 }

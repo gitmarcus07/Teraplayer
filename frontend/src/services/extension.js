@@ -98,7 +98,7 @@ export async function runExtensionExtraction({
   try {
     created = await createAndPublishExtensionJob(url, password);
   } catch (err) {
-    console.error("[extension] create job failed:", err);
+    console.error("[extension] create job failed:", err?.message);
     onStatus(
       EXT_STATUS.ERROR,
       err?.response?.data?.detail || err?.message || "Could not create an extraction job."

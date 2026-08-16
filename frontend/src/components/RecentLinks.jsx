@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   History,
@@ -36,7 +36,7 @@ const TYPE_ICON = {
   file: FileIcon,
 };
 
-export default function RecentLinks({ items, onOpen, onRemove, onClearAll }) {
+function RecentLinks({ items, onOpen, onRemove, onClearAll }) {
   const [confirmingClear, setConfirmingClear] = useState(false);
 
   useEffect(() => {
@@ -146,3 +146,7 @@ export default function RecentLinks({ items, onOpen, onRemove, onClearAll }) {
     </motion.section>
   );
 }
+
+// Handlers and items are stable between Home renders, so memoize to avoid
+// re-rendering the recent list when unrelated Home state changes.
+export default memo(RecentLinks);
