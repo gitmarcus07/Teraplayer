@@ -82,9 +82,12 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
   const [zipping, setZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
 
+  // Defensive: never crash on a missing/malformed files payload.
+  const safeFiles = useMemo(() => (Array.isArray(files) ? files : []), [files]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let arr = files.map((f, idx) => ({ ...f, _idx: idx }));
+    let arr = safeFiles.map((f, idx) => ({ ...f, _idx: idx }));
     if (q) arr = arr.filter((f) => (f.name || "").toLowerCase().includes(q));
     arr.sort((a, b) => {
       switch (sortId) {
@@ -101,7 +104,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
       }
     });
     return arr;
-  }, [files, query, sortId]);
+  }, [safeFiles, query, sortId]);
 
   const allSelected = filtered.length > 0 && filtered.every((f) => selected.has(f._idx));
   const someSelected = selected.size > 0 && !allSelected;
@@ -131,7 +134,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
   };
 
   const downloadZip = async () => {
-    const items = files
+    const items = safeFiles
       .map((f, i) => ({ ...f, _idx: i }))
       .filter((f) => selected.has(f._idx) && (f.download_url || f.stream_url));
 
@@ -194,7 +197,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
         <ChevronRight className="h-3.5 w-3.5" />
         <span className="line-clamp-1 max-w-[150px] font-medium text-foreground sm:max-w-none" title={folderName || "Shared folder"}>{folderName || "Shared folder"}</span>
         <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs">
-          {files.length} items
+          {safeFiles.length} items
         </Badge>
       </nav>
 
@@ -319,7 +322,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
       </div>
 
       {/* Grid / list */}
-      {files.length === 0 ? (
+      {safeFiles.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <FolderOpen className="mx-auto mb-2 h-8 w-8 text-muted-foreground" strokeWidth={1.25} />
           <div className="text-sm font-medium">This folder is empty</div>

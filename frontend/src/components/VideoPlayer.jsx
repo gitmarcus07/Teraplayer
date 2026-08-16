@@ -43,7 +43,7 @@ function hashStr(str) {
   return h.toString(36);
 }
 
-export default function VideoPlayer({ src, poster, title, onDownloadInstead, onProcessAnother }) {
+export default function VideoPlayer({ src, poster, title, onDownloadInstead, onProcessAnother, onRefreshSource }) {
   const videoRef = useRef(null);
   const wrapRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -463,6 +463,15 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
               <Button onClick={tryAgain} data-testid="player-retry-btn">
                 Try again
               </Button>
+              {onRefreshSource && (
+                <Button
+                  variant="secondary"
+                  onClick={onRefreshSource}
+                  data-testid="player-refresh-btn"
+                >
+                  Refresh link
+                </Button>
+              )}
               {onDownloadInstead && (
                 <Button
                   variant="secondary"

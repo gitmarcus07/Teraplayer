@@ -33,6 +33,7 @@ import { Button } from "../components/ui/button";
 import {
   postPreview,
   streamProxyUrl,
+  isRequestCancelled,
 } from "../services/api";
 import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 import { classifyPreviewError } from "../utils/errorHandling";
@@ -60,7 +61,7 @@ function PlayerFallback() {
 
 // Detect if the file collection looks like alternate resolutions of the same asset.
 function buildQualityOptions(preview) {
-  if (!preview?.files || preview.files.length < 2) return [];
+  if (!Array.isArray(preview?.files) || preview.files.length < 2) return [];
   const videoFiles = preview.files.filter(
     (f) => (f.file_type === "video" || !f.file_type) && (f.stream_url || f.download_url)
   );
@@ -95,6 +96,8 @@ export default function Home() {
   const submittedUrlRef = useRef(null);
   const submittingRef = useRef(false);
   const extAbortRef = useRef(null);
+  const previewAbortRef = useRef(null);
+  const requestIdRef = useRef(0);
   const heroInputRef = useRef(null);
   const folderBrowserRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -103,7 +106,15 @@ export default function Home() {
     async (url, password = "") => {
       if (submittingRef.current) return;
       submittingRef.current = true;
+      const gen = ++requestIdRef.current;
       submittedUrlRef.current = url;
+
+      // Cancel any in-flight preview so the newest submission always wins and
+      // a slow/late response can never overwrite a newer result.
+      previewAbortRef.current?.abort();
+      const controller = new AbortController();
+      previewAbortRef.current = controller;
+
       setLoading(true);
       setPreview(null);
       setErrorInfo(null);
@@ -112,7 +123,16 @@ export default function Home() {
       setSelectedQualityId("");
       track("core_url_submitted");
       try {
-        const data = await postPreview(url, password);
+        const data = await postPreview(url, password, { signal: controller.signal });
+        if (gen !== requestIdRef.current) return;
+
+        // Defensive: never let a malformed payload crash the result UI.
+        if (data === null || data === undefined || typeof data !== "object" || Array.isArray(data)) {
+          track("core_extraction_failure");
+          setErrorInfo(classifyPreviewError(null, data));
+          return;
+        }
+
         const enriched = { ...data, sourceUrl: url, usedPassword: password };
         setPreview(enriched);
         if (!data.ok) {
@@ -131,12 +151,22 @@ export default function Home() {
         }
         setSearchParams({ url });
       } catch (e) {
+        // User-initiated cancellation or a superseded request is not an error.
+        if (gen !== requestIdRef.current || isRequestCancelled(e)) return;
+        if (e.code === "ECONNABORTED") {
+          track("request_timeout", { operation: "preview" });
+        } else if (!e.response) {
+          track("network_error", { operation: "preview" });
+        }
         console.error(e.message);
         track("core_extraction_failure");
         setErrorInfo(classifyPreviewError(e, null));
       } finally {
-        setLoading(false);
-        submittingRef.current = false;
+        // Only the newest request may release the loading state / submit guard.
+        if (gen === requestIdRef.current) {
+          setLoading(false);
+          submittingRef.current = false;
+        }
       }
     },
     [setSearchParams]
@@ -152,7 +182,9 @@ export default function Home() {
   const runBrowserExtraction = useCallback(
     async (url, password = "") => {
       if (!url) return;
+      const gen = ++requestIdRef.current;
       extLastRef.current = { url, password };
+      submittingRef.current = false;
       setLoading(false);
       setPreview(null);
       setErrorInfo(null);
@@ -174,8 +206,13 @@ export default function Home() {
         url,
         password,
         signal: controller.signal,
-        onStatus: (state, message) => setExtStatus({ state, message }),
+        onStatus: (state, message) => {
+          if (gen === requestIdRef.current) setExtStatus({ state, message });
+        },
       });
+
+      // A newer submission / process-another has superseded this one.
+      if (gen !== requestIdRef.current) return;
 
       if (res.status === EXT_STATUS.DONE && res.preview) {
         const enriched = { ...res.preview, sourceUrl: url, usedPassword: password };
@@ -216,8 +253,12 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Stop any in-flight browser-extraction polling when Home unmounts.
-  useEffect(() => () => extAbortRef.current?.abort(), []);
+  // Stop any in-flight browser-extraction polling / preview request when Home
+  // unmounts, so nothing keeps running in the background after navigation.
+  useEffect(() => () => {
+    extAbortRef.current?.abort();
+    previewAbortRef.current?.abort();
+  }, []);
 
   const copyLink = async () => {
     try {
@@ -244,7 +285,7 @@ export default function Home() {
   };
 
   const qualityOptions = useMemo(() => buildQualityOptions(preview), [preview]);
-  const isFolder = preview?.ok && preview?.files && preview.files.length > 1 && qualityOptions.length === 0;
+  const isFolder = preview?.ok && Array.isArray(preview?.files) && preview.files.length > 1 && qualityOptions.length === 0;
 
   const selectedQuality = qualityOptions.find((q) => q.id === selectedQualityId) || qualityOptions[0];
 
@@ -292,6 +333,13 @@ export default function Home() {
 
   const processAnother = useCallback(() => {
     track("process_another_clicked");
+    // Supersede any in-flight extraction (native or browser) so its late
+    // response can never repaint the screen after the reset.
+    requestIdRef.current += 1;
+    previewAbortRef.current?.abort();
+    extAbortRef.current?.abort();
+    submittingRef.current = false;
+    setLoading(false);
     setPreview(null);
     setErrorInfo(null);
     setWatching(false);
@@ -303,7 +351,6 @@ export default function Home() {
     setPwdDialog({ open: false, url: "", incorrect: false });
     submittedUrlRef.current = null;
     extLastRef.current = null;
-    extAbortRef.current?.abort();
     setSearchParams({});
     heroInputRef.current?.focus();
   }, [setSearchParams]);
@@ -489,6 +536,9 @@ export default function Home() {
                     title={currentFile?.name || preview.title}
                     onDownloadInstead={() => setWatching(false)}
                     onProcessAnother={processAnother}
+                    onRefreshSource={() => {
+                      if (preview?.sourceUrl) submit(preview.sourceUrl);
+                    }}
                   />
                 </Suspense>
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">

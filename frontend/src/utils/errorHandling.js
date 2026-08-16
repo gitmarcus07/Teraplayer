@@ -18,6 +18,7 @@ export const ERROR_CATEGORIES = {
   PASSWORD_REQUIRED: "password_required",
   UNAVAILABLE: "unavailable",
   TEMPORARY: "temporary",
+  RATE_LIMITED: "rate_limited",
   NETWORK: "network",
   UNKNOWN: "unknown",
 };
@@ -25,10 +26,19 @@ export const ERROR_CATEGORIES = {
 const INVALID_LINK_PHRASE = "not a valid terabox link";
 
 export function classifyPreviewError(error, data) {
-  const raw = (data && data.error) || "";
+  // Malformed/missing payload from the API (null, empty, wrong type) should
+  // never crash the UI. Treat it as an unknown failure with friendly copy.
+  if (
+    !error &&
+    (data === null || data === undefined || typeof data !== "object" || Array.isArray(data))
+  ) {
+    return { category: ERROR_CATEGORIES.UNKNOWN };
+  }
+
+  const raw = (data && typeof data === "object" && data.error) || "";
   const lower = raw.toLowerCase();
 
-  if (data && data.password_required) {
+  if (data && typeof data === "object" && data.password_required) {
     return {
       category: ERROR_CATEGORIES.PASSWORD_REQUIRED,
       raw: raw || "This link is password protected.",
@@ -37,7 +47,7 @@ export function classifyPreviewError(error, data) {
 
   // Extraction-level response (HTTP 200, ok:false). No axios error involved,
   // so classify purely from the message the backend wrote for us.
-  if (data) {
+  if (data && typeof data === "object") {
     if (lower.includes(INVALID_LINK_PHRASE)) {
       return {
         category: ERROR_CATEGORIES.INVALID_LINK,
@@ -51,17 +61,40 @@ export function classifyPreviewError(error, data) {
     return { category: ERROR_CATEGORIES.UNKNOWN };
   }
 
-  // No server response at all → network/timeout.
-  if (!error || !error.response || error.code === "ECONNABORTED" || error.code === "ERR_NETWORK") {
+  // No error object at all → nothing to classify.
+  if (!error) {
+    return { category: ERROR_CATEGORIES.NETWORK };
+  }
+
+  // User-initiated cancellation is not a failure; callers normally skip
+  // classification for it, but never surface it as an error if it slips in.
+  if (error.name === "CanceledError" || error.name === "AbortError" || error.code === "ERR_CANCELED") {
+    return null;
+  }
+
+  // Request timed out → the service is slow/busy, not "offline".
+  if (error.code === "ECONNABORTED") {
+    return { category: ERROR_CATEGORIES.TEMPORARY };
+  }
+
+  // No server response at all → network/connection problem.
+  if (!error.response) {
     return { category: ERROR_CATEGORIES.NETWORK };
   }
 
   const status = error.response.status;
   const detail =
-    error.response.data && error.response.data.detail;
+    error.response.data && typeof error.response.data === "object"
+      ? error.response.data.detail
+      : undefined;
 
-  // Rate limited or upstream server trouble → transient, retry later.
-  if (status === 429 || (status >= 500 && status < 600)) {
+  // Rate limited → tell the user to wait; don't encourage rapid retries.
+  if (status === 429) {
+    return { category: ERROR_CATEGORIES.RATE_LIMITED };
+  }
+
+  // Server trouble → transient, retry later.
+  if (status >= 500 && status < 600) {
     return { category: ERROR_CATEGORIES.TEMPORARY };
   }
 
@@ -88,13 +121,18 @@ export const ERROR_COPY = {
     actionLabel: "Try again",
   },
   [ERROR_CATEGORIES.TEMPORARY]: {
-    title: "We couldn't load this content right now.",
-    description: "This usually resolves in a few moments.",
+    title: "TeraPlayer is temporarily unavailable.",
+    description: "We're having trouble reaching the service right now. This usually resolves in a few moments.",
     actionLabel: "Retry",
   },
+  [ERROR_CATEGORIES.RATE_LIMITED]: {
+    title: "Too many requests",
+    description: "Please wait a moment before trying again.",
+    actionLabel: "Try again",
+  },
   [ERROR_CATEGORIES.NETWORK]: {
-    title: "TeraPlayer couldn't reach the server.",
-    description: "Check your connection and try again.",
+    title: "Couldn't connect to TeraPlayer.",
+    description: "Check your internet connection and try again.",
     actionLabel: "Retry",
   },
   [ERROR_CATEGORIES.UNKNOWN]: {

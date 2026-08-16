@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Download, Check, Loader2, XCircle, ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
+import { track } from "../lib/analytics";
 
 export function humanBytes(n) {
   if (!n && n !== 0) return "—";
@@ -37,6 +38,8 @@ export function useDownload({ url, filename, sizeHint }) {
   const [error, setError] = useState(null);
   const abortRef = useRef(null);
   const startingRef = useRef(false);
+  const revokeTimerRef = useRef(null);
+  const pendingObjectUrlRef = useRef(null);
 
   const start = useCallback(() => {
     if (!url || startingRef.current) return false;
@@ -57,6 +60,11 @@ export function useDownload({ url, filename, sizeHint }) {
         if (!resp.ok) throw new Error("bad-response");
         const contentLength = Number(resp.headers.get("content-length") || 0);
         if (contentLength) setTotal(contentLength);
+
+        // Some browsers/embedded contexts do not expose a readable stream body.
+        if (!resp.body || typeof resp.body.getReader !== "function") {
+          throw new Error("stream-unavailable");
+        }
 
         const reader = resp.body.getReader();
         const chunks = [];
@@ -82,13 +90,19 @@ export function useDownload({ url, filename, sizeHint }) {
         }
         const blob = new Blob(chunks);
         const objectUrl = URL.createObjectURL(blob);
+        pendingObjectUrlRef.current = objectUrl;
         const a = document.createElement("a");
         a.href = objectUrl;
         a.download = filename || "teraplayer-download";
         document.body.appendChild(a);
         a.click();
         a.remove();
-        URL.revokeObjectURL(objectUrl);
+        // Give the browser time to initiate the download before releasing the
+        // object URL; revoking too early can cancel the transfer.
+        revokeTimerRef.current = setTimeout(() => {
+          URL.revokeObjectURL(objectUrl);
+          if (pendingObjectUrlRef.current === objectUrl) pendingObjectUrlRef.current = null;
+        }, 4000);
         setStatus("done");
         setProgress(100);
       } catch (e) {
@@ -98,6 +112,7 @@ export function useDownload({ url, filename, sizeHint }) {
         }
         setStatus("error");
         setError("Download couldn't be completed.");
+        track("download_failed");
       } finally {
         startingRef.current = false;
       }
@@ -110,7 +125,20 @@ export function useDownload({ url, filename, sizeHint }) {
     abortRef.current?.abort();
   }, []);
 
-  useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(
+    () => () => {
+      abortRef.current?.abort();
+      if (revokeTimerRef.current) {
+        clearTimeout(revokeTimerRef.current);
+        revokeTimerRef.current = null;
+      }
+      if (pendingObjectUrlRef.current) {
+        URL.revokeObjectURL(pendingObjectUrlRef.current);
+        pendingObjectUrlRef.current = null;
+      }
+    },
+    []
+  );
 
   return { status, progress, received, total, speed, eta, error, start, cancel };
 }
