@@ -1,10 +1,12 @@
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
   Download,
   Copy,
-   Share2,
-   FileVideo,
+  Check,
+  Share2,
+  FileVideo,
   Image as ImageIcon,
   FileText,
   FileArchive,
@@ -13,9 +15,14 @@ import {
   Clock,
   HardDrive,
   Layers,
+  FolderOpen,
+  Loader2,
+  XCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
+import { useDownload, humanBytes, humanSpeed } from "./DownloadPanel";
 
 const TYPE_ICON = {
   video: FileVideo,
@@ -30,11 +37,63 @@ export default function PreviewCard({
   data,
   onWatch,
   onDownload,
+  onOpenFolder,
   onCopy,
   onShare,
+  downloadUrl,
+  downloadFilename,
+  downloadSize,
 }) {
+  const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), []);
+
+  const download = useDownload({
+    url: downloadUrl,
+    filename: downloadFilename,
+    sizeHint: downloadSize,
+  });
+  const hasInlineDownload = !!downloadUrl;
+
+  const handleDownload = () => {
+    if (hasInlineDownload) {
+      if (download.start()) onDownload?.();
+    } else {
+      onDownload?.();
+    }
+  };
+
+  const isFolder = Array.isArray(data.files) && data.files.length > 1;
   const Icon = TYPE_ICON[data.file_type || "file"] || FileIcon;
   const canWatch = data.file_type === "video" && (data.stream_url || data.download_url);
+
+  const handleCopy = async () => {
+    try {
+      await onCopy?.();
+      setCopied(true);
+      clearTimeout(copiedTimerRef.current);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* failure is reported by the caller */
+    }
+  };
+
+  const metas = isFolder
+    ? [
+        {
+          icon: FolderOpen,
+          label: "Files",
+          value: `${data.files.length} ${data.files.length === 1 ? "item" : "items"}`,
+          testId: "meta-files",
+        },
+      ]
+    : [
+        data.size_str && { icon: HardDrive, label: "Size", value: data.size_str, testId: "meta-size" },
+        data.duration && { icon: Clock, label: "Duration", value: formatDuration(data.duration), testId: "meta-duration" },
+        data.resolution && { icon: Layers, label: "Resolution", value: data.resolution, testId: "meta-resolution" },
+        { icon: Icon, label: "Type", value: data.file_type || "file", testId: "meta-type" },
+      ].filter(Boolean);
 
   return (
     <motion.div
@@ -49,7 +108,7 @@ export default function PreviewCard({
         {data.thumbnail ? (
           <img
             src={data.thumbnail}
-            alt={data.title}
+            alt={data.title || "TeraBox preview"}
             className="h-full w-full object-cover"
             data-testid="preview-thumbnail"
             onError={(e) => {
@@ -69,9 +128,10 @@ export default function PreviewCard({
               className="border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md"
               data-testid="preview-type-badge"
             >
-              <Icon className="mr-1 h-3 w-3" /> {data.file_type}
+              {isFolder ? <FolderOpen className="mr-1 h-3 w-3" /> : <Icon className="mr-1 h-3 w-3" />}{" "}
+              {isFolder ? "folder" : data.file_type || "file"}
             </Badge>
-            {data.size_str && (
+            {data.size_str && !isFolder && (
               <Badge
                 variant="secondary"
                 className="border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md"
@@ -81,11 +141,11 @@ export default function PreviewCard({
               </Badge>
             )}
           </div>
-          {canWatch && (
+          {canWatch && !isFolder && (
             <button
               onClick={onWatch}
               data-testid="thumbnail-play-btn"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-300 ease-out hover:scale-110 hover:bg-white/20 sm:h-14 sm:w-14"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-300 ease-out hover:scale-110 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:h-14 sm:w-14"
               aria-label="Play video"
             >
               <Play className="h-5 w-5 fill-white sm:h-5 sm:w-5" strokeWidth={0} />
@@ -100,53 +160,126 @@ export default function PreviewCard({
           className="font-display text-lg font-bold leading-tight tracking-tight break-words"
           data-testid="preview-title"
         >
-          {data.title}
+          {data.title || "TeraBox file"}
         </h2>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Meta icon={HardDrive} label="Size" value={data.size_str || "—"} testId="meta-size" />
-          <Meta
-            icon={Clock}
-            label="Duration"
-            value={data.duration ? formatDuration(data.duration) : "—"}
-            testId="meta-duration"
-          />
-          <Meta icon={Layers} label="Resolution" value={data.resolution || "—"} testId="meta-resolution" />
-          <Meta icon={Icon} label="Type" value={data.file_type || "file"} testId="meta-type" />
+          {metas.map((m) => (
+            <Meta key={m.label} icon={m.icon} label={m.label} value={m.value} testId={m.testId} />
+          ))}
         </div>
 
         <div className="mt-3 flex flex-col gap-2">
           <div className="flex flex-col gap-2 sm:flex-row">
-            {canWatch && (
+            {isFolder && onOpenFolder ? (
               <Button
-                onClick={onWatch}
-                data-testid="watch-now-btn"
+                onClick={onOpenFolder}
+                data-testid="open-folder-btn"
                 size="lg"
-                className="h-11 w-full text-white sm:flex-1"
+                className="h-11 w-full text-white"
               >
-                <Play className="mr-1.5 h-4 w-4 fill-current" strokeWidth={0} /> Watch Now
+                <FolderOpen className="mr-1.5 h-4 w-4" /> Open Folder
               </Button>
+            ) : (
+              <>
+                {canWatch && (
+                  <Button
+                    onClick={onWatch}
+                    data-testid="watch-now-btn"
+                    size="lg"
+                    className="h-11 w-full text-white sm:flex-1"
+                  >
+                    <Play className="mr-1.5 h-4 w-4 fill-current" strokeWidth={0} /> Watch Now
+                  </Button>
+                )}
+                {download.status === "downloading" ? (
+                  <>
+                    <Button
+                      size="lg"
+                      disabled
+                      data-testid="downloading-btn"
+                      className="h-11 w-full text-white sm:flex-1"
+                    >
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Downloading…
+                    </Button>
+                    <Button
+                      onClick={download.cancel}
+                      variant="secondary"
+                      size="lg"
+                      data-testid="download-cancel-btn"
+                      className="h-11 w-full sm:flex-1"
+                    >
+                      <XCircle className="mr-1.5 h-4 w-4" /> Cancel
+                    </Button>
+                  </>
+                ) : download.status === "error" ? (
+                  <Button
+                    onClick={download.start}
+                    variant="destructive"
+                    size="lg"
+                    data-testid="download-retry-btn"
+                    className="h-11 w-full sm:flex-1"
+                  >
+                    <XCircle className="mr-1.5 h-4 w-4" /> Retry
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleDownload}
+                    data-testid="download-btn"
+                    variant={canWatch ? "secondary" : "default"}
+                    size="lg"
+                    className="h-11 w-full sm:flex-1"
+                  >
+                    <Download className="mr-1.5 h-4 w-4" /> Download
+                  </Button>
+                )}
+              </>
             )}
-            <Button
-              onClick={onDownload}
-              data-testid="download-btn"
-              variant={canWatch ? "secondary" : "default"}
-              size="lg"
-              className="h-11 w-full sm:flex-1"
-            >
-              <Download className="mr-1.5 h-4 w-4" /> Download
-            </Button>
           </div>
+
+          {download.status !== "idle" && (
+            <div
+              className="space-y-1.5 rounded-lg border border-border bg-surface-overlay/50 p-2.5"
+              aria-live="polite"
+              data-testid="download-status"
+            >
+              {download.status === "downloading" && (
+                <>
+                  <Progress value={download.progress} data-testid="download-progress" />
+                  <div className="text-xs text-muted-foreground">
+                    {humanBytes(download.received)}
+                    {download.total ? ` / ${humanBytes(download.total)}` : ""}
+                    {download.speed ? ` · ${humanSpeed(download.speed)}` : ""}
+                    {download.eta ? ` · ETA ${Math.max(0, Math.round(download.eta))}s` : ""}
+                    {download.total > 0 ? ` · ${Math.min(100, Math.round(download.progress))}%` : ""}
+                  </div>
+                </>
+              )}
+              {download.status === "done" && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                  <Check className="h-3.5 w-3.5" /> Download complete
+                </div>
+              )}
+              {download.status === "error" && (
+                <div className="text-xs text-destructive">{download.error}</div>
+              )}
+            </div>
+          )}
           <div className="flex items-center justify-center gap-2">
             <Button
-              onClick={onCopy}
+              onClick={handleCopy}
               data-testid="copy-link-btn"
               variant="outline"
               size="sm"
               className="text-xs"
+              aria-label="Copy source link"
             >
-              <Copy className="h-3.5 w-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">Copy</span>
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-primary sm:mr-1.5" />
+              ) : (
+                <Copy className="h-3.5 w-3.5 sm:mr-1.5" />
+              )}
+              <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
             </Button>
             <Button
               onClick={onShare}
@@ -158,6 +291,9 @@ export default function PreviewCard({
               <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
               <span className="hidden sm:inline">Share</span>
             </Button>
+            <span className="sr-only" aria-live="polite">
+              {copied ? "Source link copied" : ""}
+            </span>
           </div>
         </div>
       </div>

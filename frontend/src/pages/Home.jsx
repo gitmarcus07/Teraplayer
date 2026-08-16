@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import {
-  AlertTriangle,
   Sparkles,
   Zap,
   ShieldCheck,
@@ -14,6 +13,8 @@ import {
   Film,
   FolderOpen,
   Puzzle,
+  RefreshCw,
+  ChevronLeft,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -21,11 +22,12 @@ import { FooterLegalLinks } from "../components/Footer";
 import HeroInput from "../components/HeroInput";
 import PreviewCard from "../components/PreviewCard";
 import VideoPlayer from "../components/VideoPlayer";
-import DownloadPanel from "../components/DownloadPanel";
 import PasswordDialog from "../components/PasswordDialog";
 import QualityPicker from "../components/QualityPicker";
 import FolderBrowser from "../components/FolderBrowser";
 import ExtensionStatus from "../components/ExtensionStatus";
+import ExtractionStatus from "../components/ExtractionStatus";
+import ExtractionError from "../components/ExtractionError";
 import { Button } from "../components/ui/button";
 
 import {
@@ -33,6 +35,8 @@ import {
   streamProxyUrl,
 } from "../services/api";
 import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
+import { classifyPreviewError } from "../utils/errorHandling";
+import { track } from "../lib/analytics";
 
 // Detect if the file collection looks like alternate resolutions of the same asset.
 function buildQualityOptions(preview) {
@@ -59,8 +63,8 @@ function buildQualityOptions(preview) {
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [errorInfo, setErrorInfo] = useState(null);
   const [watching, setWatching] = useState(false);
-  const [downloading, setDownloading] = useState(false);
   const [pwdDialog, setPwdDialog] = useState({ open: false, url: "", incorrect: false });
   const [selectedQualityId, setSelectedQualityId] = useState("");
   const [activeFile, setActiveFile] = useState(null);
@@ -68,16 +72,24 @@ export default function Home() {
   const [extRunning, setExtRunning] = useState(false);
   const [extRetrying, setExtRetrying] = useState(false);
   const extLastRef = useRef(null);
+  const submittedUrlRef = useRef(null);
+  const submittingRef = useRef(false);
+  const heroInputRef = useRef(null);
+  const folderBrowserRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const submit = useCallback(
     async (url, password = "") => {
+      if (submittingRef.current) return;
+      submittingRef.current = true;
+      submittedUrlRef.current = url;
       setLoading(true);
       setPreview(null);
+      setErrorInfo(null);
       setWatching(false);
-      setDownloading(false);
       setActiveFile(null);
       setSelectedQualityId("");
+      track("core_url_submitted");
       try {
         const data = await postPreview(url, password);
         const enriched = { ...data, sourceUrl: url, usedPassword: password };
@@ -88,21 +100,33 @@ export default function Home() {
             if (wasIncorrect) toast.error("Incorrect password. Please try again.");
             setPwdDialog({ open: true, url, incorrect: wasIncorrect });
           } else {
-            toast.error(data.error || "Could not extract this link.");
+            track("core_extraction_failure");
+            setErrorInfo(classifyPreviewError(null, data));
           }
         } else {
+          track("core_extraction_success");
+          track("result_viewed");
           toast.success("Link resolved");
         }
         setSearchParams({ url });
       } catch (e) {
         console.error(e);
-        toast.error("Network error. Please try again.");
+        track("core_extraction_failure");
+        setErrorInfo(classifyPreviewError(e, null));
       } finally {
         setLoading(false);
+        submittingRef.current = false;
       }
     },
     [setSearchParams]
   );
+
+  const retry = useCallback(() => {
+    const last = submittedUrlRef.current;
+    if (!last || submittingRef.current) return;
+    track("core_retry");
+    submit(last);
+  }, [submit]);
 
   const runBrowserExtraction = useCallback(
     async (url, password = "") => {
@@ -110,8 +134,8 @@ export default function Home() {
       extLastRef.current = { url, password };
       setLoading(false);
       setPreview(null);
+      setErrorInfo(null);
       setWatching(false);
-      setDownloading(false);
       setActiveFile(null);
       setSelectedQualityId("");
       setExtRetrying(false);
@@ -130,6 +154,8 @@ export default function Home() {
         setPreview(enriched);
         setExtStatus(null);
         if (res.preview.ok) {
+          track("core_extraction_success");
+          track("result_viewed");
           toast.success("Link resolved via browser");
         } else if (res.preview.password_required) {
           setPwdDialog({
@@ -138,7 +164,8 @@ export default function Home() {
             incorrect: !!res.preview.password_incorrect,
           });
         } else {
-          toast.error(res.preview.error || "Could not extract this link via browser.");
+          track("core_extraction_failure");
+          setErrorInfo(classifyPreviewError(null, res.preview));
         }
       }
       setExtRunning(false);
@@ -164,9 +191,10 @@ export default function Home() {
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(preview.sourceUrl);
-      toast.success("Link copied");
-    } catch {
+      track("copy_link_clicked");
+    } catch (e) {
       toast.error("Could not copy link");
+      throw e;
     }
   };
 
@@ -195,8 +223,41 @@ export default function Home() {
   const openFolderFile = (file) => {
     setActiveFile(file);
     setWatching(file.file_type === "video");
-    setDownloading(false);
   };
+
+  const handleQualityChange = useCallback(
+    (id) => {
+      setSelectedQualityId(id);
+      setActiveFile(null);
+      const opt = qualityOptions.find((q) => q.id === id);
+      track("quality_selected", opt ? { quality: opt.label } : {});
+    },
+    [qualityOptions]
+  );
+
+  const openFolder = useCallback(() => {
+    folderBrowserRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const backToFolder = useCallback(() => {
+    setActiveFile(null);
+    setSelectedQualityId("");
+    setWatching(false);
+  }, []);
+
+  const processAnother = useCallback(() => {
+    track("process_another_clicked");
+    setPreview(null);
+    setErrorInfo(null);
+    setWatching(false);
+    setActiveFile(null);
+    setSelectedQualityId("");
+    setExtStatus(null);
+    setExtRunning(false);
+    setExtRetrying(false);
+    setSearchParams({});
+    heroInputRef.current?.focus();
+  }, [setSearchParams]);
 
   return (
     <div className="App noise min-h-screen">
@@ -255,6 +316,7 @@ export default function Home() {
 
             <div className="mt-6 md:mt-5">
               <HeroInput
+                ref={heroInputRef}
                 onSubmit={submit}
                 loading={loading}
                 defaultValue={searchParams.get("url") || ""}
@@ -300,7 +362,7 @@ export default function Home() {
           </div>
         </section>
 
-        {loading && <LoadingSkeleton />}
+        {loading && <ExtractionStatus />}
 
         {extStatus && (
           <ExtensionStatus
@@ -311,24 +373,12 @@ export default function Home() {
           />
         )}
 
-        {!loading && preview && preview.ok === false && !preview.password_required && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mx-auto mb-6 max-w-3xl rounded-2xl border border-destructive/40 bg-destructive/10 p-4 text-destructive sm:mb-10 sm:p-6"
-            data-testid="error-panel"
-          >
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-              <div>
-                <div className="font-semibold">We couldn't extract this link</div>
-                <p className="mt-1 text-sm opacity-90">
-                  {preview.error ||
-                    "The link may be private, expired, or the extractor mirrors are temporarily unavailable."}
-                </p>
-              </div>
-            </div>
-          </motion.div>
+        {!loading && errorInfo && !(preview && preview.password_required) && (
+          <ExtractionError
+            error={errorInfo}
+            onRetry={retry}
+            onCheckLink={() => heroInputRef.current?.focus()}
+          />
         )}
 
         {!loading && preview && preview.ok === false && preview.password_required && (
@@ -360,8 +410,28 @@ export default function Home() {
 
         {!loading && preview && preview.ok && (
           <div className="mx-auto mb-6 max-w-[650px] space-y-3 sm:mb-8 sm:space-y-4">
+            {activeFile && (
+              <div className="flex items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={backToFolder}
+                  data-testid="back-to-folder-btn"
+                  className="text-xs"
+                >
+                  <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Back to folder
+                </Button>
+              </div>
+            )}
+
             {watching && streamViaProxy ? (
-              <div className="space-y-3">
+              <motion.div
+                key="player"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-3"
+              >
                 <VideoPlayer
                   src={streamViaProxy}
                   poster={currentFile?.thumbnail || preview.thumbnail}
@@ -374,27 +444,29 @@ export default function Home() {
                   <QualityPicker
                     options={qualityOptions}
                     value={selectedQuality?.id || ""}
-                    onChange={(id) => {
-                      setSelectedQualityId(id);
-                      setActiveFile(null);
-                    }}
+                    onChange={handleQualityChange}
                   />
                 </div>
-              </div>
+              </motion.div>
             ) : (
               <div className="md:mx-auto md:max-w-[470px]">
                 <PreviewCard
-                  data={{ ...preview, ...(selectedQuality?.file || {}) }}
+                  data={{ ...preview, ...(activeFile || selectedQuality?.file || {}) }}
+                  onOpenFolder={openFolder}
                   onWatch={() => {
                     if (!streamViaProxy) {
                       toast.error("No stream URL available");
                       return;
                     }
+                    track("core_watch_clicked");
                     setWatching(true);
                   }}
-                  onDownload={() => setDownloading(true)}
+                  onDownload={() => track("core_download_clicked")}
                   onCopy={copyLink}
                   onShare={share}
+                  downloadUrl={streamViaProxy}
+                  downloadFilename={currentFile?.name || preview.title}
+                  downloadSize={currentFile?.size || preview.size || 0}
                 />
               </div>
             )}
@@ -404,30 +476,35 @@ export default function Home() {
                 <QualityPicker
                   options={qualityOptions}
                   value={selectedQuality?.id || ""}
-                  onChange={(id) => {
-                    setSelectedQualityId(id);
-                    setActiveFile(null);
-                  }}
+                  onChange={handleQualityChange}
                 />
               </div>
             )}
 
-            {downloading && streamUrl && (
-              <DownloadPanel
-                url={streamViaProxy}
-                filename={currentFile?.name || preview.title}
-                sizeHint={currentFile?.size || preview.size || 0}
-                onClose={() => setDownloading(false)}
-              />
+            {isFolder && (
+              <div ref={folderBrowserRef} className="scroll-mt-4">
+                <FolderBrowser
+                  files={preview.files}
+                  folderName={preview.title}
+                  onPlayFile={openFolderFile}
+                />
+              </div>
             )}
 
-            {isFolder && (
-              <FolderBrowser
-                files={preview.files}
-                folderName={preview.title}
-                onPlayFile={openFolderFile}
-              />
-            )}
+            <div className="flex flex-col items-center gap-2 pt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={processAnother}
+                data-testid="process-another-btn"
+                className="text-xs sm:text-sm"
+              >
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Process another link
+              </Button>
+              <p className="text-center text-[11px] text-muted-foreground sm:text-xs">
+                Your link is processed to retrieve the requested content. No account required.
+              </p>
+            </div>
           </div>
         )}
 
@@ -598,25 +675,4 @@ const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 g
     </motion.div>
   ))}
 </div >
-);
-
-const LoadingSkeleton = () => (
-  <div className="mx-auto mt-4 max-w-[650px] sm:mt-12">
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-6">
-      <div className="md:col-span-7">
-        <div className="aspect-video w-full animate-pulse rounded-2xl bg-secondary shimmer" />
-      </div>
-      <div className="space-y-3 md:col-span-5">
-        <div className="h-5 w-1/2 animate-pulse rounded-full bg-secondary shimmer" />
-        <div className="h-10 w-full animate-pulse rounded-xl bg-secondary shimmer" />
-        <div className="grid grid-cols-2 gap-3">
-          <div className="h-16 animate-pulse rounded-xl bg-secondary shimmer" />
-          <div className="h-16 animate-pulse rounded-xl bg-secondary shimmer" />
-          <div className="h-16 animate-pulse rounded-xl bg-secondary shimmer" />
-          <div className="h-16 animate-pulse rounded-xl bg-secondary shimmer" />
-        </div>
-        <div className="h-12 w-full animate-pulse rounded-xl bg-secondary shimmer" />
-      </div>
-    </div>
-  </div>
 );

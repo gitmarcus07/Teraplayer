@@ -257,6 +257,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
           onClick={downloadZip}
           data-testid="download-zip-btn"
           className="text-xs sm:text-sm"
+          aria-live="polite"
         >
           {zipping ? (
             <>
@@ -276,7 +277,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
           No files match your search.
         </div>
       ) : view === "grid" ? (
-        <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((f) => {
             const Icon = ICONS[f.file_type || "file"] || FileIcon;
             const isSel = selected.has(f._idx);
@@ -291,7 +292,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
               >
                 <button
                   onClick={() => toggle(f._idx)}
-                  className="absolute left-2 top-2 z-10 rounded-md bg-black/50 p-1 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110"
+                  className="absolute left-2 top-2 z-10 rounded-md bg-black/50 p-1 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   aria-label="Select"
                   data-testid="folder-select-btn"
                 >
@@ -308,7 +309,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName }) {
                   {canPlay && (
                     <button
                       onClick={() => onPlayFile?.(f)}
-                      className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-[background-color,opacity] duration-200 hover:bg-black/40 hover:opacity-100"
+                      className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-[background-color,opacity] duration-200 hover:bg-black/40 hover:opacity-100 focus-visible:bg-black/40 focus-visible:opacity-100"
                       aria-label="Play"
                     >
                       <span className="rounded-full bg-white/20 p-3 backdrop-blur-md transition-transform duration-200 hover:scale-110">

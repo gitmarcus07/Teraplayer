@@ -35,7 +35,7 @@ function extractTokenAll(text, patterns) {
 
 function sanitizeQueryString(text) {
   return String(text)
-    .replace(/(csrfToken|browserid|TSID|ndus|pcftoken|bdstoken|sign|timestamp|shareid|uk|dp-logid|jsToken)=[^&]+/gi, "$1=REDACTED");
+    .replace(/(csrfToken|browserid|TSID|ndus|pcftoken|bdstoken|sign|timestamp|shareid|uk|dp-logid|jsToken|pwd)=[^&]+/gi, "$1=REDACTED");
 }
 
 function redactTokenLike(text) {
@@ -159,6 +159,72 @@ const BDSTOKEN_PATTERNS = [
   /bdstoken%22%3A%22([^%]+)%22/,
 ];
 
+const VERIFY_ERRNO = new Set([400141, 4000020]);
+const VERIFY_PHRASES = [
+  "need verify",
+  "verify required",
+  "verification required",
+  "pi verify",
+];
+
+function normalizeErrno(errno) {
+  if (errno === null || errno === undefined || errno === "") return errno;
+  const n = Number(errno);
+  return Number.isNaN(n) ? errno : n;
+}
+
+function isVerificationErrorText(text) {
+  if (!text) return false;
+  const lower = String(text).toLowerCase();
+  return VERIFY_PHRASES.some((p) => lower.includes(p));
+}
+
+function extractShareId(url) {
+  try {
+    const u = new URL(url);
+    const surl = u.searchParams.get("surl");
+    if (surl) return surl.replace(/^1/, "");
+    const m = u.pathname.match(/\/s\/1?([A-Za-z0-9_\-]+)/);
+    if (m) return m[1].replace(/^1/, "");
+    const m2 = url.match(/\/sharing\/link\?surl=([A-Za-z0-9_\-]+)/);
+    if (m2) return m2[1].replace(/^1/, "");
+  } catch { }
+  return null;
+}
+
+function canonicalShortUrl(surl) {
+  return String(surl || "").replace(/^1/, "");
+}
+
+function buildSharePageCandidates(domain, surl, password) {
+  const short = canonicalShortUrl(surl);
+  const pwdParam = password ? `&pwd=${encodeURIComponent(password)}` : "";
+  return [
+    `https://${domain}/sharing/link?surl=${short}${pwdParam}`,
+    `https://${domain}/s/${short}`,
+    `https://${domain}/s/1${short}`,
+  ];
+}
+
+function detectVerificationResponse(bodyText) {
+  if (!bodyText) return null;
+  const trimmed = String(bodyText).trim();
+  if (!trimmed.startsWith("{")) return null;
+  let parsed = null;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const errno = normalizeErrno(parsed.errno);
+  const errmsg = parsed.errmsg || parsed.error_msg || "";
+  if ((errno != null && VERIFY_ERRNO.has(errno)) || isVerificationErrorText(errmsg)) {
+    return { errno, errmsg };
+  }
+  return null;
+}
+
 function runTests() {
   let passed = 0;
   let failed = 0;
@@ -256,7 +322,7 @@ function runTests() {
   assert(wbBdstoken === "window_bdstoken_123", "bdstoken extracted from window.bdstoken");
 
   // Test 14: Query string sanitization (log redaction regression test)
-  const testParams = "jsToken=SAFE_JSTOKEN&sign=SAFE_SIGN&timestamp=SAFE_TIMESTAMP&bdstoken=SAFE_BDSTOKEN&ndus=SAFE_NDUS&shorturl=abc123&uk=4401146149342&shareid=987654321";
+  const testParams = "jsToken=SAFE_JSTOKEN&sign=SAFE_SIGN&timestamp=SAFE_TIMESTAMP&bdstoken=SAFE_BDSTOKEN&ndus=SAFE_NDUS&pwd=SECRET_PWD&shorturl=abc123&uk=4401146149342&shareid=987654321";
   const sanitized = sanitizeQueryString(testParams);
   assert(!sanitized.includes("SAFE_JSTOKEN"), "jsToken redacted in query string");
   assert(!sanitized.includes("SAFE_SIGN"), "sign redacted in query string");
@@ -270,6 +336,8 @@ function runTests() {
   assert(sanitized.includes("ndus=REDACTED"), "ndus redaction marker present");
   assert(sanitized.includes("uk=REDACTED"), "uk redacted in query string");
   assert(sanitized.includes("shareid=REDACTED"), "shareid redacted in query string");
+  assert(sanitized.includes("pwd=REDACTED"), "pwd redacted in query string");
+  assert(!sanitized.includes("SECRET_PWD"), "pwd value redacted in query string");
   assert(sanitized.includes("shorturl=abc123"), "non-sensitive params preserved");
 
   // Test 15: extractCookieNames with JSON object cookie
@@ -318,6 +386,46 @@ function runTests() {
 
     const { cookieCount: count6 } = extractCookieNames(null);
     assert(count6 === 0, "extractCookieNames reports cookieCount=0 for null");
+  }
+
+  // Test 19: extractShareId from a full /s/1XXX share link
+  const shareIdFromFull = extractShareId("https://1024terabox.com/s/1E6A5yMdGvczJJAoR3tTqpg");
+  assert(shareIdFromFull === "E6A5yMdGvczJJAoR3tTqpg", "extractShareId strips the leading '1' prefix from /s/1<shorturl>");
+
+  // Test 20: extractShareId from a short /s/XXX share link (no '1' prefix)
+  const shareIdShort = extractShareId("https://1024terabox.com/s/E6A5yMdGvczJJAoR3tTqpg");
+  assert(shareIdShort === "E6A5yMdGvczJJAoR3tTqpg", "extractShareId keeps short URLs without a '1' prefix intact");
+
+  // Test 21: extractShareId from a sharing/link?surl= URL
+  const shareIdQuery = extractShareId("https://www.terabox.com/sharing/link?surl=E6A5yMdGvczJJAoR3tTqpg");
+  assert(shareIdQuery === "E6A5yMdGvczJJAoR3tTqpg", "extractShareId reads the surl query parameter");
+
+  // Test 22: canonicalShortUrl never keeps a leading '1' prefix
+  assert(canonicalShortUrl("1E6A5yMdGvczJJAoR3tTqpg") === "E6A5yMdGvczJJAoR3tTqpg", "canonicalShortUrl strips a leading '1' prefix");
+  assert(canonicalShortUrl("E6A5yMdGvczJJAoR3tTqpg") === "E6A5yMdGvczJJAoR3tTqpg", "canonicalShortUrl leaves short URLs without a '1' prefix untouched");
+
+  // Test 23: share page candidates never use the prefixed value as `surl=`
+  {
+    const cands = buildSharePageCandidates("www.1024tera.com", "E6A5yMdGvczJJAoR3tTqpg");
+    assert(cands.length === 3, "buildSharePageCandidates returns exactly 3 candidates per domain");
+    const hasPrefixedSurl = cands.some((u) => /surl=1E6A5yMdGvczJJAoR3tTqpg/.test(u));
+    assert(!hasPrefixedSurl, "candidates never emit surl=1E6A5yMdGvczJJAoR3tTqpg (prefixed value rejected)");
+    assert(cands.some((u) => u.includes("surl=E6A5yMdGvczJJAoR3tTqpg")), "candidates use the canonical short URL in surl=");
+    assert(cands.some((u) => u === "https://www.1024tera.com/s/1E6A5yMdGvczJJAoR3tTqpg"), "candidates keep the full /s/1<shorturl> path form");
+    assert(cands.some((u) => u === "https://www.1024tera.com/s/E6A5yMdGvczJJAoR3tTqpg"), "candidates keep the short /s/<shorturl> path form");
+  }
+
+  // Test 24: detect errno 400141 / "need verify" verification response
+  {
+    const vr = detectVerificationResponse('{"errno":400141,"errmsg":"need verify","request_id":"abc"}');
+    assert(vr !== null && vr.errno === 400141 && vr.errmsg === "need verify", "detects errno=400141 need verify as a verification response");
+  }
+
+  // Test 25: verification detection ignores normal HTML / non-verification JSON
+  {
+    assert(detectVerificationResponse("<!doctype html>...") === null, "verification detection ignores normal HTML pages");
+    assert(detectVerificationResponse('{"errno":0,"list":[]}') === null, "verification detection ignores successful JSON");
+    assert(detectVerificationResponse("") === null, "verification detection ignores empty bodies");
   }
 
   console.log(`\n--- Results: ${passed} passed, ${failed} failed ---`);

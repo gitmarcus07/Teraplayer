@@ -142,6 +142,48 @@ function isVerificationErrorText(text) {
   return VERIFY_PHRASES.some((p) => lower.includes(p));
 }
 
+// TeraBox short-link paths carry a "1" prefix before the canonical short URL
+// (e.g. /s/1E6A5yMdGvczJJAoR3tTqpg), but the canonical short URL value used in
+// `surl=` query parameters must NOT include that leading "1"
+// (e.g. surl=E6A5yMdGvczJJAoR3tTqpg). Keep the two forms separate so we never
+// send "1<shorturl>" as a `surl` value.
+function canonicalShortUrl(surl) {
+  return String(surl || "").replace(/^1/, "");
+}
+
+function buildSharePageCandidates(domain, surl, password) {
+  const short = canonicalShortUrl(surl);
+  const pwdParam = password ? `&pwd=${encodeURIComponent(password)}` : "";
+  return [
+    `https://${domain}/sharing/link?surl=${short}${pwdParam}`,
+    `https://${domain}/s/${short}`,
+    `https://${domain}/s/1${short}`,
+  ];
+}
+
+// TeraBox sometimes answers the share-page request with a small JSON
+// verification/challenge body (e.g. {"errno":400141,"errmsg":"need verify"})
+// instead of the share HTML. Detect it explicitly so it is not misreported as a
+// normal page that merely lacks jsToken.
+function detectVerificationResponse(bodyText) {
+  if (!bodyText) return null;
+  const trimmed = String(bodyText).trim();
+  if (!trimmed.startsWith("{")) return null;
+  let parsed = null;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const errno = normalizeErrno(parsed.errno);
+  const errmsg = parsed.errmsg || parsed.error_msg || "";
+  if ((errno != null && VERIFY_ERRNO.has(errno)) || isVerificationErrorText(errmsg)) {
+    return { errno, errmsg };
+  }
+  return null;
+}
+
 function extractCookiePairs(setCookieHeader) {
   if (!setCookieHeader) return [];
   const pairs = [];
@@ -223,7 +265,7 @@ function redactTokenLike(text) {
 
 function sanitizeQueryString(text) {
   return String(text)
-    .replace(/(csrfToken|browserid|TSID|ndus|pcftoken|bdstoken|sign|timestamp|shareid|uk|dp-logid|jsToken)=[^&]+/gi, "$1=REDACTED");
+    .replace(/(csrfToken|browserid|TSID|ndus|pcftoken|bdstoken|sign|timestamp|shareid|uk|dp-logid|jsToken|pwd)=[^&]+/gi, "$1=REDACTED");
 }
 
 function logRequest(label, url, opts = {}) {
@@ -260,7 +302,7 @@ function logResponse(label, url, status, data, opts = {}) {
 }
 
 async function fetchSharePage(surl, password, cookieHeader) {
-  const pwdParam = password ? `&pwd=${encodeURIComponent(password)}` : "";
+  let sawVerification = false;
 
   const SIGN_PATTERNS = [
     /[?&](?:amp;)?sign=([^&"'\s<>]+)/i,
@@ -302,12 +344,8 @@ async function fetchSharePage(surl, password, cookieHeader) {
   ];
 
   for (const domain of TERABOX_DOMAINS) {
-    for (const fmt of [surl, `1${surl}`]) {
-      const urls = [
-        `https://${domain}/sharing/link?surl=${fmt}${pwdParam}`,
-        `https://${domain}/s/${fmt}`,
-      ];
-      for (const url of urls) {
+    const urls = buildSharePageCandidates(domain, surl, password);
+    for (const url of urls) {
         try {
           logRequest("fetch_share_page", url);
 
@@ -320,6 +358,23 @@ async function fetchSharePage(surl, password, cookieHeader) {
           if (hopTwo.status !== 200) continue;
           const html = hopTwo.html;
           const finalUrl = hopTwo.finalUrl;
+
+          // TeraBox can answer with a small JSON verification/challenge body
+          // (e.g. {"errno":400141,"errmsg":"need verify"}) instead of the share
+          // HTML. Treat it as a verification response — never as a page that
+          // merely lacks jsToken.
+          const verification = detectVerificationResponse(html);
+          if (verification) {
+            sawVerification = true;
+            console.log(JSON.stringify({
+              event: "fetch_share_page_verification_required",
+              responseUrl: sanitizeQueryString(finalUrl),
+              status: hopTwo.status,
+              errno: verification.errno,
+              errmsg: verification.errmsg,
+            }));
+            continue;
+          }
 
           // jsToken extraction — reference-consistent (tbx-proxy/src/utils.js extractJsToken).
           // Legacy precedence is kept ONLY as a fallback; no token values are ever logged.
@@ -477,7 +532,16 @@ async function fetchSharePage(surl, password, cookieHeader) {
         }
       }
     }
+
+  if (sawVerification) {
+    return {
+      error: "verification_required",
+      verification_required: true,
+      ogTitle: null,
+      ogImage: null,
+    };
   }
+
   return null;
 }
 
@@ -976,6 +1040,25 @@ async function handleExtract(url, password, cookieJson) {
     };
   }
 
+  if (tokens.error === "verification_required") {
+    return {
+      ok: false,
+      source: "cf_worker",
+      error: "TeraBox requires verification to access this link.",
+      verification_required: true,
+      title: tokens.ogTitle || "Verification required",
+      size: null,
+      size_str: null,
+      duration: null,
+      resolution: null,
+      thumbnail: tokens.ogImage,
+      download_url: null,
+      stream_url: null,
+      file_type: null,
+      files: [],
+    };
+  }
+
   if (tokens.error === "password_required") {
     return {
       ok: false,
@@ -1162,7 +1245,7 @@ _diagnostic: apiResult?._diagnostic,
 }
 
 async function handleResolve(surl, password, cookieJson) {
-  const normalizedSurl = surl.replace(/^1/, "");
+  const normalizedSurl = canonicalShortUrl(surl);
 
   const { names: cookieNames, cookieHeader: initialCookieHeader, cookieCount } = extractCookieNames(cookieJson);
   let cookieHeader = initialCookieHeader;
@@ -1173,6 +1256,25 @@ async function handleResolve(surl, password, cookieJson) {
       ok: false,
       source: "cf_worker",
       error: "Could not fetch TeraBox share page or extract authentication tokens.",
+    };
+  }
+
+  if (tokens.error === "verification_required") {
+    return {
+      ok: false,
+      source: "cf_worker",
+      error: "TeraBox requires verification to access this link.",
+      verification_required: true,
+      title: tokens.ogTitle || "Verification required",
+      size: null,
+      size_str: null,
+      duration: null,
+      resolution: null,
+      thumbnail: tokens.ogImage,
+      download_url: null,
+      stream_url: null,
+      file_type: null,
+      files: [],
     };
   }
 

@@ -1,15 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
   Link2,
   Loader2,
-  ShieldCheck,
-  FolderOpen,
-  Film,
   ClipboardPaste,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { sanitizeUrl, isLikelyTeraBoxUrl } from "../utils/url";
 
 const EXAMPLES = [
   "https://terabox.com/s/1abcXYZ",
@@ -17,14 +16,21 @@ const EXAMPLES = [
   "https://terasharelink.com/s/1qw",
 ];
 
-export default function HeroInput({
-  onSubmit,
-  loading,
-  defaultValue = "",
-}) {
+const HeroInput = forwardRef(function HeroInput(
+  { onSubmit, loading, defaultValue = "" },
+  ref
+) {
   const [value, setValue] = useState(defaultValue);
+  const [error, setError] = useState(null);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const inputRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    },
+  }));
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -37,22 +43,41 @@ export default function HeroInput({
   const submit = (e) => {
     e.preventDefault();
 
-    const trimmed = value.trim();
+    if (loading) return;
 
-    if (!trimmed || loading) return;
+    const clean = sanitizeUrl(value);
 
-    onSubmit?.(trimmed);
+    if (!clean) {
+      setError("Paste a TeraBox link to get started.");
+      return;
+    }
+
+    if (!isLikelyTeraBoxUrl(clean)) {
+      setError("That doesn't look like a valid TeraBox link.");
+      return;
+    }
+
+    setError(null);
+    onSubmit?.(clean);
   };
 
   const paste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-
       if (text) {
-        setValue(text.trim());
+        const clean = sanitizeUrl(text);
+        setValue(clean);
+        setError(null);
         inputRef.current?.focus();
       }
-    } catch { }
+    } catch {
+      // Clipboard permission denied or unavailable — normal input still works.
+    }
+  };
+
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    if (error) setError(null);
   };
 
   return (
@@ -67,9 +92,10 @@ export default function HeroInput({
       }}
       className="mx-auto w-full max-w-2xl"
       data-testid="hero-form"
+      noValidate
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-0">
-        <div className="flex items-center rounded-2xl border border-border bg-surface-raised shadow-2xl shadow-primary/5 focus-within:border-primary focus-within:ring-2 focus-within:ring-accent/20 transition-colors duration-300 sm:flex-1">
+        <div className="flex min-w-0 items-center rounded-2xl border border-border bg-surface-raised shadow-2xl shadow-primary/5 focus-within:border-primary focus-within:ring-2 focus-within:ring-accent/20 transition-colors duration-300 sm:flex-1">
           <button
             type="button"
             onClick={paste}
@@ -80,17 +106,20 @@ export default function HeroInput({
             <ClipboardPaste className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="hidden sm:inline">Paste</span>
           </button>
-          <div className="flex items-center px-3 sm:px-5">
+          <div className="flex min-w-0 items-center px-3 sm:px-5">
             <Link2 className="mr-2 h-4 w-4 shrink-0 text-muted-foreground sm:mr-3 sm:h-5 sm:w-5" />
             <input
               ref={inputRef}
-              type="url"
+              type="text"
               inputMode="url"
+              autoComplete="off"
               data-testid="paste-input"
               value={value}
-              onChange={(e) => setValue(e.target.value)}
+              onChange={handleChange}
               placeholder="Paste your TeraBox link..."
-              className="flex-1 bg-transparent py-4 text-base outline-none placeholder:text-muted-foreground sm:py-5 sm:text-lg"
+              aria-label="TeraBox link"
+              aria-invalid={error ? "true" : undefined}
+              className="min-w-0 flex-1 bg-transparent py-4 text-base outline-none placeholder:text-muted-foreground sm:py-5 sm:text-lg"
               spellCheck={false}
               autoCorrect="off"
               autoCapitalize="off"
@@ -107,7 +136,7 @@ export default function HeroInput({
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading
+              Preparing…
             </>
           ) : (
             <>
@@ -118,9 +147,24 @@ export default function HeroInput({
         </Button>
       </div>
 
+      {/* Reserved line so an inline validation error never shifts the layout. */}
+      <div className="mt-2 min-h-[1.35rem]" aria-live="polite">
+        {error && (
+          <p
+            className="flex items-center gap-1.5 text-xs text-destructive"
+            data-testid="hero-input-error"
+          >
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            {error}
+          </p>
+        )}
+      </div>
+
       <div className="sr-only">
         Paste your public TeraBox link below and click Watch Now
       </div>
     </motion.form>
   );
-}
+});
+
+export default HeroInput;

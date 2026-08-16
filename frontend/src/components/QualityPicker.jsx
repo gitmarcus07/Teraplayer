@@ -17,7 +17,8 @@ export default function QualityPicker({ options, value, onChange }) {
 
   return (
     <div className="flex items-center gap-2" data-testid="quality-picker">
-      <Layers className="h-4 w-4 text-muted-foreground" />
+      <Layers className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="text-xs font-medium text-muted-foreground">Quality</span>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="h-10 w-[180px] bg-surface-raised border-border" data-testid="quality-trigger">
           <SelectValue placeholder="Choose quality" />
