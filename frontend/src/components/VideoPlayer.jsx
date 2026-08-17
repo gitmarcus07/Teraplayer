@@ -64,6 +64,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
   const errorTrackedRef = useRef(false);
   const lastSaveRef = useRef(0);
   const resumeKeyRef = useRef(null);
+  const resumePendingRef = useRef(false);
 
   const saveResume = useCallback((pos) => {
     if (!resumeKeyRef.current) return;
@@ -203,6 +204,24 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
     setPlaybackError(null);
     setResumePos(null);
 
+    // Detect a pending session resume up front so we never auto-play over the
+    // resume prompt. The prompt's full eligibility check needs video metadata
+    // (duration), so a saved position's presence is used here instead.
+    resumePendingRef.current = false;
+    if (resumeKeyRef.current) {
+      try {
+        const raw = sessionStorage.getItem(resumeKeyRef.current);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          if (saved && typeof saved.t === "number" && saved.t >= 10) {
+            resumePendingRef.current = true;
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
     // xAPiverse returns HLS manifests from /fast_stream without a .m3u8
     // filename extension, so detect both normal HLS URLs and that endpoint.
     const isHls =
@@ -277,6 +296,18 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
       surfaceError();
     };
 
+    // Watch Now requested autoplay: try to start playback as early as the
+    // source is attached, so the request stays as close as possible to the
+    // user's activation. If the browser blocks it the promise rejects and the
+    // center play button stays usable.
+    const attemptAutoplay = () => {
+      if (!autoPlay || resumePendingRef.current) return;
+      v.play().catch(() => {
+        // Autoplay may be blocked (no active user gesture yet) — keep the play
+        // button visible so the user can start playback by tapping it.
+      });
+    };
+
     if (isHls && Hls.isSupported()) {
       hls = new Hls({
         enableWorker: true,
@@ -287,6 +318,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setBuffering(false);
+        attemptAutoplay();
       });
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -320,8 +352,10 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
       });
     } else if (isHls && v.canPlayType("application/vnd.apple.mpegurl")) {
       v.src = src;
+      attemptAutoplay();
     } else {
       v.src = src || "";
+      attemptAutoplay();
     }
 
     v.addEventListener("play", onPlay);
