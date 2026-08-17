@@ -648,6 +648,23 @@ export default function Home() {
         </div>
 
         <section
+          aria-labelledby="what-is-teraplayer-heading"
+          className="mx-auto mt-10 max-w-3xl px-5 md:mt-8"
+        >
+          <h2
+            id="what-is-teraplayer-heading"
+            className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:text-sm"
+          >
+            What is TeraPlayer?
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-relaxed text-muted-foreground sm:text-base">
+            TeraPlayer is a free TeraBox online player and downloader that runs right in your browser. Paste a
+            supported public TeraBox link to open it, watch TeraBox videos online, and download supported files — no
+            account required.
+          </p>
+        </section>
+
+        <section
           aria-labelledby="terabox-guides-heading"
           className="mx-auto mt-10 max-w-4xl px-5 md:mt-8"
         >

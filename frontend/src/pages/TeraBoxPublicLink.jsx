@@ -84,7 +84,7 @@ export default function TeraBoxPublicLink() {
 
       <Seo
         title="TeraBox Link Opener & Downloader | TeraPlayer"
-        description="Open TeraBox links online with TeraPlayer. Learn how public TeraBox share links work, how to turn a TeraBox link to video, and how to download supported files."
+        description="Open TeraBox links online with TeraPlayer. Learn how public TeraBox share links work, how to turn a TeraBox link to video, and how to use a TeraBox link downloader for supported files."
         path="/terabox-public-link"
         ogTitle="TeraBox Link Opener & Downloader | TeraPlayer"
         ogDescription="Open TeraBox links online with TeraPlayer. Learn how public TeraBox share links work and how to download supported files."

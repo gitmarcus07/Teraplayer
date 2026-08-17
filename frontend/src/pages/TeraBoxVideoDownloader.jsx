@@ -225,8 +225,9 @@ export default function TeraBoxVideoDownloader() {
   };
 
   const faqSchema = faqItems.map((item) => ({
+    "@type": "Question",
     name: item.q,
-    acceptedAnswer: { "@type": "AnsweredQuestion", text: item.a },
+    acceptedAnswer: { "@type": "Answer", text: item.a },
   }));
 
   return (
