@@ -29,7 +29,11 @@ export default function QualityPicker({ options, value, onChange }) {
       <Layers className="h-4 w-4 shrink-0 text-muted-foreground" />
       <span className="text-xs font-medium text-muted-foreground">Quality</span>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="h-10 w-[180px] bg-surface-raised border-border" data-testid="quality-trigger">
+        <SelectTrigger
+          className="h-10 w-[180px] bg-surface-raised border-border"
+          data-testid="quality-trigger"
+          aria-label="Select video quality"
+        >
           <SelectValue placeholder="Choose quality" />
         </SelectTrigger>
         <SelectContent>

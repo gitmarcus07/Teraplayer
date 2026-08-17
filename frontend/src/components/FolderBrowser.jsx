@@ -209,6 +209,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search in this folder…"
+            aria-label="Search files in this folder"
             className="pl-9"
             data-testid="folder-search"
           />
@@ -423,7 +424,13 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                   isActive ? "bg-primary/5 ring-1 ring-inset ring-primary" : isSel ? "bg-primary/5" : "hover:bg-surface-overlay/40"
                 }`}
               >
-                <button onClick={() => toggle(f._idx)} data-testid="folder-select-btn" aria-label={isSel ? "Deselect file" : "Select file"} aria-pressed={isSel}>
+                <button
+                  onClick={() => toggle(f._idx)}
+                  data-testid="folder-select-btn"
+                  aria-label={isSel ? "Deselect file" : "Select file"}
+                  aria-pressed={isSel}
+                  className="p-1.5 text-muted-foreground hover:text-foreground"
+                >
                   {isSel ? (
                     <CheckSquare className="h-4 w-4 text-primary" />
                   ) : (

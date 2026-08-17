@@ -2,13 +2,22 @@ import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Home, Info, Mail, Crown, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
+// Lightweight focus trap: anything a keyboard/SR user can reach while the
+// drawer is open. Kept dependency-free on purpose.
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export default function Header() {
   const location = useLocation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuBtnRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const drawerRef = useRef(null);
+  const prevOpenRef = useRef(false);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -19,6 +28,62 @@ export default function Header() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [mobileMenuOpen]);
+
+  // Move focus into the drawer when it opens so keyboard/SR users land inside
+  // it instead of the page behind the overlay. Never runs while closed.
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      closeBtnRef.current?.focus();
+    }
+  }, [mobileMenuOpen]);
+
+  // When the drawer closes, return focus to the trigger that opened it.
+  // Fires only on the true → false transition; guards the initial mount.
+  useEffect(() => {
+    if (prevOpenRef.current && !mobileMenuOpen) {
+      menuBtnRef.current?.focus();
+    }
+    prevOpenRef.current = mobileMenuOpen;
+  }, [mobileMenuOpen]);
+
+  // Escape closes the drawer; Tab / Shift+Tab stay trapped inside it so focus
+  // can never escape behind the overlay. Listener is attached only while the
+  // drawer is open and removed on close/unmount.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const node = drawerRef.current;
+      if (!node) return;
+      const focusables = Array.from(node.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+        (el) => !el.hasAttribute("disabled")
+      );
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey) {
+        if (active === first || !node.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !node.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [mobileMenuOpen]);
 
   return (
@@ -57,6 +122,7 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             <Button
+              ref={menuBtnRef}
               variant="ghost"
               size="icon"
               className="md:hidden h-10 w-10 rounded-xl"
@@ -85,6 +151,10 @@ export default function Header() {
 
             {/* Cinematic Drawer */}
             <motion.div
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
               className="fixed top-0 right-0 z-50 h-screen w-[85vw] max-w-sm bg-surface-raised/95 backdrop-blur-2xl border-l border-border/60 md:hidden"
               style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
               initial={{ x: "100%", opacity: 0.5 }}
@@ -109,6 +179,7 @@ export default function Header() {
                   </a>
 
                   <Button
+                    ref={closeBtnRef}
                     variant="ghost"
                     size="icon"
                     className="h-10 w-10 rounded-xl"

@@ -320,6 +320,7 @@ export default function PreviewCard({
               variant="outline"
               size="sm"
               className="text-xs"
+              aria-label="Share link"
             >
               <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
               <span className="hidden sm:inline">Share</span>

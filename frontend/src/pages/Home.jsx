@@ -5,10 +5,7 @@ import { toast } from "sonner";
 import Seo from "../components/Seo";
 import {
   Sparkles,
-  Zap,
   ShieldCheck,
-  Cloud,
-  Cpu,
   KeyRound,
   Film,
   FolderOpen,
@@ -753,27 +750,3 @@ export default function Home() {
     </div>
   );
 }
-
-const FEATURES = [
-  { icon: Zap, title: "Instant Preview", body: "Native + fallback extractors resolve links in under 2 seconds." },
-  { icon: Cpu, title: "Beautiful Player", body: "Full keyboard controls, PIP, speed, and cinematic overlay." },
-  { icon: Cloud, title: "Folder & ZIP", body: "Browse shared folders and grab everything as a single ZIP." },
-  { icon: ShieldCheck, title: "Sign in optional", body: "Sign in with Google to save your preferences across devices." },
-];
-
-const FeaturesStrip = () => (<div className="mx-auto mt-8 w-full max-w-md px-5 grid grid-cols-1 gap-3 sm:mt-14 sm:max-w-5xl sm:px-0 sm:grid-cols-2 md:grid-cols-4">
-  {FEATURES.map((f, i) => (
-    <motion.div
-      key={f.title}
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, delay: 0.05 * i }}
-      className="rounded-2xl border border-border bg-surface-raised p-4 transition-[border-color,box-shadow] duration-300 ease-out hover:border-primary/50 hover:brightness-110 sm:p-5"
-    >
-      <f.icon className="mb-2 h-4 w-4 text-primary sm:mb-3 sm:h-5 sm:w-5" strokeWidth={1.75} />
-      <div className="text-xs font-semibold sm:text-sm">{f.title}</div>
-      <div className="mt-1 text-[11px] text-muted-foreground sm:text-xs">{f.body}</div>
-    </motion.div>
-  ))}
-</div >
-);

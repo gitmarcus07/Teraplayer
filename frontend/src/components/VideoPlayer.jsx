@@ -403,6 +403,7 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
       <video
         ref={videoRef}
         poster={poster}
+        aria-label={title || "Video player"}
         className="h-full w-full object-contain"
         playsInline
         preload="metadata"
