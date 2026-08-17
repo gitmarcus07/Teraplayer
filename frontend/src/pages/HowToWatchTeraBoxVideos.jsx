@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Play,
@@ -147,32 +147,18 @@ export default function HowToWatchTeraBoxVideos() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>How to Watch TeraBox Videos Online | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn how to watch supported TeraBox videos online with TeraPlayer. Follow a simple guide to open a public TeraBox share link and stream videos in your browser."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/how-to-watch-terabox-videos" />
-        <meta property="og:title" content="How to Watch TeraBox Videos Online | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/how-to-watch-terabox-videos" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="How to Watch TeraBox Videos Online - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="How to Watch TeraBox Videos Online | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="How to Watch TeraBox Videos Online - TeraPlayer" />
+      <Seo
+        title="How to Watch TeraBox Videos Online | TeraPlayer"
+        description="Learn how to watch supported TeraBox videos online with TeraPlayer. Follow a simple guide to open a public TeraBox share link and stream videos in your browser."
+        path="/how-to-watch-terabox-videos"
+        ogTitle="How to Watch TeraBox Videos Online | TeraPlayer"
+        ogDescription="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+        imageAlt="How to Watch TeraBox Videos Online - TeraPlayer"
+        twitterDescription="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+      >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

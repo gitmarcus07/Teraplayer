@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } fro
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Sparkles,
   Zap,
@@ -357,19 +357,15 @@ export default function Home() {
 
   return (
     <div className="App noise min-h-screen">
-      <Helmet>
-        <title>TeraPlayer | TeraBox Video Downloader, Player &amp; Streaming</title>
-        <meta name="description" content="Watch, stream and download TeraBox videos online for free with TeraPlayer. Fast HD streaming, folder support, ZIP downloads and no login required." />
-        <link rel="canonical" href="https://www.teraplayer.in/" />
-        <meta property="og:title" content="TeraPlayer - Watch &amp; Download TeraBox Videos" />
-        <meta property="og:description" content="Watch, stream and download TeraBox videos instantly with TeraPlayer. Fast HD streaming and folder support." />
-        <meta property="og:url" content="https://www.teraplayer.in/" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="TeraPlayer - Watch &amp; Download TeraBox Videos" />
-        <meta name="twitter:description" content="Watch, stream and download TeraBox videos instantly with TeraPlayer." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="TeraPlayer | TeraBox Video Downloader, Player & Streaming"
+        description="Watch, stream and download TeraBox videos online for free with TeraPlayer. Fast HD streaming, folder support, ZIP downloads and no login required."
+        path="/"
+        ogTitle="TeraPlayer - Watch & Download TeraBox Videos"
+        ogDescription="Watch, stream and download TeraBox videos instantly with TeraPlayer. Fast HD streaming and folder support."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="Watch, stream and download TeraBox videos instantly with TeraPlayer."
+      />
       <Header />
 
       <main id="main" className="tp-container">

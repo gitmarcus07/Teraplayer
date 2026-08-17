@@ -188,6 +188,15 @@ function App() {
             <script type="application/ld+json">
               {JSON.stringify({
                 "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "TeraPlayer",
+                url: "https://www.teraplayer.in/",
+                logo: "https://www.teraplayer.in/logo.png",
+              })}
+            </script>
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
                 "@type": "WebApplication",
                 name: "TeraPlayer",
                 url: "https://www.teraplayer.in/",

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Wrench,
@@ -123,32 +123,18 @@ export default function TeraBoxVideoLinkNotWorking() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>TeraBox Link Not Working? Common Fixes | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Is your TeraBox link not working? Learn how to troubleshoot incomplete, private, unavailable and unsupported TeraBox video links with TeraPlayer."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/terabox-video-link-not-working" />
-        <meta property="og:title" content="TeraBox Link Not Working? Common Fixes | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/terabox-video-link-not-working" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="TeraBox Link Not Working - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="TeraBox Link Not Working? Common Fixes | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="TeraBox Link Not Working - TeraPlayer" />
+      <Seo
+        title="TeraBox Link Not Working? Common Fixes | TeraPlayer"
+        description="Is your TeraBox link not working? Learn how to troubleshoot incomplete, private, unavailable and unsupported TeraBox video links with TeraPlayer."
+        path="/terabox-video-link-not-working"
+        ogTitle="TeraBox Link Not Working? Common Fixes | TeraPlayer"
+        ogDescription="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
+        imageAlt="TeraBox Link Not Working - TeraPlayer"
+        twitterDescription="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
+      >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

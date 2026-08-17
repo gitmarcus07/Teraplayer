@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Download,
   FolderOpen,
@@ -231,18 +231,15 @@ export default function TeraBoxVideoDownloader() {
 
   return (
     <div className="App noise min-h-screen">
-      <Helmet>
-        <title>TeraBox Video Downloader | Download TeraBox Videos - TeraPlayer</title>
-        <meta name="description" content="Download supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview, watch and download videos directly from your browser." />
-        <link rel="canonical" href="https://www.teraplayer.in/terabox-video-downloader" />
-        <meta property="og:title" content="TeraBox Video Downloader | TeraPlayer" />
-        <meta property="og:description" content="Download supported TeraBox videos online with TeraPlayer. Preview and download videos directly from your browser." />
-        <meta property="og:url" content="https://www.teraplayer.in/terabox-video-downloader" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraBox Video Downloader - TeraPlayer" />
-        <meta name="twitter:title" content="TeraBox Video Downloader | TeraPlayer" />
-        <meta name="twitter:description" content="Download supported TeraBox videos online with TeraPlayer." />
-        <meta name="twitter:image:alt" content="TeraBox Video Downloader - TeraPlayer" />
+      <Seo
+        title="TeraBox Video Downloader | Download TeraBox Videos - TeraPlayer"
+        description="Download supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview, watch and download videos directly from your browser."
+        path="/terabox-video-downloader"
+        ogTitle="TeraBox Video Downloader | TeraPlayer"
+        ogDescription="Download supported TeraBox videos online with TeraPlayer. Preview and download videos directly from your browser."
+        imageAlt="TeraBox Video Downloader - TeraPlayer"
+        twitterDescription="Download supported TeraBox videos online with TeraPlayer."
+      >
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -262,7 +259,7 @@ export default function TeraBoxVideoDownloader() {
             mainEntity: faqSchema,
           })}
         </script>
-      </Helmet>
+      </Seo>
 
       <Header />
 

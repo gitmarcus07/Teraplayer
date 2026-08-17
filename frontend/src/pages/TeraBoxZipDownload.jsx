@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Archive,
@@ -115,32 +115,18 @@ export default function TeraBoxZipDownload() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>TeraBox ZIP Download: Download Multiple Files | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser, including how to select files and start a ZIP download."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/terabox-zip-download" />
-        <meta property="og:title" content="TeraBox ZIP Download: Download Multiple Files | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/terabox-zip-download" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="TeraBox ZIP Download - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="TeraBox ZIP Download: Download Multiple Files | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="TeraBox ZIP Download - TeraPlayer" />
+      <Seo
+        title="TeraBox ZIP Download: Download Multiple Files | TeraPlayer"
+        description="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser, including how to select files and start a ZIP download."
+        path="/terabox-zip-download"
+        ogTitle="TeraBox ZIP Download: Download Multiple Files | TeraPlayer"
+        ogDescription="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
+        imageAlt="TeraBox ZIP Download - TeraPlayer"
+        twitterDescription="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
+      >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

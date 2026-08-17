@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Sparkles,
   Info,
@@ -142,19 +142,15 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>Privacy Policy — TeraPlayer</title>
-        <meta name="description" content="How TeraPlayer handles information — what we process, why, cookies and local storage, third-party services, and your choices." />
-        <link rel="canonical" href="https://www.teraplayer.in/privacy" />
-        <meta property="og:title" content="Privacy Policy — TeraPlayer" />
-        <meta property="og:description" content="How TeraPlayer handles information — what we process, why, cookies and local storage, third-party services, and your choices." />
-        <meta property="og:url" content="https://www.teraplayer.in/privacy" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="Privacy Policy — TeraPlayer" />
-        <meta name="twitter:description" content="How TeraPlayer handles information and the choices you have about it." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="Privacy Policy — TeraPlayer"
+        description="How TeraPlayer handles information — what we process, why, cookies and local storage, third-party services, and your choices."
+        path="/privacy"
+        ogTitle="Privacy Policy — TeraPlayer"
+        ogDescription="How TeraPlayer handles information — what we process, why, cookies and local storage, third-party services, and your choices."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="How TeraPlayer handles information and the choices you have about it."
+      />
 
       <main>
         {/* Hero */}

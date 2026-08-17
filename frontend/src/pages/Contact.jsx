@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Mail,
   MessageSquare,
@@ -74,18 +74,15 @@ export default function Contact() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries</title>
-        <meta name="description" content="Questions, bug reports, or business inquiries? Contact TeraPlayer support. We respond quickly to all messages." />
-        <link rel="canonical" href="https://www.teraplayer.in/contact" />
-        <meta property="og:title" content="Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries" />
-        <meta property="og:description" content="Contact TeraPlayer for support, bug reports, feedback, or business inquiries." />
-        <meta property="og:url" content="https://www.teraplayer.in/contact" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="Contact TeraPlayer — Support, Bug Reports &amp; Business Inquiries" />
-        <meta name="twitter:description" content="Contact TeraPlayer for support, bug reports, feedback, or business inquiries." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
+      <Seo
+        title="Contact TeraPlayer — Support, Bug Reports & Business Inquiries"
+        description="Questions, bug reports, or business inquiries? Contact TeraPlayer support. We respond quickly to all messages."
+        path="/contact"
+        ogTitle="Contact TeraPlayer — Support, Bug Reports & Business Inquiries"
+        ogDescription="Contact TeraPlayer for support, bug reports, feedback, or business inquiries."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="Contact TeraPlayer for support, bug reports, feedback, or business inquiries."
+      >
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -100,7 +97,7 @@ export default function Contact() {
             })),
           })}
         </script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Sparkles,
   Code2,
@@ -101,19 +101,15 @@ export default function MeetTheDev() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>Meet the Dev — TeraPlayer</title>
-        <meta name="description" content="Marcus — the 20-year-old BCA student behind TeraPlayer. Gaming → boredom → building. Meet the dev, the stack, and the story." />
-        <link rel="canonical" href="https://www.teraplayer.in/meet-the-dev" />
-        <meta property="og:title" content="Meet the Dev — TeraPlayer" />
-        <meta property="og:description" content="Marcus — the 20-year-old BCA student behind TeraPlayer. Gaming → boredom → building. Meet the dev, the stack, and the story." />
-        <meta property="og:url" content="https://www.teraplayer.in/meet-the-dev" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="Meet the Dev — TeraPlayer" />
-        <meta name="twitter:description" content="Marcus — the 20-year-old BCA student behind TeraPlayer. Gaming → boredom → building." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="Meet the Dev — TeraPlayer"
+        description="Marcus — the 20-year-old BCA student behind TeraPlayer. Gaming → boredom → building. Meet the dev, the stack, and the story."
+        path="/meet-the-dev"
+        ogTitle="Meet the Dev — TeraPlayer"
+        ogDescription="Marcus — the 20-year-old BCA student behind TeraPlayer. Gaming → boredom → building. Meet the dev, the stack, and the story."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="Marcus — the 20-year-old BCA student behind TeraPlayer. Gaming → boredom → building."
+      />
 
       <main>
         {/* Hero */}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   FolderOpen,
@@ -124,32 +124,18 @@ export default function HowToDownloadTeraBoxFolder() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>How to Download a TeraBox Folder | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn how to work with supported TeraBox folder and file links using TeraPlayer. See how to download supported files and what to do when a folder link does not work."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/how-to-download-terabox-folder" />
-        <meta property="og:title" content="How to Download a TeraBox Folder | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/how-to-download-terabox-folder" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="How to Download a TeraBox Folder - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="How to Download a TeraBox Folder | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="How to Download a TeraBox Folder - TeraPlayer" />
+      <Seo
+        title="How to Download a TeraBox Folder | TeraPlayer"
+        description="Learn how to work with supported TeraBox folder and file links using TeraPlayer. See how to download supported files and what to do when a folder link does not work."
+        path="/how-to-download-terabox-folder"
+        ogTitle="How to Download a TeraBox Folder | TeraPlayer"
+        ogDescription="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
+        imageAlt="How to Download a TeraBox Folder - TeraPlayer"
+        twitterDescription="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
+      >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

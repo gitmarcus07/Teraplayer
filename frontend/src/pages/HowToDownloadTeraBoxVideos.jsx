@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Download,
@@ -146,32 +146,18 @@ export default function HowToDownloadTeraBoxVideos() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>How to Download TeraBox Videos | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn how to download supported TeraBox videos online with TeraPlayer. Follow a simple step-by-step guide to paste a public TeraBox link, preview the video and download it."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/how-to-download-terabox-videos" />
-        <meta property="og:title" content="How to Download TeraBox Videos | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how to download supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/how-to-download-terabox-videos" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="How to Download TeraBox Videos - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="How to Download TeraBox Videos | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how to download supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="How to Download TeraBox Videos - TeraPlayer" />
+      <Seo
+        title="How to Download TeraBox Videos | TeraPlayer"
+        description="Learn how to download supported TeraBox videos online with TeraPlayer. Follow a simple step-by-step guide to paste a public TeraBox link, preview the video and download it."
+        path="/how-to-download-terabox-videos"
+        ogTitle="How to Download TeraBox Videos | TeraPlayer"
+        ogDescription="Learn how to download supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+        imageAlt="How to Download TeraBox Videos - TeraPlayer"
+        twitterDescription="Learn how to download supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+      >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Film,
   Eye,
@@ -85,19 +85,15 @@ export default function About() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>About TeraPlayer — TeraBox Video Player &amp; Downloader</title>
-        <meta name="description" content="TeraPlayer is a free, privacy-first web app that lets you watch and download public TeraBox links instantly. No signup required." />
-        <link rel="canonical" href="https://www.teraplayer.in/about" />
-        <meta property="og:title" content="About TeraPlayer — TeraBox Video Player &amp; Downloader" />
-        <meta property="og:description" content="Learn how TeraPlayer works — a privacy-first TeraBox video player and downloader with instant streaming." />
-        <meta property="og:url" content="https://www.teraplayer.in/about" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="About TeraPlayer — TeraBox Video Player &amp; Downloader" />
-        <meta name="twitter:description" content="Learn how TeraPlayer works — a privacy-first TeraBox video player and downloader with instant streaming." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="About TeraPlayer — TeraBox Video Player & Downloader"
+        description="TeraPlayer is a free, privacy-first web app that lets you watch and download public TeraBox links instantly. No signup required."
+        path="/about"
+        ogTitle="About TeraPlayer — TeraBox Video Player & Downloader"
+        ogDescription="Learn how TeraPlayer works — a privacy-first TeraBox video player and downloader with instant streaming."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="Learn how TeraPlayer works — a privacy-first TeraBox video player and downloader with instant streaming."
+      />
 
       <main>
         {/* Hero */}

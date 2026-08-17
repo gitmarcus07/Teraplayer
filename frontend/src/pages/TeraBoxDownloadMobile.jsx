@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Smartphone,
@@ -115,32 +115,18 @@ export default function TeraBoxDownloadMobile() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>TeraBox Downloader on Mobile: Download Videos on Your Phone | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn how to use TeraPlayer on a phone or tablet to open supported public TeraBox links, watch videos, and download supported files directly from a mobile browser."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/terabox-download-mobile" />
-        <meta property="og:title" content="TeraBox Downloader on Mobile: Download Videos on Your Phone | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how to use TeraPlayer on a phone or tablet to open supported public TeraBox links and download files from a mobile browser."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/terabox-download-mobile" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="TeraBox Downloader on Mobile - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="TeraBox Downloader on Mobile: Download Videos on Your Phone | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how to use TeraPlayer on a phone or tablet to open supported public TeraBox links and download files from a mobile browser."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="TeraBox Downloader on Mobile - TeraPlayer" />
+      <Seo
+        title="TeraBox Downloader on Mobile: Download Videos on Your Phone | TeraPlayer"
+        description="Learn how to use TeraPlayer on a phone or tablet to open supported public TeraBox links, watch videos, and download supported files directly from a mobile browser."
+        path="/terabox-download-mobile"
+        ogTitle="TeraBox Downloader on Mobile: Download Videos on Your Phone | TeraPlayer"
+        ogDescription="Learn how to use TeraPlayer on a phone or tablet to open supported public TeraBox links and download files from a mobile browser."
+        imageAlt="TeraBox Downloader on Mobile - TeraPlayer"
+        twitterDescription="Learn how to use TeraPlayer on a phone or tablet to open supported public TeraBox links and download files from a mobile browser."
+      >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Sparkles,
   Info,
@@ -72,19 +72,15 @@ export default function AboutTeraPlayer() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>About TeraPlayer</title>
-        <meta name="description" content="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required." />
-        <link rel="canonical" href="https://www.teraplayer.in/about-teraplayer" />
-        <meta property="og:title" content="About TeraPlayer" />
-        <meta property="og:description" content="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required." />
-        <meta property="og:url" content="https://www.teraplayer.in/about-teraplayer" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="About TeraPlayer" />
-        <meta name="twitter:description" content="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="About TeraPlayer"
+        description="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
+        path="/about-teraplayer"
+        ogTitle="About TeraPlayer"
+        ogDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links."
+      />
 
       <main>
         {/* Hero */}

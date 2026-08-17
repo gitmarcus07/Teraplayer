@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -260,70 +260,15 @@ export default function TeraBoxVideoPlayer() {
 
   return (
     <>
-      <Helmet>
-        <title>
-          TeraBox Video Player | Watch TeraBox Videos Online - TeraPlayer
-        </title>
-
-        <meta
-          name="description"
-          content="Watch supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview and play videos directly from your browser."
-        />
-
-        <link
-          rel="canonical"
-          href="https://www.teraplayer.in/terabox-video-player"
-        />
-
-        <meta
-          property="og:title"
-          content="TeraBox Video Player | TeraPlayer"
-        />
-
-        <meta
-          property="og:description"
-          content="Watch supported TeraBox videos online with TeraPlayer. Preview and play videos directly from your browser."
-        />
-
-        <meta
-          property="og:url"
-          content="https://www.teraplayer.in/terabox-video-player"
-        />
-
-        <meta property="og:type" content="website" />
-
-        <meta
-          property="og:image"
-          content="https://www.teraplayer.in/logo.png"
-        />
-
-        <meta
-          property="og:image:alt"
-          content="TeraBox Video Player - TeraPlayer"
-        />
-
-        <meta name="twitter:card" content="summary_large_image" />
-
-        <meta
-          name="twitter:title"
-          content="TeraBox Video Player | TeraPlayer"
-        />
-
-        <meta
-          name="twitter:description"
-          content="Watch supported TeraBox videos online with TeraPlayer."
-        />
-
-        <meta
-          name="twitter:image"
-          content="https://www.teraplayer.in/logo.png"
-        />
-
-        <meta
-          name="twitter:image:alt"
-          content="TeraBox Video Player - TeraPlayer"
-        />
-
+      <Seo
+        title="TeraBox Video Player | Watch TeraBox Videos Online - TeraPlayer"
+        description="Watch supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview and play videos directly from your browser."
+        path="/terabox-video-player"
+        ogTitle="TeraBox Video Player | TeraPlayer"
+        ogDescription="Watch supported TeraBox videos online with TeraPlayer. Preview and play videos directly from your browser."
+        imageAlt="TeraBox Video Player - TeraPlayer"
+        twitterDescription="Watch supported TeraBox videos online with TeraPlayer."
+      >
         <script type="application/ld+json">
           {JSON.stringify(faqSchema)}
         </script>
@@ -331,7 +276,7 @@ export default function TeraBoxVideoPlayer() {
         <script type="application/ld+json">
           {JSON.stringify(webAppSchema)}
         </script>
-      </Helmet>
+      </Seo>
 
       <div className="min-h-[calc(100vh-4rem)] pb-16">
         <section className="px-4 pt-10 pb-12 sm:pt-16 sm:pb-16 text-center max-w-4xl mx-auto">

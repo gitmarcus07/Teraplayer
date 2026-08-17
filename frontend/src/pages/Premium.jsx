@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Sparkles,
@@ -67,31 +67,17 @@ export default function Premium() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>India's Got Latent Bonus &amp; Members Only Episodes | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn how to watch India's Got Latent bonus episodes, members-only episodes, extra content and the latest updates."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/premium" />
-        <meta property="og:title" content="India's Got Latent Bonus &amp; Members Only Episodes | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn how to watch India's Got Latent bonus episodes, members-only episodes, extra content and the latest updates."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/premium" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="India's Got Latent bonus and members-only episodes - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="India's Got Latent Bonus &amp; Members Only Episodes | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn how to watch India's Got Latent bonus episodes, members-only episodes, extra content and the latest updates."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="India's Got Latent bonus and members-only episodes - TeraPlayer" />
+      <Seo
+        title="India's Got Latent Bonus & Members Only Episodes | TeraPlayer"
+        description="Learn how to watch India's Got Latent bonus episodes, members-only episodes, extra content and the latest updates."
+        path="/premium"
+        ogTitle="India's Got Latent Bonus & Members Only Episodes | TeraPlayer"
+        ogDescription="Learn how to watch India's Got Latent bonus episodes, members-only episodes, extra content and the latest updates."
+        imageAlt="India's Got Latent bonus and members-only episodes - TeraPlayer"
+        twitterDescription="Learn how to watch India's Got Latent bonus episodes, members-only episodes, extra content and the latest updates."
+      >
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Sparkles,
   BookOpen,
@@ -138,19 +138,15 @@ export default function TermsOfService() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>Terms of Service — TeraPlayer</title>
-        <meta name="description" content="The Terms of Service for TeraPlayer — acceptable use, user responsibilities, third-party services, availability, and liability." />
-        <link rel="canonical" href="https://www.teraplayer.in/terms" />
-        <meta property="og:title" content="Terms of Service — TeraPlayer" />
-        <meta property="og:description" content="The Terms of Service for TeraPlayer — acceptable use, user responsibilities, third-party services, availability, and liability." />
-        <meta property="og:url" content="https://www.teraplayer.in/terms" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="Terms of Service — TeraPlayer" />
-        <meta name="twitter:description" content="The Terms of Service for TeraPlayer — acceptable use and responsibilities." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="Terms of Service — TeraPlayer"
+        description="The Terms of Service for TeraPlayer — acceptable use, user responsibilities, third-party services, availability, and liability."
+        path="/terms"
+        ogTitle="Terms of Service — TeraPlayer"
+        ogDescription="The Terms of Service for TeraPlayer — acceptable use, user responsibilities, third-party services, availability, and liability."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="The Terms of Service for TeraPlayer — acceptable use and responsibilities."
+      />
 
       <main>
         {/* Hero */}

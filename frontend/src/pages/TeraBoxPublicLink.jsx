@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import { Link } from "react-router-dom";
 import {
   Link2,
@@ -82,31 +82,17 @@ export default function TeraBoxPublicLink() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>TeraBox Public Link Guide: How Shared Links Work | TeraPlayer</title>
-        <meta
-          name="description"
-          content="Learn what a public TeraBox share link is, how to use supported links with TeraPlayer, and what to do when a shared link is private, expired, restricted, or unsupported."
-        />
-        <link rel="canonical" href="https://www.teraplayer.in/terabox-public-link" />
-        <meta property="og:title" content="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer" />
-        <meta
-          property="og:description"
-          content="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
-        />
-        <meta property="og:url" content="https://www.teraplayer.in/terabox-public-link" />
-        <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-        <meta property="og:image:alt" content="TeraBox Public Link Guide - TeraPlayer" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer" />
-        <meta
-          name="twitter:description"
-          content="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
-        />
-        <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-        <meta name="twitter:image:alt" content="TeraBox Public Link Guide - TeraPlayer" />
+      <Seo
+        title="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer"
+        description="Learn what a public TeraBox share link is, how to use supported links with TeraPlayer, and what to do when a shared link is private, expired, restricted, or unsupported."
+        path="/terabox-public-link"
+        ogTitle="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer"
+        ogDescription="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
+        imageAlt="TeraBox Public Link Guide - TeraPlayer"
+        twitterDescription="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
+      >
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
+      </Seo>
 
       <main>
         {/* Hero */}

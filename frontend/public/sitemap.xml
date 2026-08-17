@@ -13,7 +13,13 @@
     <loc>https://www.teraplayer.in/about</loc>
   </url>
   <url>
+    <loc>https://www.teraplayer.in/about-teraplayer</loc>
+  </url>
+  <url>
     <loc>https://www.teraplayer.in/contact</loc>
+  </url>
+  <url>
+    <loc>https://www.teraplayer.in/meet-the-dev</loc>
   </url>
   <url>
     <loc>https://www.teraplayer.in/how-to-download-terabox-videos</loc>
@@ -38,5 +44,17 @@
   </url>
   <url>
     <loc>https://www.teraplayer.in/terabox-download-pc</loc>
+  </url>
+  <url>
+    <loc>https://www.teraplayer.in/premium</loc>
+  </url>
+  <url>
+    <loc>https://www.teraplayer.in/privacy</loc>
+  </url>
+  <url>
+    <loc>https://www.teraplayer.in/terms</loc>
+  </url>
+  <url>
+    <loc>https://www.teraplayer.in/copyright</loc>
   </url>
 </urlset>

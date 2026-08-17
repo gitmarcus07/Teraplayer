@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import Seo from "../components/Seo";
 import {
   Sparkles,
   Copyright,
@@ -71,19 +71,15 @@ export default function CopyrightPage() {
     <div className="min-h-screen bg-void">
       <Header />
 
-      <Helmet>
-        <title>Copyright — TeraPlayer</title>
-        <meta name="description" content="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement through the Contact page." />
-        <link rel="canonical" href="https://www.teraplayer.in/copyright" />
-        <meta property="og:title" content="Copyright — TeraPlayer" />
-        <meta property="og:description" content="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement." />
-        <meta property="og:url" content="https://www.teraplayer.in/copyright" />
-        <meta property="og:image" content="/logo.png" />
-        <meta property="og:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-        <meta name="twitter:title" content="Copyright — TeraPlayer" />
-        <meta name="twitter:description" content="TeraPlayer respects copyright and intellectual-property rights." />
-        <meta name="twitter:image:alt" content="TeraPlayer - Watch &amp; Download TeraBox Videos Free" />
-      </Helmet>
+      <Seo
+        title="Copyright — TeraPlayer"
+        description="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement through the Contact page."
+        path="/copyright"
+        ogTitle="Copyright — TeraPlayer"
+        ogDescription="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement."
+        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
+        twitterDescription="TeraPlayer respects copyright and intellectual-property rights."
+      />
 
       <main>
         {/* Hero */}
