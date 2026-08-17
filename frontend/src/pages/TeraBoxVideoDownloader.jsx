@@ -402,7 +402,7 @@ export default function TeraBoxVideoDownloader() {
           >
             <div className="mx-auto max-w-3xl px-5">
               <PreviewCard
-                preview={preview}
+                data={preview}
                 onWatch={() => setWatching(true)}
                 onDownload={() => setDownloading(true)}
                 onPlayFolderFile={openFolderFile}
