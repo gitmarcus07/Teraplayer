@@ -97,6 +97,8 @@ export default function Home() {
   const requestIdRef = useRef(0);
   const heroInputRef = useRef(null);
   const folderBrowserRef = useRef(null);
+  const playerAreaRef = useRef(null);
+  const wasWatchingRef = useRef(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const submit = useCallback(
@@ -256,6 +258,24 @@ export default function Home() {
     extAbortRef.current?.abort();
     previewAbortRef.current?.abort();
   }, []);
+
+  // When Watch Now (or a folder video) activates the player, scroll it into
+  // view so it sits fully below the sticky header — exactly once per
+  // activation, never during extraction or on page load.
+  useEffect(() => {
+    if (watching && !wasWatchingRef.current && playerAreaRef.current) {
+      const el = playerAreaRef.current;
+      const rect = el.getBoundingClientRect();
+      const header = document.querySelector('[data-testid="app-header"]');
+      const headerH = header ? header.getBoundingClientRect().height : 0;
+      const fullyVisible = rect.top >= headerH && rect.bottom <= window.innerHeight;
+      if (!fullyVisible) {
+        el.style.scrollMarginTop = `${headerH + 12}px`;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+    wasWatchingRef.current = watching;
+  }, [watching]);
 
   const copyLink = async () => {
     try {
@@ -516,6 +536,7 @@ export default function Home() {
 
             {watching && streamViaProxy ? (
               <motion.div
+                ref={playerAreaRef}
                 key="player"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -527,6 +548,7 @@ export default function Home() {
                     src={streamViaProxy}
                     poster={currentFile?.thumbnail || preview.thumbnail}
                     title={currentFile?.name || preview.title}
+                    autoPlay
                     onDownloadInstead={() => setWatching(false)}
                     onProcessAnother={processAnother}
                     onRefreshSource={() => {

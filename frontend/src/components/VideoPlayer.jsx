@@ -43,7 +43,7 @@ function hashStr(str) {
   return h.toString(36);
 }
 
-export default function VideoPlayer({ src, poster, title, onDownloadInstead, onProcessAnother, onRefreshSource }) {
+export default function VideoPlayer({ src, poster, title, autoPlay = false, onDownloadInstead, onProcessAnother, onRefreshSource }) {
   const videoRef = useRef(null);
   const wrapRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -121,7 +121,14 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
   const togglePlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) v.play(); else v.pause();
+    if (v.paused) {
+      v.play().catch(() => {
+        // Autoplay may be blocked (no active user gesture yet) — keep the play
+        // button visible so the user can start playback by tapping it.
+      });
+    } else {
+      v.pause();
+    }
   }, []);
 
   const seek = useCallback((delta) => {
@@ -231,6 +238,7 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
       setDuration(v.duration || 0);
       setBuffering(false);
       // Offer a session-only resume when there's a meaningful saved position.
+      let hasResume = false;
       if (resumeKeyRef.current && Number.isFinite(v.duration)) {
         try {
           const raw = sessionStorage.getItem(resumeKeyRef.current);
@@ -243,12 +251,19 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
               v.duration > 30 &&
               saved.t < v.duration - 10
             ) {
+              hasResume = true;
               setResumePos(saved.t);
             }
           }
         } catch {
           /* ignore */
         }
+      }
+      // Watch Now requested autoplay: start once metadata is ready, unless a
+      // session resume prompt should be shown instead. If the browser blocks
+      // autoplay the promise rejects and the center play button stays usable.
+      if (autoPlay && !hasResume) {
+        v.play().catch(() => {});
       }
     };
     const onEnded = () => {
@@ -337,7 +352,7 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
       v.removeAttribute("src");
       v.load();
     };
-  }, [src, reloadToken, saveResume, clearResume, surfaceError]);
+  }, [src, reloadToken, saveResume, clearResume, surfaceError, autoPlay]);
 
   useEffect(() => {
     const onFs = () => setFullscreen(!!document.fullscreenElement);
@@ -499,9 +514,16 @@ export default function VideoPlayer({ src, poster, title, onDownloadInstead, onP
       {/* Center play button */}
       {!playing && !buffering && !playbackError && (
         <button
-          onClick={togglePlay}
+          onClick={(e) => {
+            // The bottom controls bar is rendered later and paints above this
+            // button, so on short (mobile) players it can swallow taps at the
+            // button's center. Raise the button above it and stop the event
+            // from propagating to the parent player's click handling.
+            e.stopPropagation();
+            togglePlay();
+          }}
           data-testid="center-play-btn"
-          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 ease-out hover:scale-110 sm:h-20 sm:w-20"
+          className="absolute left-1/2 top-1/2 z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 ease-out hover:scale-110 sm:h-20 sm:w-20"
           aria-label="Play"
         >
           <Play className="h-6 w-6 fill-white sm:h-8 sm:w-8" strokeWidth={0} />
