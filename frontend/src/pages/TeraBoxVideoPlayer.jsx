@@ -156,7 +156,7 @@ export default function TeraBoxVideoPlayer() {
 
         setSearchParams({ url });
       } catch (e) {
-        console.error(e);
+        console.error(e?.message || "Request failed");
         toast.error("Network error. Please try again.");
       } finally {
         setLoading(false);

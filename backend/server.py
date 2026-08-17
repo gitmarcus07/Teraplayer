@@ -6,11 +6,14 @@ and structured JSON logging for observability on Render/Railway.
 """
 from __future__ import annotations
 
+import asyncio
 import contextvars
+import ipaddress
 import json
 import logging
 import os
 import platform
+import socket
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -36,7 +39,7 @@ from models.terabox import (
 )
 from models.auth import UserCreate, UserLogin, GoogleAuthRequest
 from models.admin import AdminLogin, AdminCreate, AdminUpdate, AdminPasswordUpdate
-from services.terabox import get_preview, _set_db as _set_cache_db
+from services.terabox import get_preview, _set_db as _set_cache_db, CACHE_TTL_SECONDS
 from services.extractors import is_terabox_url, EXTRACTORS
 from services.extension_jobs import (
     create_job,
@@ -183,6 +186,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         try:
             await ensure_rl_indexes(db)
             await _ensure_session_ttl_index(db)
+            await _ensure_cache_ttl_index(db)
             await ensure_extension_jobs_indexes(db)
             await ensure_admin_indexes(db)
             await bootstrap_super_admin(db)
@@ -209,6 +213,20 @@ async def _ensure_session_ttl_index(db) -> None:
                        expireAfterSeconds=0),
         ])
         logger.info("Created TTL index on user_sessions.expires_at")
+
+
+async def _ensure_cache_ttl_index(db) -> None:
+    """TTL index on cache.expires_at so cached extraction results (whose keys
+    embed the share password and whose values embed signed CDN URLs) expire on
+    their own, even when never read again after the cache window."""
+    existing = await db.cache.index_information()
+    if "expires_at_ttl" not in existing:
+        await db.cache.create_indexes([
+            IndexModel([("expires_at", ASCENDING)],
+                       name="expires_at_ttl",
+                       expireAfterSeconds=CACHE_TTL_SECONDS),
+        ])
+        logger.info("Created TTL index on cache.expires_at")
 
 
 # ---------------------------------------------------------------------------
@@ -297,8 +315,8 @@ async def health(request: Request) -> dict[str, Any]:
         try:
             await db.command("ping")
             checks["mongo"] = "connected"
-        except Exception as exc:
-            checks["mongo"] = f"error: {exc}"
+        except Exception:
+            checks["mongo"] = "error"
             status = "degraded"
     else:
         checks["mongo"] = "not_configured"
@@ -535,6 +553,69 @@ def _is_trusted_cdn(url: str) -> bool:
         return False
 
 
+_PRIVATE_NETWORKS = tuple(
+    ipaddress.ip_network(net)
+    for net in (
+        "0.0.0.0/8",
+        "10.0.0.0/8",
+        "100.64.0.0/10",
+        "127.0.0.0/8",
+        "169.254.0.0/16",
+        "172.16.0.0/12",
+        "192.0.0.0/24",
+        "192.168.0.0/16",
+        "198.18.0.0/15",
+        "224.0.0.0/4",
+        "240.0.0.0/4",
+        "::1/128",
+        "fc00::/7",
+        "fe80::/10",
+    )
+)
+
+
+async def _is_unsafe_ssrf_target(url: str) -> bool:
+    """Reject stream targets that could reach internal infrastructure.
+
+    Blocks non-http(s) schemes, embedded credentials, private/loopback/
+    link-local/reserved IP literals, and hostnames that resolve to any such
+    address (covers DNS-rebinding and literal names like localhost).
+    Legitimate public TeraBox/CDN hosts are unaffected.
+    """
+    try:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return True
+        if parsed.username or parsed.password:
+            return True
+        host = (parsed.hostname or "").lower().rstrip(".")
+        if not host:
+            return True
+        try:
+            addr = ipaddress.ip_address(host)
+        except ValueError:
+            addr = None
+        if addr is not None:
+            return any(addr in net for net in _PRIVATE_NETWORKS)
+        loop = asyncio.get_running_loop()
+        try:
+            infos = await loop.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        except Exception:
+            return True
+        for info in infos:
+            try:
+                resolved = ipaddress.ip_address(info[4][0])
+            except ValueError:
+                continue
+            if any(resolved in net for net in _PRIVATE_NETWORKS):
+                return True
+        return False
+    except Exception:
+        return True
+
+
 # ---------------------------------------------------------------------------
 # Streaming proxy
 # ---------------------------------------------------------------------------
@@ -544,6 +625,8 @@ def _is_trusted_cdn(url: str) -> bool:
 async def stream(request: Request, url: str = Query(...)):
     await check_rate_limit(db, request, scope="stream")
     if not url or not url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="Invalid stream URL")
+    if await _is_unsafe_ssrf_target(url):
         raise HTTPException(status_code=400, detail="Invalid stream URL")
 
     range_header = request.headers.get("range")
@@ -580,6 +663,12 @@ async def stream(request: Request, url: str = Query(...)):
                 next_url = urljoin(curr_url, req.headers["location"])
                 await cm.__aexit__(None, None, None)
                 redirect_count += 1
+                if await _is_unsafe_ssrf_target(next_url):
+                    await client_.aclose()
+                    raise HTTPException(
+                        status_code=502,
+                        detail="The requested stream could not be reached. Please try again.",
+                    )
                 curr_url = next_url
                 if _is_trusted_cdn(curr_url):
                     if _ndus:
@@ -590,7 +679,10 @@ async def stream(request: Request, url: str = Query(...)):
                 break
     except Exception as exc:
         await client_.aclose()
-        raise HTTPException(status_code=502, detail=f"Upstream error: {exc}") from exc
+        raise HTTPException(
+            status_code=502,
+            detail="The requested stream could not be reached. Please try again.",
+        ) from exc
 
     async def _iter():
         try:

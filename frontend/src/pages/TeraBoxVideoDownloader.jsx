@@ -122,7 +122,7 @@ export default function TeraBoxVideoDownloader() {
         }
         setSearchParams({ url });
       } catch (e) {
-        console.error(e);
+        console.error(e?.message || "Request failed");
         toast.error("Network error. Please try again.");
       } finally {
         setLoading(false);

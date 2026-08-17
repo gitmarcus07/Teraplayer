@@ -81,49 +81,56 @@ def _is_password_error(errno: int, errmsg: str) -> bool:
     return any(p in errmsg.lower() for p in PASSWORD_PHRASES) if errmsg else False
 
 
+def _sanitize_log_url(url: str) -> str:
+    """Strip credential-bearing query params (pwd/password) before logging."""
+    try:
+        from urllib.parse import parse_qsl, urlencode, urlunparse
+        p = urlparse(url)
+        if not p.query:
+            return url
+        keep = [(k, v) for k, v in parse_qsl(p.query) if k.lower() not in ("pwd", "password")]
+        return urlunparse((p.scheme, p.netloc, p.path, p.params, urlencode(keep, doseq=True), p.fragment))
+    except Exception:
+        return url
+
+
 def _log_request(label: str, url: str, method: str = "GET", **kwargs):
-    """Structured request logging."""
+    """Structured request logging (sanitized; never forwards payloads)."""
     log_data = {
         "event": "request",
         "label": label,
-        "url": url,
+        "url": _sanitize_log_url(url),
         "method": method,
-        **kwargs,
     }
     logger.info(json.dumps(log_data, default=str))
 
 
 def _log_response(label: str, url: str, status: int, data: Any, log_raw: bool = False):
-    """Structured response logging with sanitized JSON."""
+    """Structured response logging with sanitized JSON (no raw payloads)."""
     log_data = {
         "event": "response",
         "label": label,
-        "url": url,
+        "url": _sanitize_log_url(url),
         "status": status,
         "errno": data.get("errno") if isinstance(data, dict) else None,
         "errmsg": data.get("errmsg") or data.get("error_msg") if isinstance(data, dict) else None,
     }
-    if log_raw and isinstance(data, dict):
-        sanitized = dict(data)
-        if "list" in sanitized and isinstance(sanitized["list"], list) and len(sanitized["list"]) > 5:
-            sanitized["list"] = sanitized["list"][:5] + [{"_truncated": len(sanitized["list"]) - 5}]
-        log_data["raw_json"] = sanitized
     logger.info(json.dumps(log_data, default=str))
 
 
 def _log_tokens(label: str, tokens: dict):
-    """Log extracted tokens (masked)."""
+    """Log which tokens were extracted, never their values."""
     logger.info(json.dumps({
         "event": "tokens_extracted",
         "label": label,
-        "jsToken": tokens.get("js_token", "")[:20] + "..." if tokens.get("js_token") else None,
-        "sign": tokens.get("sign", "")[:10] + "..." if tokens.get("sign") else None,
-        "shareid": tokens.get("shareid"),
-        "uk": tokens.get("uk"),
-        "timestamp": tokens.get("timestamp"),
-        "bdstoken": tokens.get("bdstoken", "")[:10] + "..." if tokens.get("bdstoken") else None,
-        "shorturl": tokens.get("shorturl"),
-        "surl": tokens.get("surl"),
+        "jsToken": bool(tokens.get("js_token")),
+        "sign": bool(tokens.get("sign")),
+        "shareid": bool(tokens.get("shareid")),
+        "uk": bool(tokens.get("uk")),
+        "timestamp": bool(tokens.get("timestamp")),
+        "bdstoken": bool(tokens.get("bdstoken")),
+        "shorturl": bool(tokens.get("shorturl")),
+        "surl": bool(tokens.get("surl")),
         "domain": tokens.get("domain"),
     }, default=str))
 
@@ -332,19 +339,6 @@ async def _fetch_share_page(
             html = resp.text
             final_url = str(resp.url)
 
-            # Save HTML to file for debugging when tokens are missing
-            import tempfile
-            import os
-            debug_dir = os.path.join(tempfile.gettempdir(), "terabox_debug")
-            os.makedirs(debug_dir, exist_ok=True)
-            debug_file = os.path.join(debug_dir, f"terabox_{domain}_{surl[:20]}.html")
-            try:
-                with open(debug_file, "w", encoding="utf-8") as f:
-                    f.write(html)
-                logger.info(f"Saved HTML to {debug_file} for debugging")
-            except Exception:
-                pass
-
             # Extract surl from final URL
             parsed = urlparse(final_url)
             extracted_surl = parse_qs(parsed.query).get("surl", [None])[0]
@@ -362,14 +356,12 @@ async def _fetch_share_page(
                 if not tokens.get(token_name):
                     missing_tokens.append(token_name)
 
-            # Log missing tokens for debugging
-            if missing_tokens:
-                logger.warning(
-                    f"Missing tokens on {domain}: {', '.join(missing_tokens)}. "
-                    f"Available: {[k for k, v in tokens.items() if v]}"
-                )
-                # Log HTML snippet at WARNING level so it's visible
-                logger.warning(f"HTML preview (first 3000 chars): {html[:3000]}")
+# Log which tokens are missing/available (names only, never values)
+                if missing_tokens:
+                    logger.warning(
+                        f"Missing tokens on {domain}: {', '.join(missing_tokens)}. "
+                        f"Available: {[k for k, v in tokens.items() if v]}"
+                    )
 
             # CRITICAL FIX: Return tokens even if modern tokens are missing
             # Only fail if js_token is missing (required for share/list API)
@@ -531,7 +523,7 @@ async def _call_get_download(
             if errno == 0 or errno == "0":
                 dlink = data.get("dlink") or data.get("download_link") or data.get("url")
                 if dlink:
-                    logger.info(f"Got direct dlink from {api_domain}: {dlink[:80]}...")
+                    logger.info(f"Got direct dlink from {api_domain}")
                     return dlink
 
             if _is_password_error(errno, errmsg):
@@ -718,7 +710,7 @@ async def extract_native(
         final_url_resolved = None
         if dlink:
             final_url_resolved = await _resolve_dlink(client, dlink, cookie_header)
-            logger.info(f"Resolved final URL: {final_url_resolved[:100]}...")
+            logger.info("Resolved final CDN URL")
 
         # Step 8: Validate we have a working URL
         if not final_url_resolved:

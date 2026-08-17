@@ -164,7 +164,7 @@ async def _playwright_extract(
                 page_url = f"https://{domain}/sharing/link?surl={surl}{pwd_param}"
 
                 try:
-                    logger.info(f"Playwright navigating to: {page_url}")
+                    logger.info(f"Playwright navigating to: {domain}")
                     await page.goto(page_url, wait_until="networkidle", timeout=20000)
                     await asyncio.sleep(2)  # Extra time for JS execution
 
@@ -210,8 +210,8 @@ async def _playwright_extract(
                     if tokens.get("jsToken"):
                         break
 
-                except Exception as e:
-                    logger.warning(f"Playwright failed on {domain}: {e}")
+                except Exception:
+                    logger.warning(f"Playwright failed on {domain}")
                     continue
 
             if not tokens or not tokens.get("jsToken"):
@@ -273,8 +273,8 @@ async def _playwright_extract(
                 "files": api_result["files"],
             }
 
-        except Exception as e:
-            logger.error(f"Playwright extraction error: {e}")
+        except Exception:
+            logger.error("Playwright extraction failed")
             return {
                 "ok": False,
                 "source": "playwright",
