@@ -232,13 +232,13 @@ export default function TeraBoxVideoDownloader() {
   return (
     <div className="App noise min-h-screen">
       <Seo
-        title="TeraBox Video Downloader | Download TeraBox Videos - TeraPlayer"
-        description="Download supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview, watch and download videos directly from your browser."
+        title="TeraBox Downloader — Download Videos & Files | TeraPlayer"
+        description="Download supported TeraBox videos and files online with TeraPlayer — a free TeraBox online downloader. Paste a public TeraBox link to preview, watch, and download in your preferred quality — no app, no login."
         path="/terabox-video-downloader"
-        ogTitle="TeraBox Video Downloader | TeraPlayer"
-        ogDescription="Download supported TeraBox videos online with TeraPlayer. Preview and download videos directly from your browser."
-        imageAlt="TeraBox Video Downloader - TeraPlayer"
-        twitterDescription="Download supported TeraBox videos online with TeraPlayer."
+        ogTitle="TeraBox Downloader — Download Videos & Files | TeraPlayer"
+        ogDescription="Download supported TeraBox videos and files online with TeraPlayer. Preview and download videos directly from your browser."
+        imageAlt="TeraBox Downloader - TeraPlayer"
+        twitterDescription="Download supported TeraBox videos and files online with TeraPlayer's TeraBox online downloader."
       >
         <script type="application/ld+json">
           {JSON.stringify({
@@ -675,7 +675,7 @@ export default function TeraBoxVideoDownloader() {
               Prefer to watch TeraBox videos online rather than download them?
             </p>
             <Button asChild className="mt-3 h-9 px-6 text-sm">
-              <Link to="/">Go to TeraPlayer</Link>
+              <Link to="/terabox-video-player">TeraBox video player</Link>
             </Button>
           </div>
         </motion.section>

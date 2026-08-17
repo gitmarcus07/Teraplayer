@@ -149,12 +149,12 @@ export default function HowToWatchTeraBoxVideos() {
 
       <Seo
         title="How to Watch TeraBox Videos Online | TeraPlayer"
-        description="Learn how to watch supported TeraBox videos online with TeraPlayer. Follow a simple guide to open a public TeraBox share link and stream videos in your browser."
+        description="Learn how to watch TeraBox videos online with TeraPlayer's TeraBox online player. Open a public TeraBox share link and stream videos directly in your browser."
         path="/how-to-watch-terabox-videos"
         ogTitle="How to Watch TeraBox Videos Online | TeraPlayer"
-        ogDescription="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+        ogDescription="Learn how to watch supported TeraBox videos online with TeraPlayer's TeraBox online player."
         imageAlt="How to Watch TeraBox Videos Online - TeraPlayer"
-        twitterDescription="Learn how to watch supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+        twitterDescription="Learn how to watch supported TeraBox videos online with TeraPlayer's TeraBox online player."
       >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -289,7 +289,15 @@ export default function HowToWatchTeraBoxVideos() {
             <p className="mt-4 text-muted-foreground">
               If the link you were given does not load, it usually means one of two things: the share itself is no
               longer public, or the link was not copied in full. Re-sharing from the original owner and copying the
-              complete URL are the most reliable ways to get playback working again.
+              complete URL are the most reliable ways to get playback working again. To understand why some links
+              open and others do not, the{" "}
+              <Link
+                to="/terabox-public-link"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                TeraBox public link guide
+              </Link>{" "}
+              explains how public shares work.
             </p>
           </motion.div>
         </section>

@@ -124,10 +124,10 @@ export default function TeraBoxVideoLinkNotWorking() {
       <Header />
 
       <Seo
-        title="TeraBox Link Not Working? Common Fixes | TeraPlayer"
-        description="Is your TeraBox link not working? Learn how to troubleshoot incomplete, private, unavailable and unsupported TeraBox video links with TeraPlayer."
+        title="TeraBox Video Link Not Working? Common Fixes | TeraPlayer"
+        description="TeraBox video link not working? Fix common TeraBox link, playback, and download issues with TeraPlayer and get supported public links to video playback."
         path="/terabox-video-link-not-working"
-        ogTitle="TeraBox Link Not Working? Common Fixes | TeraPlayer"
+        ogTitle="TeraBox Video Link Not Working? Common Fixes | TeraPlayer"
         ogDescription="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
         imageAlt="TeraBox Link Not Working - TeraPlayer"
         twitterDescription="Learn how to troubleshoot common TeraBox video link, playback and download problems with TeraPlayer."
@@ -164,7 +164,14 @@ export default function TeraBoxVideoLinkNotWorking() {
                 This guide walks through the common causes and helps you figure out the next step, whether the problem
                 is with the link itself, video playback, or downloading. Some links resolve quickly, while others
                 fail for reasons outside your control. Knowing which situation you are in makes it easier to decide
-                what to try next.
+                what to try next. To understand how public TeraBox share links are meant to work, see the{" "}
+                <Link
+                  to="/terabox-public-link"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  TeraBox public link guide
+                </Link>
+                .
               </p>
             </div>
           </motion.div>

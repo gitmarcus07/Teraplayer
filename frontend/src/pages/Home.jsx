@@ -381,13 +381,13 @@ export default function Home() {
   return (
     <div className="App noise min-h-screen">
       <Seo
-        title="TeraPlayer | TeraBox Video Downloader, Player & Streaming"
-        description="Watch, stream and download TeraBox videos online for free with TeraPlayer. Fast HD streaming, folder support, ZIP downloads and no login required."
+        title="TeraPlayer — TeraBox Online Player & Downloader"
+        description="TeraPlayer is a free TeraBox online player and downloader. Open TeraBox links, watch TeraBox videos online, and download supported files straight from your browser — no login."
         path="/"
-        ogTitle="TeraPlayer - Watch & Download TeraBox Videos"
-        ogDescription="Watch, stream and download TeraBox videos instantly with TeraPlayer. Fast HD streaming and folder support."
-        imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
-        twitterDescription="Watch, stream and download TeraBox videos instantly with TeraPlayer."
+        ogTitle="TeraPlayer — TeraBox Online Player & Downloader"
+        ogDescription="Watch TeraBox videos online and download supported files with TeraPlayer — a free TeraBox online player and downloader. No login required."
+        imageAlt="TeraPlayer - TeraBox Online Player & Downloader"
+        twitterDescription="Watch TeraBox videos online and download supported files with TeraPlayer."
       />
       <Header />
 

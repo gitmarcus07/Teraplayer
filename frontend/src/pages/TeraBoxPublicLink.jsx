@@ -83,13 +83,13 @@ export default function TeraBoxPublicLink() {
       <Header />
 
       <Seo
-        title="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer"
-        description="Learn what a public TeraBox share link is, how to use supported links with TeraPlayer, and what to do when a shared link is private, expired, restricted, or unsupported."
+        title="TeraBox Link Opener & Downloader | TeraPlayer"
+        description="Open TeraBox links online with TeraPlayer. Learn how public TeraBox share links work, how to turn a TeraBox link to video, and how to download supported files."
         path="/terabox-public-link"
-        ogTitle="TeraBox Public Link Guide: How Shared Links Work | TeraPlayer"
-        ogDescription="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
-        imageAlt="TeraBox Public Link Guide - TeraPlayer"
-        twitterDescription="Learn what a TeraBox public share link is, how to use supported links with TeraPlayer, and what to do when a shared link no longer works."
+        ogTitle="TeraBox Link Opener & Downloader | TeraPlayer"
+        ogDescription="Open TeraBox links online with TeraPlayer. Learn how public TeraBox share links work and how to download supported files."
+        imageAlt="TeraBox Link Opener & Downloader - TeraPlayer"
+        twitterDescription="Open TeraBox links online with TeraPlayer. Learn how public TeraBox share links work."
       >
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
       </Seo>
@@ -303,7 +303,7 @@ export default function TeraBoxPublicLink() {
         <section className="tp-container py-16 md:py-20">
           <motion.div {...fadeUp} className="mx-auto max-w-4xl">
             <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              How to Watch a <span className="text-primary">Shared TeraBox Video</span>
+              TeraBox Link to Video: <span className="text-primary">Watch a Shared Video</span>
             </h2>
             <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
               <p>
@@ -315,7 +315,9 @@ export default function TeraBoxPublicLink() {
                 >
                   TeraBox Video Player
                 </Link>{" "}
-                and stream supported public videos directly in your browser.
+                and stream supported public videos directly in your browser. In other words, TeraPlayer turns a
+                TeraBox link into a playable video in seconds — an easy way to open a TeraBox link to video without
+                installing anything.
               </p>
               <p>
                 Playback happens inside the browser, so there is nothing to install and no account needed. When a
@@ -357,9 +359,10 @@ export default function TeraBoxPublicLink() {
                   >
                     TeraBox Video Downloader
                   </Link>{" "}
-                  and use the download flow from your browser. For a single file, resolve the link and download it
-                  directly. For a folder, use the selection and ZIP features to download several supported files
-                  together.
+                  and use the download flow from your browser. This TeraBox link downloader resolves the share and
+                  prepares supported files for download without installing an app. For a single file, resolve the link
+                  and download it directly. For a folder, use the selection and ZIP features to download several
+                  supported files together.
                 </p>
                 <p>
                   Downloads only work when the underlying supported public share can be resolved. If the share is

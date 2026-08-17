@@ -126,12 +126,12 @@ export default function HowToDownloadTeraBoxFolder() {
 
       <Seo
         title="How to Download a TeraBox Folder | TeraPlayer"
-        description="Learn how to work with supported TeraBox folder and file links using TeraPlayer. See how to download supported files and what to do when a folder link does not work."
+        description="Download supported TeraBox folders and files online with TeraPlayer. Browse folder shares, select files, and download them individually or together as a ZIP."
         path="/how-to-download-terabox-folder"
         ogTitle="How to Download a TeraBox Folder | TeraPlayer"
-        ogDescription="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
+        ogDescription="Learn how to browse supported TeraBox folders and download individual files or a ZIP archive with TeraPlayer."
         imageAlt="How to Download a TeraBox Folder - TeraPlayer"
-        twitterDescription="Learn how to work with supported TeraBox folder and file links using TeraPlayer."
+        twitterDescription="Learn how to browse supported TeraBox folders and download individual files or a ZIP archive with TeraPlayer."
       >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

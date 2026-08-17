@@ -261,13 +261,13 @@ export default function TeraBoxVideoPlayer() {
   return (
     <>
       <Seo
-        title="TeraBox Video Player | Watch TeraBox Videos Online - TeraPlayer"
-        description="Watch supported TeraBox videos online with TeraPlayer. Paste a public TeraBox link to preview and play videos directly from your browser."
+        title="TeraBox Player — Watch TeraBox Videos Online | TeraPlayer"
+        description="Watch supported TeraBox videos online with TeraPlayer — a free TeraBox online video player. Paste a public TeraBox link to preview and stream videos directly in your browser."
         path="/terabox-video-player"
-        ogTitle="TeraBox Video Player | TeraPlayer"
-        ogDescription="Watch supported TeraBox videos online with TeraPlayer. Preview and play videos directly from your browser."
-        imageAlt="TeraBox Video Player - TeraPlayer"
-        twitterDescription="Watch supported TeraBox videos online with TeraPlayer."
+        ogTitle="TeraBox Player — Watch TeraBox Videos Online | TeraPlayer"
+        ogDescription="Watch supported TeraBox videos online with TeraPlayer's TeraBox online video player. Preview and play videos directly from your browser."
+        imageAlt="TeraBox Player - TeraPlayer"
+        twitterDescription="Watch supported TeraBox videos online with TeraPlayer's TeraBox online video player."
       >
         <script type="application/ld+json">
           {JSON.stringify(faqSchema)}
@@ -440,13 +440,13 @@ export default function TeraBoxVideoPlayer() {
         </section>
 
         <section className="max-w-4xl mx-auto px-4 py-10 border-t border-border/40">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center sm:text-left">
-            TeraBox Video Player — Watch TeraBox Videos Online
-          </h1>
-
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-4 text-center sm:text-left">
-            Online Browser Playback for Shared TeraBox Media
+            TeraBox Player — Watch TeraBox Videos Online
           </h2>
+
+          <h3 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight mb-4 text-center sm:text-left">
+            Online Browser Playback for Shared TeraBox Media
+          </h3>
 
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
             TeraPlayer provides a streamlined online video player interface
@@ -460,7 +460,16 @@ export default function TeraBoxVideoPlayer() {
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
             Our web player resolves shared links cleanly, organizing folder
             structures, multi-part video collections, and resolution choices
-            into a clean, accessible viewing experience.
+            into a clean, accessible viewing experience. If someone shared a
+            TeraBox file with you, learn how{" "}
+            <Link to="/terabox-public-link" className="text-primary hover:underline">
+              public TeraBox share links work
+            </Link>{" "}
+            and how to{" "}
+            <Link to="/how-to-watch-terabox-videos" className="text-primary hover:underline">
+              watch TeraBox videos online
+            </Link>
+            .
           </p>
         </section>
 

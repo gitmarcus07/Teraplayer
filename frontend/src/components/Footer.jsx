@@ -8,6 +8,14 @@ const LEGAL_LINKS = [
   { to: "/copyright", label: "Copyright" },
 ];
 
+const POPULAR_LINKS = [
+  { to: "/terabox-video-player", label: "TeraBox Video Player" },
+  { to: "/terabox-video-downloader", label: "TeraBox Video Downloader" },
+  { to: "/terabox-public-link", label: "Open a TeraBox Link" },
+  { to: "/terabox-zip-download", label: "TeraBox ZIP Download" },
+  { to: "/how-to-watch-terabox-videos", label: "How to Watch TeraBox Videos" },
+];
+
 export function FooterLegalLinks() {
   return (
     <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-border/40 pt-5 text-xs text-muted-foreground">
@@ -48,6 +56,23 @@ export default function Footer() {
               <Link to="/about" className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">
                 About
               </Link>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Popular
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+              {POPULAR_LINKS.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  className="transition-colors duration-200 hover:text-foreground"
+                >
+                  {l.label}
+                </Link>
+              ))}
             </div>
           </div>
 

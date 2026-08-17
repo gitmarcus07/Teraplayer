@@ -116,13 +116,13 @@ export default function TeraBoxZipDownload() {
       <Header />
 
       <Seo
-        title="TeraBox ZIP Download: Download Multiple Files | TeraPlayer"
-        description="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser, including how to select files and start a ZIP download."
+        title="TeraBox File Downloader — ZIP & Folder Downloads | TeraPlayer"
+        description="Download multiple supported TeraBox files as one ZIP with TeraPlayer. Browse folders, select files, and download them together from your browser."
         path="/terabox-zip-download"
-        ogTitle="TeraBox ZIP Download: Download Multiple Files | TeraPlayer"
-        ogDescription="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
-        imageAlt="TeraBox ZIP Download - TeraPlayer"
-        twitterDescription="Learn how TeraPlayer can combine selected supported TeraBox files into a ZIP archive in your browser."
+        ogTitle="TeraBox File Downloader — ZIP & Folder Downloads | TeraPlayer"
+        ogDescription="Download multiple supported TeraBox files as one ZIP with TeraPlayer, right from your browser."
+        imageAlt="TeraBox File Downloader - TeraPlayer"
+        twitterDescription="Download multiple supported TeraBox files as one ZIP with TeraPlayer, right from your browser."
       >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

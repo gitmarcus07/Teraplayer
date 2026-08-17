@@ -147,13 +147,13 @@ export default function HowToDownloadTeraBoxVideos() {
       <Header />
 
       <Seo
-        title="How to Download TeraBox Videos | TeraPlayer"
-        description="Learn how to download supported TeraBox videos online with TeraPlayer. Follow a simple step-by-step guide to paste a public TeraBox link, preview the video and download it."
+        title="How to Download TeraBox Videos Online | TeraPlayer"
+        description="Learn how to download TeraBox videos online with TeraPlayer. Paste a public TeraBox link, preview the video, and download supported files from your browser — no login."
         path="/how-to-download-terabox-videos"
-        ogTitle="How to Download TeraBox Videos | TeraPlayer"
-        ogDescription="Learn how to download supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
-        imageAlt="How to Download TeraBox Videos - TeraPlayer"
-        twitterDescription="Learn how to download supported TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+        ogTitle="How to Download TeraBox Videos Online | TeraPlayer"
+        ogDescription="Learn how to download TeraBox videos online with TeraPlayer using a simple browser-based workflow."
+        imageAlt="How to Download TeraBox Videos Online - TeraPlayer"
+        twitterDescription="Learn how to download TeraBox videos online with TeraPlayer using a simple browser-based workflow."
       >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
@@ -185,7 +185,14 @@ export default function HowToDownloadTeraBoxVideos() {
                 If someone has shared a TeraBox video with you through a public share link, this guide walks through
                 a simple way to save that video to your device. It also covers which links TeraPlayer can work
                 with, the difference between downloading and streaming, and what to do when a download does not go as
-                expected.
+                expected. If a link will not resolve at all, the{" "}
+                <Link
+                  to="/terabox-video-link-not-working"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  TeraBox link troubleshooting guide
+                </Link>{" "}
+                covers the common causes.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Button asChild className="h-11 px-6 text-sm">
