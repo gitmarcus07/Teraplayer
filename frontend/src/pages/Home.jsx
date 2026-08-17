@@ -261,24 +261,22 @@ export default function Home() {
 
   // When Watch Now (or a folder video) activates the player, scroll it into
   // view so it sits fully below the sticky header — exactly once per
-  // activation, never during extraction or on page load. Measure on the next
-  // frame so the player has been laid out at its final size, and only skip the
-  // scroll when it is clearly fully visible with a small margin (viewport
-  // height shifts as mobile URL bars collapse, so a tight check wrongly skips).
+  // activation, never during extraction or on page load. Scroll on every
+  // activation (no visibility guess): on Chrome Android `window.innerHeight`
+  // shifts as the URL bar collapses, so a "fully visible" check can wrongly
+  // skip. Wait two frames so the player has mounted and the browser has
+  // painted it at its final size before scrolling.
   useEffect(() => {
     if (watching && !wasWatchingRef.current) {
       const el = playerAreaRef.current;
       if (el) {
+        const header = document.querySelector('[data-testid="app-header"]');
+        const headerH = header ? header.getBoundingClientRect().height : 0;
+        el.style.scrollMarginTop = `${headerH + 12}px`;
         requestAnimationFrame(() => {
-          const rect = el.getBoundingClientRect();
-          const header = document.querySelector('[data-testid="app-header"]');
-          const headerH = header ? header.getBoundingClientRect().height : 0;
-          const fullyVisible =
-            rect.top >= headerH + 8 && rect.bottom <= window.innerHeight - 8;
-          if (!fullyVisible) {
-            el.style.scrollMarginTop = `${headerH + 12}px`;
+          requestAnimationFrame(() => {
             el.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
+          });
         });
       }
     }
