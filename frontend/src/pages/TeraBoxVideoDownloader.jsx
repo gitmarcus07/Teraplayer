@@ -401,52 +401,78 @@ export default function TeraBoxVideoDownloader() {
             className="tp-container pb-6"
           >
             <div className="mx-auto max-w-3xl px-5">
-              <PreviewCard
-                data={preview}
-                onWatch={() => setWatching(true)}
-                onDownload={() => setDownloading(true)}
-                onPlayFolderFile={openFolderFile}
-                isDownloading={downloading}
-                isWatching={watching}
-                qualityOptions={qualityOptions}
-                selectedQualityId={selectedQualityId}
-                onSelectQuality={setSelectedQualityId}
-                showQualityPicker={!!watching}
-                streamProxyUrl={streamViaProxy}
-                isFolder={isFolder}
-                copyLink={copyLink}
-                share={share}
-              />
+              {watching && streamViaProxy ? (
+                <motion.div
+                  key="player"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-3"
+                >
+                  <VideoPlayer
+                    src={streamViaProxy}
+                    poster={currentFile?.thumbnail || preview.thumbnail}
+                    title={currentFile?.name || preview.title}
+                    autoPlay
+                    onDownloadInstead={() => setWatching(false)}
+                    onRefreshSource={() => {
+                      if (preview?.sourceUrl) submit(preview.sourceUrl);
+                    }}
+                  />
 
-              {watching && isFolder && activeFile?.file_type === "video" && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setWatching(false)}
+                      data-testid="close-player-btn"
+                    >
+                      ← Back
+                    </Button>
+
+                    <QualityPicker
+                      options={qualityOptions}
+                      value={selectedQuality?.id || ""}
+                      onChange={setSelectedQualityId}
+                    />
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="md:mx-auto md:max-w-[470px]">
+                  <PreviewCard
+                    data={preview}
+                    onWatch={() => {
+                      if (!streamViaProxy) {
+                        toast.error("No stream URL available");
+                        return;
+                      }
+                      setWatching(true);
+                    }}
+                    onDownload={() => setDownloading(true)}
+                    onOpenFolder={() => setWatching(true)}
+                    onCopy={copyLink}
+                    onShare={share}
+                  />
+                </div>
+              )}
+
+              {qualityOptions.length > 1 && !watching && (
                 <div className="mt-4">
                   <QualityPicker
                     options={qualityOptions}
-                    selectedId={selectedQualityId}
+                    value={selectedQuality?.id || ""}
                     onChange={setSelectedQualityId}
                   />
                 </div>
               )}
 
-              {watching && (
-                <div className="mt-4">
-                  <VideoPlayer
-                    src={streamViaProxy}
-                    poster={preview.cover_url || preview.thumbnail}
-                    title={preview.title}
-                    qualityOptions={qualityOptions}
-                    selectedQualityId={selectedQualityId}
-                    onSelectQuality={setSelectedQualityId}
-                  />
-                </div>
-              )}
-
-              {(downloading || (watching && !isFolder)) && (
+              {(downloading || (watching && !isFolder)) && streamViaProxy && (
                 <div className="mt-4">
                   <DownloadPanel
-                    file={currentFile}
-                    preview={preview}
-                    onDone={() => setDownloading(false)}
+                    url={streamViaProxy}
+                    filename={currentFile?.name || preview.title}
+                    sizeHint={currentFile?.size || preview.size || 0}
+                    onClose={() => setDownloading(false)}
                   />
                 </div>
               )}
@@ -457,17 +483,9 @@ export default function TeraBoxVideoDownloader() {
                     files={preview.files}
                     folderName={preview.title}
                     onPlayFile={openFolderFile}
+                    activeIdx={activeFile?._idx}
                   />
                 </div>
-              )}
-
-              {watching && isFolder && (
-                <DownloadPanel
-                  file={null}
-                  preview={preview}
-                  isFolderDownload
-                  onDone={() => setWatching(false)}
-                />
               )}
             </div>
           </motion.section>
