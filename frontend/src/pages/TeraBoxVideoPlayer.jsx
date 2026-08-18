@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   ArrowRight,
   Puzzle,
+  KeyRound,
 } from "lucide-react";
 
 import HeroInput from "../components/HeroInput";
@@ -237,6 +238,19 @@ export default function TeraBoxVideoPlayer() {
   const streamUrl = effectiveFile?.stream_url || effectiveFile?.download_url;
   const streamViaProxy = streamUrl ? streamProxyUrl(streamUrl) : null;
 
+  const isFolder =
+    preview?.ok &&
+    Array.isArray(preview?.files) &&
+    preview.files.length > 1 &&
+    qualityOptions.length === 0;
+
+  const openFolderFile = (file) => {
+    setActiveFile(file);
+    setSelectedQualityId("");
+    setWatching(file.file_type === "video");
+    setDownloading(false);
+  };
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -351,63 +365,116 @@ export default function TeraBoxVideoPlayer() {
             <div className="mt-8 text-left max-w-2xl mx-auto space-y-6">
               {preview.ok ? (
                 <>
-                  <PreviewCard
-                    preview={preview}
-                    onWatch={() => {
-                      setWatching(true);
-                      setDownloading(false);
-                    }}
-                    onDownload={() => {
-                      setDownloading(true);
-                      setWatching(false);
-                    }}
-                  />
+                  {watching && effectiveFile ? (
+                    streamViaProxy ? (
+                      <div className="space-y-6">
+                        <VideoPlayer
+                          src={streamViaProxy}
+                          poster={effectiveFile?.thumbnail || preview.thumbnail}
+                          title={effectiveFile?.name || preview.title}
+                        />
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setWatching(false)}
+                            data-testid="close-player-btn"
+                          >
+                            ← Back
+                          </Button>
+                          {qualityOptions.length > 1 && (
+                            <QualityPicker
+                              options={qualityOptions}
+                              selectedId={
+                                selectedQualityId || qualityOptions[0].id
+                              }
+                              onSelect={(q) => {
+                                setSelectedQualityId(q.id);
+                                setActiveFile(q.file);
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
+                        No playable stream URL available for this file.
+                      </div>
+                    )
+                  ) : (
+                    <>
+                      <PreviewCard
+                        data={preview}
+                        onWatch={() => {
+                          setWatching(true);
+                          setDownloading(false);
+                        }}
+                        onDownload={() => {
+                          setDownloading(true);
+                          setWatching(false);
+                        }}
+                      />
 
-                  {qualityOptions.length > 1 && (
-                    <QualityPicker
-                      options={qualityOptions}
-                      selectedId={
-                        selectedQualityId || qualityOptions[0].id
-                      }
-                      onSelect={(q) => {
-                        setSelectedQualityId(q.id);
-                        setActiveFile(q.file);
-                      }}
-                    />
+                      {qualityOptions.length > 1 && (
+                        <QualityPicker
+                          options={qualityOptions}
+                          selectedId={
+                            selectedQualityId || qualityOptions[0].id
+                          }
+                          onSelect={(q) => {
+                            setSelectedQualityId(q.id);
+                            setActiveFile(q.file);
+                          }}
+                        />
+                      )}
+
+                      {isFolder && (
+                        <FolderBrowser
+                          files={preview.files}
+                          folderName={preview.title}
+                          onPlayFile={openFolderFile}
+                          activeIdx={activeFile?._idx}
+                        />
+                      )}
+                    </>
                   )}
 
-                  {preview.is_folder && preview.files?.length > 1 && (
-                    <FolderBrowser
-                      files={preview.files}
-                      activeFile={effectiveFile}
-                      onSelectFile={(f) => {
-                        setActiveFile(f);
-                        setSelectedQualityId("");
-                      }}
-                    />
-                  )}
-
-                  {watching && effectiveFile && streamViaProxy && (
-                    <VideoPlayer
-                      src={streamViaProxy}
-                      poster={effectiveFile?.thumbnail || preview.thumbnail}
-                      title={effectiveFile?.name || preview.title}
-                    />
-                  )}
-
-                  {watching && effectiveFile && !streamViaProxy && (
-                    <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
-                      No playable stream URL available for this file.
-                    </div>
-                  )}
-
-                  {downloading && effectiveFile && (
+                  {downloading && effectiveFile && streamViaProxy && (
                     <DownloadPanel
-                      file={effectiveFile}
-                      sourceUrl={preview.sourceUrl}
+                      url={streamViaProxy}
+                      filename={effectiveFile?.name || preview.title}
+                      sizeHint={effectiveFile?.size || preview.size || 0}
+                      onClose={() => setDownloading(false)}
                     />
                   )}
                 </>
+              ) : preview.password_required ? (
+                <div
+                  data-testid="password-required-panel"
+                  className="flex items-start gap-3 rounded-2xl border border-primary/40 bg-primary/5 p-4 sm:p-6"
+                >
+                  <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <div className="flex-1">
+                    <div className="font-semibold">This link is password protected</div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Enter the password to unlock the file preview.
+                    </p>
+                    <Button
+                      className="mt-3"
+                      size="sm"
+                      onClick={() =>
+                        setPwdDialog({
+                          open: true,
+                          url: preview.sourceUrl || searchParams.get("url") || "",
+                          incorrect: false,
+                        })
+                      }
+                      data-testid="open-password-btn"
+                    >
+                      Enter password
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
                   {safePreviewError(preview.error).description}

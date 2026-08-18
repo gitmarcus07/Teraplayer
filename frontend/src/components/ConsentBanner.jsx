@@ -37,7 +37,8 @@ export default function ConsentBanner() {
     <div
       role="dialog"
       aria-label="Privacy consent"
-      className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-xl rounded-2xl border border-border/70 bg-surface-raised/95 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl sm:left-4 sm:right-auto"
+      className="fixed inset-x-4 bottom-4 mx-auto max-w-xl rounded-2xl border border-border/70 bg-surface-raised/95 p-4 shadow-2xl shadow-black/40 sm:left-4 sm:right-auto"
+      style={{ zIndex: 2147483647 }}
       data-testid="consent-banner"
     >
       <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">

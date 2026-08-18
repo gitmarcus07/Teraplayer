@@ -12,6 +12,7 @@ import {
   Smartphone,
   ChevronRight,
   Puzzle,
+  KeyRound,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -391,7 +392,40 @@ export default function TeraBoxVideoDownloader() {
           </div>
         )}
 
-        {preview && (
+        {preview && preview.ok === false && preview.password_required && (
+          <div className="tp-container pb-4">
+            <div
+              className="mx-auto max-w-3xl px-5 rounded-2xl border border-primary/40 bg-primary/5 p-4 sm:p-6"
+              data-testid="password-required-panel"
+            >
+              <div className="flex items-start gap-3">
+                <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <div className="flex-1">
+                  <div className="font-semibold">This link is password protected</div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Enter the password to unlock the file preview.
+                  </p>
+                  <Button
+                    className="mt-3"
+                    size="sm"
+                    onClick={() =>
+                      setPwdDialog({
+                        open: true,
+                        url: preview.sourceUrl || searchParams.get("url") || "",
+                        incorrect: false,
+                      })
+                    }
+                    data-testid="open-password-btn"
+                  >
+                    Enter password
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {preview && preview.ok && (
           <motion.section
             id="results"
             initial={{ opacity: 0, y: 20 }}

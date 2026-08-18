@@ -181,6 +181,15 @@ async def extract_via_xapiverse(url: str, client: httpx.AsyncClient, password: s
     if not isinstance(data, dict):
         raise ValueError("xapiverse: invalid response type")
 
+    # A password-protected share is not a generic failure: propagate it so the
+    # orchestrator can prompt the user for the share password instead of
+    # surfacing "Something went wrong". (Imported lazily to avoid a circular
+    # import — services.extractors imports this module at load time.)
+    from .extractors import PasswordError, _is_password_error as _detect_password
+
+    if _detect_password(data):
+        raise PasswordError("xapiverse: password required")
+
     if data.get("status") != "success":
         raise ValueError("xapiverse: non-success response")
 
@@ -190,8 +199,15 @@ async def extract_via_xapiverse(url: str, client: httpx.AsyncClient, password: s
 
     files = [_map_item(item) for item in lst]
     first = files[0]
-    stream_url = first.get("stream_url")
-    if not stream_url:
+    # A folder share's first entry usually has no direct stream. Fall back to
+    # the first playable entry so single-video shares keep a top-level stream
+    # while folder shares still surface their full file list.
+    stream_url = first.get("stream_url") or next(
+        (f.get("stream_url") for f in files if f.get("stream_url")), None
+    )
+    if not stream_url and not any(
+        (f.get("download_url") or f.get("stream_url")) for f in files
+    ):
         raise ValueError("xapiverse: no stream URL in response")
 
     return {

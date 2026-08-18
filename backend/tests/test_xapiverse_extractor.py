@@ -249,6 +249,24 @@ class TestFailureHandling:
         payload = {"status": "error", "message": "invalid share url"}
         self._assert_error(_make_client(post_result=_resp(200, json_data=payload)), "non-success", monkeypatch)
 
+    def test_password_required_raises_password_error(self, monkeypatch):
+        monkeypatch.setattr(xapiverse, "XAPIVERSE_API_KEY", "test-api-key")
+        payload = {"status": "error", "message": "This link is password protected, please enter password"}
+        client = _make_client(post_result=_resp(200, json_data=payload))
+        with pytest.raises(extractors.PasswordError, match="password required"):
+            run_async(
+                xapiverse.extract_via_xapiverse("https://terabox.com/s/1abc", client, "")
+            )
+
+    def test_password_errno_raises_password_error(self, monkeypatch):
+        monkeypatch.setattr(xapiverse, "XAPIVERSE_API_KEY", "test-api-key")
+        payload = {"status": "error", "errno": -9, "message": "access denied"}
+        client = _make_client(post_result=_resp(200, json_data=payload))
+        with pytest.raises(extractors.PasswordError, match="password required"):
+            run_async(
+                xapiverse.extract_via_xapiverse("https://terabox.com/s/1abc", client, "")
+            )
+
     def test_empty_list(self, monkeypatch):
         payload = {"status": "success", "total_files": 0, "list": []}
         self._assert_error(_make_client(post_result=_resp(200, json_data=payload)), "empty list", monkeypatch)

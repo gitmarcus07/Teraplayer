@@ -229,6 +229,67 @@ class TestFallbackChain:
         assert result["password_required"] is True
         assert result["password_incorrect"] is True
 
+    def test_password_required_survives_primary_extractor_failure(self, monkeypatch):
+        """The primary (xapiverse) extractor signalling password protection must
+        propagate to the final response even when every other extractor fails."""
+        async def _xap_stub(url, client, password=""):
+            raise PasswordError("xapiverse: password required")
+
+        async def _hnn_stub(url, client, password=""):
+            raise ValueError("hnn: 403 Forbidden")
+
+        async def _teradl_stub(url, client, password=""):
+            raise ValueError("teradl error: No files found")
+
+        monkeypatch.setattr(extractors, "EXTRACTORS", [
+            ("xapiverse", _xap_stub),
+            ("hnn", _hnn_stub),
+            ("teradl", _teradl_stub),
+        ])
+        result = run_async(resolve_terabox("https://terabox.com/s/1abc"))
+        assert result["ok"] is False
+        assert result["password_required"] is True
+        assert result["password_incorrect"] is False
+        assert "Password required" in result.get("title", "")
+
+
+class TestTeradlPassword:
+    def _client(self, payload):
+        resp = _make_resp(200, payload)
+        mock_get = AsyncMock(return_value=resp)
+        return SimpleNamespace(get=mock_get)
+
+    def test_status_error_with_password_phrase_raises_password_error(self, monkeypatch):
+        client = self._client({"status": "error", "message": "This link is password protected. Enter the password."})
+        with pytest.raises(PasswordError, match="password"):
+            run_async(
+                extractors._extract_via_teradl("https://terabox.com/s/1abc", client, "")
+            )
+
+    def test_status_error_without_password_phrase_raises_value_error(self, monkeypatch):
+        client = self._client({"status": "error", "message": "No files found"})
+        with pytest.raises(ValueError, match="teradl error"):
+            run_async(
+                extractors._extract_via_teradl("https://terabox.com/s/1abc", client, "")
+            )
+
+
+class TestCfWorkerPasswordSignalFallback:
+    def test_worker_password_phrase_without_flag_raises_password_error(self, monkeypatch):
+        """Older worker responses may omit password_required but still carry a
+        definitive password phrase — treat them as password protection."""
+        monkeypatch.setattr(extractors, "CF_WORKER_URL", "https://test-worker.workers.dev")
+        resp = _make_resp(200, {"ok": False, "error": "This link is password protected."})
+        mock_post = AsyncMock(return_value=resp)
+        with pytest.raises(PasswordError, match="password"):
+            run_async(
+                extractors._extract_via_cf_worker(
+                    "https://terabox.com/s/1abc",
+                    SimpleNamespace(post=mock_post),
+                    "",
+                )
+            )
+
 
 # ---------------------------------------------------------------------------
 # Helpers

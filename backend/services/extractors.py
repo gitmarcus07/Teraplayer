@@ -159,6 +159,8 @@ async def _extract_via_teradl(url: str, client: httpx.AsyncClient, password: str
     data = resp.json()
 
     if data.get("status") == "error":
+        if _is_password_error(data):
+            raise PasswordError(f"teradl: {data.get('message', 'password required')}")
         raise ValueError(f"teradl error: {data.get('message', 'unknown error')}")
 
     files = data.get("list") or data.get("files") or []
@@ -516,7 +518,7 @@ async def _extract_via_cf_worker(url: str, client: httpx.AsyncClient, password: 
         if not isinstance(data, dict):
             raise ValueError("cf_worker: invalid response type")
 
-        if data.get("password_required"):
+        if data.get("password_required") or _is_password_error(data):
             raise PasswordError(f"cf_worker: {data.get('error', 'password required')}")
 
         if not data.get("ok"):
@@ -556,6 +558,24 @@ EXTRACTORS = [
 ]
 
 
+def _is_playable_result(result: dict[str, Any]) -> bool:
+    """Whether an extractor result is usable by the frontend.
+
+    Single-file shares carry a top-level direct link. Folder shares carry a
+    populated ``files`` list whose entries provide their own links, so they are
+    usable even when no single top-level stream applies. Results where no entry
+    has a direct link (e.g. an unverified ``normal_dlink``) are not usable.
+    """
+    if not result.get("ok"):
+        return False
+    if result.get("download_url") or result.get("stream_url"):
+        return True
+    files = result.get("files")
+    return isinstance(files, list) and any(
+        (f.get("download_url") or f.get("stream_url")) for f in files
+    )
+
+
 async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
     """Try all extractors and return the first successful result.
 
@@ -568,7 +588,7 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
             try:
                 logger.info("Trying extractor: %s", name)
                 result = await fn(url, client, password)
-                if result.get("ok") and (result.get("download_url") or result.get("stream_url")):
+                if _is_playable_result(result):
                     return result
                 last_error = f"{name}: no direct link"
             except PasswordError as exc:
