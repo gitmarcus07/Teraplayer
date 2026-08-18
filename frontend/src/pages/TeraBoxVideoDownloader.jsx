@@ -27,6 +27,7 @@ import { Button } from "../components/ui/button";
 
 import { postPreview, streamProxyUrl } from "../services/api";
 import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
+import { safePreviewError } from "../utils/errorHandling";
 
 const faqItems = [
   {
@@ -115,7 +116,7 @@ export default function TeraBoxVideoDownloader() {
             if (wasIncorrect) toast.error("Incorrect password. Please try again.");
             setPwdDialog({ open: true, url, incorrect: wasIncorrect });
           } else {
-            toast.error(data.error || "Could not extract this link.");
+            toast.error(safePreviewError(data.error).title);
           }
         } else {
           toast.success("Link resolved");
@@ -165,7 +166,7 @@ export default function TeraBoxVideoDownloader() {
             incorrect: !!res.preview.password_incorrect,
           });
         } else {
-          toast.error(res.preview.error || "Could not extract this link via browser.");
+          toast.error(safePreviewError(res.preview.error).title);
         }
       }
       setExtRunning(false);
@@ -369,8 +370,7 @@ export default function TeraBoxVideoDownloader() {
                 <div>
                   <div className="font-semibold">We couldn't extract this link</div>
                   <p className="mt-1 text-sm opacity-90">
-                    {preview.error ||
-                      "The link may be private, expired, or the extractor mirrors are temporarily unavailable."}
+                    {safePreviewError(preview.error).description}
                   </p>
                   <Button
                     className="mt-3"

@@ -8,6 +8,7 @@ import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { lazy, Suspense, useState, useEffect } from "react";
 import Home from "@/pages/Home";
+import ConsentBanner from "@/components/ConsentBanner";
 import { getSiteStatus } from "@/services/adminApi";
 
 // Non-critical pages and the entire admin shell are lazy-loaded so they never
@@ -29,6 +30,7 @@ const TeraBoxZipDownload = lazy(() => import("@/pages/TeraBoxZipDownload"));
 const TeraBoxPublicLink = lazy(() => import("@/pages/TeraBoxPublicLink"));
 const TeraBoxDownloadMobile = lazy(() => import("@/pages/TeraBoxDownloadMobile"));
 const TeraBoxDownloadPC = lazy(() => import("@/pages/TeraBoxDownloadPC"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 const AdminRoute = lazy(() => import("@/components/admin/AdminRoute"));
 const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
@@ -74,33 +76,36 @@ function PublicShell() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <PageTransition key={location.pathname}>
-        <Suspense fallback={<PageLoader />}>
-          <Routes location={location}>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/meet-the-dev" element={<MeetTheDev />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/about-teraplayer" element={<AboutTeraPlayer />} />
-          <Route path="/copyright" element={<Copyright />} />
-          <Route path="/terabox-video-downloader" element={<TeraBoxVideoDownloader />} />
-          <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
-          <Route path="/how-to-download-terabox-videos" element={<HowToDownloadTeraBoxVideos />} />
-          <Route path="/how-to-watch-terabox-videos" element={<HowToWatchTeraBoxVideos />} />
-          <Route path="/terabox-video-link-not-working" element={<TeraBoxVideoLinkNotWorking />} />
-          <Route path="/how-to-download-terabox-folder" element={<HowToDownloadTeraBoxFolder />} />
-          <Route path="/terabox-zip-download" element={<TeraBoxZipDownload />} />
-          <Route path="/terabox-public-link" element={<TeraBoxPublicLink />} />
-          <Route path="/terabox-download-mobile" element={<TeraBoxDownloadMobile />} />
-          <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
-          <Route path="*" element={<Home />} />
-          </Routes>
-        </Suspense>
-      </PageTransition>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait">
+        <PageTransition key={location.pathname}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes location={location}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/meet-the-dev" element={<MeetTheDev />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/about-teraplayer" element={<AboutTeraPlayer />} />
+            <Route path="/copyright" element={<Copyright />} />
+            <Route path="/terabox-video-downloader" element={<TeraBoxVideoDownloader />} />
+            <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
+            <Route path="/how-to-download-terabox-videos" element={<HowToDownloadTeraBoxVideos />} />
+            <Route path="/how-to-watch-terabox-videos" element={<HowToWatchTeraBoxVideos />} />
+            <Route path="/terabox-video-link-not-working" element={<TeraBoxVideoLinkNotWorking />} />
+            <Route path="/how-to-download-terabox-folder" element={<HowToDownloadTeraBoxFolder />} />
+            <Route path="/terabox-zip-download" element={<TeraBoxZipDownload />} />
+            <Route path="/terabox-public-link" element={<TeraBoxPublicLink />} />
+            <Route path="/terabox-download-mobile" element={<TeraBoxDownloadMobile />} />
+            <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
+            <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </PageTransition>
+      </AnimatePresence>
+      <ConsentBanner />
+    </>
   );
 }
 

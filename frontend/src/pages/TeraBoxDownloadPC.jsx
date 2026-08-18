@@ -157,7 +157,7 @@ export default function TeraBoxDownloadPC() {
                 creating ZIP archives, and watching videos on a PC.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild className="h-11 px-6 text-sm">
+                <Button asChild className="h-auto min-w-0 whitespace-normal px-5 py-2.5 text-sm">
                   <Link to="/terabox-video-downloader">
                     <Download className="mr-2 h-4 w-4" />
                     Open the TeraBox Video Downloader
@@ -469,7 +469,7 @@ export default function TeraBoxDownloadPC() {
                 with TeraPlayer, no software required.
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild className="h-12 px-8 text-base" size="lg">
+                <Button asChild className="h-auto min-w-0 whitespace-normal px-5 py-3 text-base" size="lg">
                   <Link to="/terabox-video-downloader">
                     <Download className="mr-2 h-5 w-5" />
                     Go to TeraBox Video Downloader

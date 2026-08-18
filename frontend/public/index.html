@@ -2,54 +2,53 @@
 <html lang="en">
 
 <head>
-    <!-- Google tag (gtag.js) -->
+    <!-- Consent-gating for analytics/advertising cookies (see Privacy Policy) -->
+    <script>
+        (function () {
+            var c = null;
+            try {
+                c = localStorage.getItem("teraplayer-consent");
+            } catch (e) {
+                /* storage unavailable */
+            }
+            window.__tpConsent =
+                c === "accepted" ? "accepted" : c === "declined" ? "declined" : null;
+            window.__tpConsentAccepted = function () {
+                return window.__tpConsent === "accepted";
+            };
+        })();
+    </script>
+
+    <!-- Google tag (gtag.js) — analytics only after consent -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CBGDNNC6ZK"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
-        gtag('config', 'G-CBGDNNC6ZK');
+        window.__tpGtagInited = false;
+        window.__tpInitGtag = function () {
+            if (window.__tpGtagInited) return;
+            window.__tpGtagInited = true;
+            gtag('config', 'G-CBGDNNC6ZK');
+        };
+        if (window.__tpConsentAccepted()) window.__tpInitGtag();
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta name="description"
-        content="TeraPlayer is a free TeraBox online player and downloader. Open TeraBox links, watch TeraBox videos online, and download supported files straight from your browser — no login." />
 
     <title>TeraPlayer — TeraBox Online Player & Downloader</title>
-
-    <link rel="canonical" href="https://www.teraplayer.in/" />
-
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="TeraPlayer" />
-    <meta property="og:title" content="TeraPlayer — TeraBox Online Player & Downloader" />
-    <meta property="og:description"
-        content="TeraPlayer is a free TeraBox online player and downloader. Open TeraBox links, watch TeraBox videos online, and download supported files straight from your browser — no login." />
-    <meta property="og:url" content="https://www.teraplayer.in/" />
-    <meta property="og:image" content="https://www.teraplayer.in/logo.png" />
-    <meta property="og:image:alt" content="TeraPlayer — TeraBox Online Player & Downloader" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="TeraPlayer — TeraBox Online Player & Downloader" />
-    <meta name="twitter:description"
-        content="TeraPlayer is a free TeraBox online player and downloader. Open TeraBox links, watch TeraBox videos online, and download supported files straight from your browser — no login." />
-    <meta name="twitter:image" content="https://www.teraplayer.in/logo.png" />
-    <meta name="twitter:image:alt" content="TeraPlayer — TeraBox Online Player & Downloader" />
-
-    <meta name="author" content="TeraPlayer" />
-    <meta name="application-name" content="TeraPlayer" />
-    <meta name="robots" content="index, follow" />
 
     <!-- Icons -->
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/logoforsite.png" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logoforsite.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Fonts -->
+    <!-- Fonts (single consolidated request, swapped so text renders immediately) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -70,9 +69,24 @@
         }, true);
     </script>
 
-    <!-- Google AdSense site verification -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1829462522713040"
-        crossorigin="anonymous"></script>
+    <!--
+      Google AdSense site verification — loaded only after consent so that no
+      advertising cookies are set before the visitor accepts.
+    -->
+    <script>
+        window.__tpAdsenseInited = false;
+        window.__tpInitAdsense = function () {
+            if (window.__tpAdsenseInited) return;
+            window.__tpAdsenseInited = true;
+            var s = document.createElement("script");
+            s.async = true;
+            s.src =
+                "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1829462522713040";
+            s.crossOrigin = "anonymous";
+            document.head.appendChild(s);
+        };
+        if (window.__tpConsentAccepted()) window.__tpInitAdsense();
+    </script>
 </head>
 
 <body>
@@ -150,11 +164,17 @@
                     }),
                     (e.__SV = 1));
         })(document, window.posthog || []);
-        posthog.init("phc_DbsPb39SRc8z3EiQ6Dhj6ikv4H4rTKcht9d4sZSesceP", {
-            api_host: "https://ap.emergent.sh",
-            person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well,
-            session_recording: false,
-        });
+        window.__tpPosthogInited = false;
+        window.__tpInitPosthog = function () {
+            if (window.__tpPosthogInited) return;
+            window.__tpPosthogInited = true;
+            posthog.init("phc_DbsPb39SRc8z3EiQ6Dhj6ikv4H4rTKcht9d4sZSesceP", {
+                api_host: "https://ap.emergent.sh",
+                person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well,
+                session_recording: false,
+            });
+        };
+        if (window.__tpConsentAccepted()) window.__tpInitPosthog();
     </script>
 </body>
 

@@ -109,6 +109,19 @@ export function classifyPreviewError(error, data) {
   return { category: ERROR_CATEGORIES.UNKNOWN };
 }
 
+// safePreviewError — returns ERROR_COPY (title + description) for a raw
+// extraction error string. It never surfaces backend/extractor internals to
+// users; raw text is used only for classification. Falls back to friendly
+// generic copy for anything unrecognized.
+export function safePreviewError(rawError, passwordRequired = false) {
+  const cls = classifyPreviewError(null, {
+    error: rawError || "",
+    password_required: passwordRequired,
+  });
+  if (!cls) return ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
+  return ERROR_COPY[cls.category] || ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
+}
+
 export const ERROR_COPY = {
   [ERROR_CATEGORIES.INVALID_LINK]: {
     title: "That doesn't look like a valid TeraBox link.",

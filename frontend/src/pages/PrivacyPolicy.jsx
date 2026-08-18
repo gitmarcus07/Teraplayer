@@ -46,6 +46,7 @@ const SECTIONS = [
     ],
     bullets: [
       "Technical request information (such as IP address, browser and device details, and basic usage information)",
+      "Aggregate analytics events (such as approximate usage and feature engagement) via PostHog and Google Analytics",
       "TeraBox links you paste in order to use the service",
       "Account information you choose to provide (such as name and email address) if you sign up",
     ],
@@ -67,9 +68,10 @@ const SECTIONS = [
     icon: Cookie,
     title: "Cookies and Local Storage",
     paragraphs: [
-      "TeraPlayer stores a small theme preference in your browser's local storage so your chosen appearance is remembered between visits.",
-      "If you sign in, our backend sets secure session cookies so you can stay signed in. These cookies are set by TeraPlayer itself, not by third parties.",
-      "We do not currently use advertising cookies or cross-site tracking cookies. If advertising is introduced in the future, advertising partners may use cookies or similar technologies according to their own policies.",
+      "TeraPlayer stores a small theme preference in your browser's local storage so your chosen appearance is remembered between visits, and a short playback resume position in session storage so a video continues where you left off within the same session.",
+      "We use privacy-conscious analytics (PostHog and Google Analytics) to understand general usage and improve the product. These services set cookies only after you accept the consent banner shown on your first visit. If you decline, analytics are not enabled.",
+      "If you sign in, our backend sets secure session cookies so you can stay signed in. These cookies are set by TeraPlayer itself.",
+      "We load the Google AdSense verification tag only after you accept the consent banner, to prepare for advertising. We do not currently serve ad units. Once the tag is loaded, Google may set advertising cookies (for example the Google/DoubleClick IDE cookie) according to its own policies.",
       "Local storage and cookies live in your browser, and you can clear them at any time through your browser settings.",
     ],
   },
@@ -77,9 +79,13 @@ const SECTIONS = [
     icon: Globe,
     title: "Third-Party Services",
     paragraphs: [
-      "TeraPlayer uses a small number of third-party services to run and to resolve links:",
+      "TeraPlayer uses a small number of third-party services to run, analyze, and resolve links:",
     ],
     bullets: [
+      "Google Analytics — aggregated, privacy-conscious web analytics (enabled only after you accept the consent banner)",
+      "PostHog — privacy-conscious product analytics, enabled only after you accept the consent banner",
+      "Google AdSense — advertising verification tag loaded only after you accept the consent banner; ad units are not currently served",
+      "Google Fonts — web fonts loaded from Google's CDN; like all web fonts, requests include standard request information such as your IP address",
       "Google Sign-In (optional) — lets you sign in with a Google account, subject to Google's privacy policy",
       "A third-party extraction service (xAPIverse) — used to resolve TeraBox links; only the link data needed for resolution is shared",
       "Cloudflare Workers, Vercel, Render, and MongoDB — hosting and data infrastructure for the frontend, backend, and storage",
@@ -114,6 +120,7 @@ const SECTIONS = [
     title: "User Choices",
     paragraphs: [
       "If you use TeraPlayer without an account, there is no account data for us to manage. You can always clear your browser's local storage and cookies.",
+      "When you first visit, a small non-intrusive banner asks whether you accept analytics and advertising cookies. The core features of TeraPlayer work whether you accept or decline. You can change your choice at any time by clearing your browser's local storage and refreshing.",
       "If you signed in, you can sign out from the header menu at any time. For anything else — including questions about your data — use the Contact page.",
     ],
   },
@@ -173,7 +180,7 @@ export default function PrivacyPolicy() {
               <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
                 A plain-English look at what information TeraPlayer processes, why, and what you can do about it.
               </p>
-              <p className="mt-3 text-xs text-muted-foreground/80">Last updated: August 15, 2026</p>
+              <p className="mt-3 text-xs text-muted-foreground/80">Last updated: August 18, 2026</p>
             </div>
           </motion.div>
         </section>

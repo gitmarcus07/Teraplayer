@@ -170,7 +170,7 @@ export default function Contact() {
             <p className="mt-3 text-muted-foreground">
               Drop us an email and we'll get back to you as soon as possible.
             </p>
-            <Button asChild className="mt-6 h-12 px-8 text-base" size="lg" variant="default">
+            <Button asChild className="mt-6 h-auto min-w-0 whitespace-normal px-5 py-3 text-base" size="lg" variant="default">
               <a href="mailto:teraplayer.contact@gmail.com">
                 <Mail className="mr-2 h-5 w-5" />
                 teraplayer.contact@gmail.com

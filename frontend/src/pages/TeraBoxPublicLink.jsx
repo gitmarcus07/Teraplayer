@@ -123,7 +123,7 @@ export default function TeraBoxPublicLink() {
                 controls.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild className="h-11 px-6 text-sm">
+                <Button asChild className="h-auto min-w-0 whitespace-normal px-5 py-2.5 text-sm">
                   <Link to="/terabox-video-downloader">
                     <Download className="mr-2 h-4 w-4" />
                     Open the TeraBox Video Downloader
@@ -377,7 +377,7 @@ export default function TeraBoxPublicLink() {
                   guide.
                 </p>
                 <div className="flex flex-wrap gap-3 pt-2">
-                  <Button asChild variant="outline" className="h-10 px-5 text-sm">
+                  <Button asChild variant="outline" className="h-auto min-w-0 whitespace-normal px-5 py-2.5 text-sm">
                     <Link to="/terabox-video-downloader">
                       <Download className="mr-2 h-4 w-4" />
                       Go to TeraBox Video Downloader
@@ -444,13 +444,13 @@ export default function TeraBoxPublicLink() {
                 all from your browser.
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild className="h-12 px-8 text-base" size="lg">
+                <Button asChild className="h-auto min-w-0 whitespace-normal px-5 py-3 text-base" size="lg">
                   <Link to="/terabox-video-downloader">
                     <Download className="mr-2 h-5 w-5" />
                     Go to TeraBox Video Downloader
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="h-12 px-8 text-base" size="lg">
+                <Button asChild variant="outline" className="h-auto min-w-0 whitespace-normal px-5 py-3 text-base" size="lg">
                   <Link to="/">
                     <Eye className="mr-2 h-5 w-5" />
                     Back to TeraPlayer home

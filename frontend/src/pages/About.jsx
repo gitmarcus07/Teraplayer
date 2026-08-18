@@ -57,7 +57,7 @@ const features = [
   {
     icon: Shield,
     title: "Privacy First",
-    body: "No sign-up required. No tracking. Your data stays on your device. Optional Google sign-in syncs across devices only if you choose.",
+    body: "No sign-up required. Privacy-conscious by design. Optional Google sign-in syncs across devices only if you choose.",
   },
 ];
 
@@ -309,7 +309,12 @@ export default function About() {
                   <p>
                     TeraPlayer was built with privacy as a core principle, not an afterthought.{" "}
                     <span className="font-medium text-foreground">You don't need an account</span> to use it — just paste
-                    a link and go. No tracking scripts, no analytics cookies, no data sold to third parties.
+                    a link and go. We keep analytics lightweight, never send the links you open to analytics tools, and
+                    never sell personal data. See our{" "}
+                    <Link to="/privacy" className="font-medium text-primary hover:underline">
+                      Privacy Policy
+                    </Link>{" "}
+                    for full details.
                   </p>
                   <p>
                     Sign in with Google (optional) to sync your preferences across devices. You can

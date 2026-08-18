@@ -85,6 +85,12 @@ let webpackConfig = {
     },
     configure: (webpackConfig) => {
 
+      // Disable source maps in production builds to cut payload and avoid
+      // shipping internal bundle structure to the public.
+      if (process.env.NODE_ENV === "production") {
+        webpackConfig.devtool = false;
+      }
+
       // Add ignored patterns to reduce watched directories
         webpackConfig.watchOptions = {
           ...webpackConfig.watchOptions,

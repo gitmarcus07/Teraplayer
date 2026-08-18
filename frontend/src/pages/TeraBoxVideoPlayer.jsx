@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Seo from "../components/Seo";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -32,6 +34,7 @@ import ExtensionStatus from "../components/ExtensionStatus";
 import { Button } from "../components/ui/button";
 import { postPreview, streamProxyUrl } from "../services/api";
 import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
+import { safePreviewError } from "../utils/errorHandling";
 
 function buildQualityOptions(preview) {
   if (!preview?.files || preview.files.length < 2) return [];
@@ -148,7 +151,7 @@ export default function TeraBoxVideoPlayer() {
               incorrect: wasIncorrect,
             });
           } else {
-            toast.error(data.error || "Could not extract this link.");
+            toast.error(safePreviewError(data.error).title);
           }
         } else {
           toast.success("Link resolved");
@@ -199,7 +202,7 @@ export default function TeraBoxVideoPlayer() {
             incorrect: !!res.preview.password_incorrect,
           });
         } else {
-          toast.error(res.preview.error || "Could not extract this link via browser.");
+          toast.error(safePreviewError(res.preview.error).title);
         }
       }
       setExtRunning(false);
@@ -278,6 +281,9 @@ export default function TeraBoxVideoPlayer() {
         </script>
       </Seo>
 
+      <Header />
+
+      <main id="main" className="bg-void">
       <div className="min-h-[calc(100vh-4rem)] pb-16">
         <section className="px-4 pt-10 pb-12 sm:pt-16 sm:pb-16 text-center max-w-4xl mx-auto">
           <motion.div
@@ -404,8 +410,7 @@ export default function TeraBoxVideoPlayer() {
                 </>
               ) : (
                 <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
-                  {preview.error ||
-                    "Unable to resolve this TeraBox link."}
+                  {safePreviewError(preview.error).description}
                   <div className="mt-3 flex justify-center">
                     <Button
                       variant="outline"
@@ -708,6 +713,9 @@ export default function TeraBoxVideoPlayer() {
           </div>
         </section>
       </div>
+      </main>
+
+      <Footer />
     </>
   );
 }
