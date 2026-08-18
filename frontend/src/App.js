@@ -29,7 +29,6 @@ const TeraBoxZipDownload = lazy(() => import("@/pages/TeraBoxZipDownload"));
 const TeraBoxPublicLink = lazy(() => import("@/pages/TeraBoxPublicLink"));
 const TeraBoxDownloadMobile = lazy(() => import("@/pages/TeraBoxDownloadMobile"));
 const TeraBoxDownloadPC = lazy(() => import("@/pages/TeraBoxDownloadPC"));
-const Premium = lazy(() => import("@/pages/Premium"));
 const AdminRoute = lazy(() => import("@/components/admin/AdminRoute"));
 const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
@@ -97,7 +96,6 @@ function PublicShell() {
           <Route path="/terabox-public-link" element={<TeraBoxPublicLink />} />
           <Route path="/terabox-download-mobile" element={<TeraBoxDownloadMobile />} />
           <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
-          <Route path="/premium" element={<Premium />} />
           <Route path="*" element={<Home />} />
           </Routes>
         </Suspense>

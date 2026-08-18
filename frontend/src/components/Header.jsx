@@ -1,6 +1,6 @@
 import logo from "./logo.png";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Info, Mail, Crown, Code2, Play, Download } from "lucide-react";
+import { Menu, X, Home, Info, Mail, Code2, Play, Download } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -112,9 +112,6 @@ export default function Header() {
             <NavLink to="/terabox-video-downloader" active={location.pathname === "/terabox-video-downloader"} testId="nav-downloader">
               Downloader
             </NavLink>
-            <NavLink to="/premium" active={location.pathname === "/premium"} testId="nav-premium">
-              Premium
-            </NavLink>
             <NavLink to="/meet-the-dev" active={location.pathname === "/meet-the-dev"} testId="nav-meet-the-dev">
               Meet the Dev
             </NavLink>
@@ -205,9 +202,6 @@ export default function Header() {
                   </DrawerLink>
                   <DrawerLink to="/terabox-video-downloader" onClick={() => setMobileMenuOpen(false)} icon={Download} testId="mobile-nav-downloader">
                     Downloader
-                  </DrawerLink>
-                  <DrawerLink to="/premium" onClick={() => setMobileMenuOpen(false)} icon={Crown} testId="mobile-nav-premium">
-                    Premium
                   </DrawerLink>
                   <DrawerLink to="/meet-the-dev" onClick={() => setMobileMenuOpen(false)} icon={Code2} testId="mobile-nav-meet-the-dev">
                     Meet the Dev
