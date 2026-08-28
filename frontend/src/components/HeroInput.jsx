@@ -100,7 +100,7 @@ const HeroInput = forwardRef(function HeroInput(
             type="button"
             onClick={paste}
             data-testid="paste-clipboard-btn"
-            className="flex h-16 shrink-0 items-center justify-center gap-2 rounded-l-2xl px-4 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-overlay hover:text-foreground sm:h-20 sm:px-5"
+            className="flex h-16 shrink-0 items-center justify-center gap-2 rounded-l-2xl px-4 text-base font-medium text-muted-foreground transition-colors duration-200 hover:bg-surface-overlay hover:text-foreground sm:h-20 sm:px-5 sm:text-lg"
             aria-label="Paste from clipboard"
           >
             <ClipboardPaste className="h-4 w-4 sm:h-5 sm:w-5" />

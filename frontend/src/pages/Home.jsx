@@ -13,6 +13,14 @@ import {
   RefreshCw,
   ChevronLeft,
   Loader2,
+  Download,
+  Play,
+  HelpCircle,
+  Link as LinkIcon,
+  Zap,
+  Box,
+  Smartphone,
+  Monitor,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -412,7 +420,7 @@ export default function Home() {
               </div>
 
               <h1
-                className="font-display text-[2.5rem] font-black leading-[0.95] tracking-tighter sm:text-5xl sm:leading-[0.9]"
+                className="font-display text-[2.5rem] font-black leading-[1.1] tracking-tighter sm:text-5xl sm:leading-[1.1]"
                 data-testid="hero-title"
               >
                 Watch &amp; Download
@@ -653,7 +661,7 @@ export default function Home() {
         >
           <h2
             id="what-is-teraplayer-heading"
-            className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:text-sm"
+            className="text-center text-xs font-semibold tracking-widest text-muted-foreground sm:text-sm"
           >
             What is TeraPlayer?
           </h2>
@@ -670,7 +678,7 @@ export default function Home() {
         >
           <h2
             id="terabox-guides-heading"
-            className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground sm:text-sm"
+            className="text-center text-xs font-semibold tracking-widest text-muted-foreground sm:text-sm"
           >
             TeraBox Guides
           </h2>
@@ -679,84 +687,94 @@ export default function Home() {
             Learn more about watching, downloading, sharing, and troubleshooting TeraBox links with TeraPlayer.
           </p>
 
-          <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
             <li>
               <Link
                 to="/terabox-video-downloader"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox Video Downloader
               </Link>
             </li>
             <li>
               <Link
                 to="/terabox-video-player"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Play className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox Video Player
               </Link>
             </li>
             <li>
               <Link
                 to="/how-to-download-terabox-videos"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <HelpCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 How to Download TeraBox Videos
               </Link>
             </li>
             <li>
               <Link
                 to="/how-to-watch-terabox-videos"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Play className="h-4 w-4 shrink-0" aria-hidden="true" />
                 How to Watch TeraBox Videos
               </Link>
             </li>
             <li>
               <Link
                 to="/terabox-video-link-not-working"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <HelpCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox Link Troubleshooting
               </Link>
             </li>
             <li>
               <Link
                 to="/how-to-download-terabox-folder"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Box className="h-4 w-4 shrink-0" aria-hidden="true" />
                 How to Download a TeraBox Folder
               </Link>
             </li>
             <li>
               <Link
                 to="/terabox-zip-download"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox ZIP Download
               </Link>
             </li>
             <li>
               <Link
                 to="/terabox-public-link"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <LinkIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox Public Link Guide
               </Link>
             </li>
             <li>
               <Link
                 to="/terabox-download-mobile"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Smartphone className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox Download on Mobile
               </Link>
             </li>
             <li>
               <Link
                 to="/terabox-download-pc"
-                className="flex items-center rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary sm:text-sm"
               >
+                <Monitor className="h-4 w-4 shrink-0" aria-hidden="true" />
                 TeraBox Downloader for PC
               </Link>
             </li>
