@@ -18,6 +18,10 @@ import {
   ExternalLink,
   Mail,
   Heart,
+  Zap,
+  MessageSquare,
+  Award,
+  Calendar,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -90,6 +94,15 @@ const SOCIALS = [
     href: "https://github.com/gitmarcus07",
     aria: "Marcus on GitHub",
   },
+];
+
+const MILESTONES = [
+  { date: "2024", title: "First commit", note: "TeraPlayer repo created" },
+  { date: "2024", title: "First extraction working", note: "Native HTTP scraper resolved links" },
+  { date: "2025", title: "Cloudflare Worker deployed", note: "Global edge extraction pipeline" },
+  { date: "2025", title: "Folder & ZIP support", note: "Multi-file shares and client-side ZIP" },
+  { date: "2026", title: "Video player v2", note: "HLS.js, PiP, quality picker, keyboard shortcuts" },
+  { date: "2026", title: "Privacy-first analytics", note: "PostHog + GA4 with consent banner" },
 ];
 
 export default function MeetTheDev() {
@@ -256,6 +269,45 @@ export default function MeetTheDev() {
                       ))}
                     </div>
                   </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Milestones */}
+        <section className="border-y border-border/40 bg-surface-overlay/30">
+          <div className="tp-container py-16 md:py-20">
+            <motion.div {...fadeUp} className="mx-auto max-w-4xl">
+              <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                <span className="text-primary">Milestones</span>
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                A timeline of how TeraPlayer evolved from a bored student's side project to a working tool.
+              </p>
+
+              <div className="mt-10 space-y-4">
+                {MILESTONES.map((m, i) => (
+                  <motion.div
+                    key={m.date}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.05 * i }}
+                    className="flex items-start gap-4 rounded-2xl border border-border bg-surface-raised p-5"
+                  >
+                    <div className="flex items-center justify-center w-16 h-16 shrink-0 rounded-xl bg-primary/10">
+                      <Calendar className="h-6 w-6 text-primary" strokeWidth={1.75} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-primary">{m.date}</span>
+                        <Award className="h-4 w-4 text-primary" strokeWidth={2} />
+                      </div>
+                      <h3 className="mt-1 text-base font-semibold">{m.title}</h3>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{m.note}</p>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>

@@ -15,6 +15,9 @@ import {
   Sparkles,
   Lock,
   ExternalLink,
+  UserCheck,
+  GitBranch,
+  Code2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -362,6 +365,107 @@ export default function About() {
                     </li>
                   ))}
                 </ul>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Trust & Transparency */}
+      <section className="border-y border-border/40 bg-surface-overlay/30">
+        <div className="tp-container py-16 md:py-20">
+          <motion.div {...fadeUp} className="mx-auto max-w-4xl">
+            <div className="flex items-start gap-4">
+              <div className="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+                <UserCheck className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                  Trust & <span className="text-primary">Transparency</span>
+                </h2>
+                <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+                  <p>
+                    TeraPlayer is an independent project built by a single developer. We believe in being upfront about
+                    what this service is, how it works, and what its limitations are.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">No official partnership:</span> TeraPlayer is not
+                    affiliated with, endorsed by, or sponsored by TeraBox, Flextech, or any cloud storage provider. All
+                    trademarks belong to their respective owners.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">No guarantees:</span> We do not promise that every
+                    TeraBox link will work. Share availability changes, links expire, and some domains are not
+                    supported. We are transparent when things don't work.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Open about the stack:</span> TeraPlayer runs on
+                    React, Python/FastAPI, Cloudflare Workers, and MongoDB. The extraction pipeline uses a combination
+                    of native HTTP scraping, a self-hosted Worker, and community APIs. See the{" "}
+                    <Link to="/meet-the-dev" className="font-medium text-primary hover:underline">
+                      Meet the Dev
+                    </Link>{" "}
+                    page for the full technical stack.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Privacy by default:</span> No account required for
+                    core features. Analytics (PostHog, Google Analytics) and advertising (Google AdSense) only load
+                    after explicit consent. See the{" "}
+                    <Link to="/privacy" className="font-medium text-primary hover:underline">
+                      Privacy Policy
+                    </Link>{" "}
+                    for full details.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How it works - Technical transparency */}
+      <section className="tp-container py-16 md:py-20">
+        <motion.div {...fadeUp} className="mx-auto max-w-4xl">
+          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+            How Extraction <span className="text-primary">Works</span>
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            A transparent look at the multi-layered pipeline that resolves your links.
+          </p>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: Code2,
+                title: "Native HTTP Scraper",
+                body: "First-pass extraction using direct HTTP requests to TeraBox share endpoints. Fast, lightweight, no browser overhead.",
+              },
+              {
+                icon: GitBranch,
+                title: "Cloudflare Worker",
+                title2: "Self-Hosted",
+                body: "A custom Worker handles geo-distributed extraction, retries, and fallback logic. Runs on Cloudflare's global network.",
+              },
+              {
+                icon: Globe,
+                title: "Community Fallback APIs",
+                body: "If primary methods fail, we try trusted third-party resolvers (e.g., xAPIverse). Only the link is shared, not your IP.",
+              },
+            ].map((layer, i) => (
+              <motion.div
+                key={layer.title}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.05 * i }}
+                className="group rounded-2xl border border-border bg-surface-raised p-5 transition-[border-color,box-shadow,brightness] duration-300 ease-out hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:brightness-110"
+              >
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
+                  <layer.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-sm font-semibold">{layer.title}</h3>
+                {layer.title2 && <p className="text-xs text-primary mt-0.5">{layer.title2}</p>}
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{layer.body}</p>
               </motion.div>
             ))}
           </div>

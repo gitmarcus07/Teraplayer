@@ -80,6 +80,7 @@ export default function AboutTeraPlayer() {
         ogDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
         imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
         twitterDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links."
+        robots="noindex, follow"
       />
 
       <main>

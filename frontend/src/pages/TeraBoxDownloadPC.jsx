@@ -123,6 +123,7 @@ export default function TeraBoxDownloadPC() {
         ogDescription="Learn how to use TeraPlayer on a PC or desktop browser to watch videos, download files, and create ZIP downloads from supported public TeraBox links."
         imageAlt="TeraBox Downloader for PC - TeraPlayer"
         twitterDescription="Learn how to use TeraPlayer on a PC or desktop browser to watch videos, download files, and create ZIP downloads from supported public TeraBox links."
+        robots="noindex, follow"
       >
         <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>

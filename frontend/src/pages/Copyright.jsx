@@ -8,6 +8,10 @@ import {
   Scale,
   Mail,
   ChevronRight,
+  ShieldCheck,
+  FileText,
+  UserCheck,
+  ExternalLink,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -28,6 +32,7 @@ const SECTIONS = [
     paragraphs: [
       "TeraPlayer respects copyright and intellectual-property rights. We do not claim ownership of content hosted by third-party services, and we do not host or store the files that flow through the service.",
       "You are responsible for making sure you have permission to access or download any content you use with TeraPlayer.",
+      "TeraPlayer only processes publicly shared links. We do not bypass paywalls, DRM, authentication, or any other access controls. If a share is not public, TeraPlayer cannot access it.",
     ],
   },
   {
@@ -54,10 +59,37 @@ const SECTIONS = [
     ],
   },
   {
+    icon: ShieldCheck,
+    title: "What TeraPlayer Does Not Do",
+    paragraphs: [
+      "To avoid misunderstandings, it is worth being explicit about what TeraPlayer is not:",
+    ],
+    bullets: [
+      "TeraPlayer is not a file host — we do not store or serve the media files you access",
+      "TeraPlayer is not a piracy tool — we only work with publicly shared links from supported domains",
+      "TeraPlayer does not circumvent DRM, passwords, or authentication",
+      "TeraPlayer does not guarantee that any specific link will always work — share availability changes over time",
+      "TeraPlayer is not affiliated with TeraBox, Flextech, or any cloud storage provider",
+    ],
+  },
+  {
+    icon: FileText,
+    title: "User Responsibilities",
+    paragraphs: [
+      "When you use TeraPlayer, you agree to:",
+    ],
+    bullets: [
+      "Only use the service with public links you are permitted to access",
+      "Respect the intellectual property rights of content owners",
+      "Comply with the laws of your jurisdiction regarding copyright and digital content",
+      "Not use TeraPlayer to circumvent access controls or distribute unauthorized copies",
+    ],
+  },
+  {
     icon: Mail,
     title: "Contact",
     paragraphs: [
-      "Please direct copyright inquiries through the Contact page.",
+      "Please direct copyright inquiries through the Contact page, or email us directly at teraplayer.contact@gmail.com.",
     ],
   },
 ];
@@ -72,13 +104,13 @@ export default function CopyrightPage() {
       <Header />
 
       <Seo
-        title="Copyright — TeraPlayer"
-        description="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement through the Contact page."
+        title="Copyright & Intellectual Property — TeraPlayer"
+        description="TeraPlayer respects copyright and intellectual-property rights. Learn what we do and don't do, how to report potential infringement, and your responsibilities when using the service."
         path="/copyright"
-        ogTitle="Copyright — TeraPlayer"
-        ogDescription="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement."
+        ogTitle="Copyright & Intellectual Property — TeraPlayer"
+        ogDescription="TeraPlayer respects copyright and intellectual-property rights. Learn how we handle infringement reports and your responsibilities."
         imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
-        twitterDescription="TeraPlayer respects copyright and intellectual-property rights."
+        twitterDescription="TeraPlayer respects copyright and intellectual-property rights. Learn how to report potential infringement."
       />
 
       <main>
@@ -97,10 +129,11 @@ export default function CopyrightPage() {
                 Legal
               </div>
               <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl">
-                <span className="text-primary">Copyright</span>
+                <span className="text-primary">Copyright</span> & Intellectual Property
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-                A short page about intellectual property and how to get in touch if you think something is wrong.
+                A clear page about intellectual property, what TeraPlayer does and doesn't do, and how to get in touch
+                if you think something is wrong.
               </p>
             </div>
           </motion.div>
