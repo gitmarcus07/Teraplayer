@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import {
-  History,
+  AlertTriangle,
   Loader2,
   RefreshCw,
   Search,
@@ -10,10 +10,15 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  Calendar,
+  FileText,
+  AlertCircle,
+  Bug,
+  Server,
+  Database,
+  Globe,
 } from "lucide-react";
 import { toast } from "sonner";
-import { getActivityFiltered, exportActivityCsv } from "@/services/adminApi";
+import { getErrors, getErrorSummary, exportErrorsCsv } from "@/services/adminApi";
 import {
   Card,
   CardContent,
@@ -23,8 +28,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -40,53 +45,67 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-export default function Activity() {
-  const [data, setData] = useState({ entries: [], total: 0, actions: [] });
+export default function Errors() {
+  const [data, setData] = useState({ errors: [], total: 0 });
+  const [summary, setSummary] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   // Filters
   const [filters, setFilters] = useState({
     limit: 50,
     skip: 0,
-    admin_id: "",
-    action: "",
+    kind: "",
+    error_type: "",
     start_date: "",
     end_date: "",
-    search: "",
   });
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await getActivityFiltered(filters);
+      const result = await getErrors(filters);
       setData(result);
     } catch (err) {
-      setError(err?.response?.data?.detail || "Failed to load activity log");
+      setError(err?.response?.data?.detail || "Failed to load errors");
     } finally {
       setLoading(false);
     }
   }, [filters]);
 
+  const loadSummary = useCallback(async () => {
+    setSummaryLoading(true);
+    try {
+      const result = await getErrorSummary(7);
+      setSummary(result);
+    } catch (err) {
+      console.error("Failed to load error summary", err);
+    } finally {
+      setSummaryLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadSummary();
+  }, [loadData, loadSummary]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value, skip: 0 }));
   };
 
   const handleSearch = (e) => {
-    handleFilterChange("search", e.target.value);
+    handleFilterChange("error_type", e.target.value);
   };
 
-  const handleActionChange = (value) => {
-    handleFilterChange("action", value);
+  const handleKindChange = (value) => {
+    handleFilterChange("kind", value);
   };
 
-  const handleAdminChange = (value) => {
-    handleFilterChange("admin_id", value);
+  const handleErrorTypeChange = (value) => {
+    handleFilterChange("error_type", value);
   };
 
   const handleDateChange = (key, date) => {
@@ -97,31 +116,30 @@ export default function Activity() {
     setFilters({
       limit: 50,
       skip: 0,
-      admin_id: "",
-      action: "",
+      kind: "",
+      error_type: "",
       start_date: "",
       end_date: "",
-      search: "",
     });
   };
 
-  const hasActiveFilters = filters.admin_id || filters.action || filters.start_date || filters.end_date || filters.search;
+  const hasActiveFilters = filters.kind || filters.error_type || filters.start_date || filters.end_date;
 
   const handleExport = async () => {
     setExporting(true);
     try {
-      const blob = await exportActivityCsv(filters);
+      const blob = await exportErrorsCsv(filters);
       const url = URL.createObjectURL(new Blob([blob], { type: "text/csv" }));
       const a = document.createElement("a");
       a.href = url;
-      a.download = `teraplayer_audit_${format(new Date(), "yyyyMMdd")}.csv`;
+      a.download = `teraplayer_errors_${format(new Date(), "yyyyMMdd")}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("Activity log exported");
+      toast.success("Errors exported");
     } catch (err) {
-      toast.error("Failed to export activity log");
+      toast.error("Failed to export errors");
     } finally {
       setExporting(false);
     }
@@ -134,28 +152,98 @@ export default function Activity() {
   const totalPages = Math.ceil(data.total / filters.limit);
   const currentPage = Math.floor(filters.skip / filters.limit) + 1;
 
+  const getTypeColor = (type) => {
+    switch (type) {
+      case "extraction": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "api": return "bg-blue-100 text-blue-700 border-blue-200";
+      case "stream": return "bg-amber-100 text-amber-700 border-amber-200";
+      case "database": return "bg-purple-100 text-purple-700 border-purple-200";
+      case "search_console": return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      case "scheduler": return "bg-pink-100 text-pink-700 border-pink-200";
+      case "auth": return "bg-red-100 text-red-700 border-red-200";
+      default: return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  const getErrorTypeColor = (type) => {
+    switch (type) {
+      case "timeout": return "bg-amber-100 text-amber-700";
+      case "network": return "bg-blue-100 text-blue-700";
+      case "parse": return "bg-purple-100 text-purple-700";
+      case "validation": return "bg-emerald-100 text-emerald-700";
+      case "auth": return "bg-red-100 text-red-700";
+      case "rate_limit": return "bg-orange-100 text-orange-700";
+      case "not_found": return "bg-gray-100 text-gray-700";
+      case "server_error": return "bg-destructive/10 text-destructive";
+      default: return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const getKindIcon = (kind) => {
+    switch (kind) {
+      case "extraction": return <Bug className="h-3.5 w-3.5" />;
+      case "api": return <Globe className="h-3.5 w-3.5" />;
+      case "stream": return <Server className="h-3.5 w-3.5" />;
+      case "database": return <Database className="h-3.5 w-3.5" />;
+      case "search_console": return <Search className="h-3.5 w-3.5" />;
+      case "scheduler": return <AlertCircle className="h-3.5 w-3.5" />;
+      case "auth": return <Shield className="h-3.5 w-3.5" />;
+      default: return <AlertTriangle className="h-3.5 w-3.5" />;
+    }
+  };
+
   return (
     <>
       <Helmet>
-        <title>Activity | TeraPlayer Admin</title>
+        <title>Error Intelligence | TeraPlayer Admin</title>
       </Helmet>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Activity</h1>
-            <p className="text-sm text-muted-foreground">Audit trail of every admin action. Immutable — appended only.</p>
+            <h1 className="text-2xl font-bold">Error Intelligence</h1>
+            <p className="text-sm text-muted-foreground">Track, analyze, and resolve application errors</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
               <Download className={cn("mr-2 h-4 w-4", exporting && "animate-spin")} />
               Export CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
+            <Button variant="outline" size="sm" onClick={() => { loadData(); loadSummary(); }} disabled={loading}>
               <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
               Refresh
             </Button>
           </div>
         </div>
+
+        {/* Summary Cards */}
+        {summary && summary.available && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Total Errors (7d)</p>
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+                <p className="mt-2 text-2xl font-bold text-destructive">{summary.total}</p>
+              </CardContent>
+            </Card>
+            {Object.entries(summary.by_kind || {}).slice(0, 3).map(([kind, count]) => (
+              <Card key={kind}>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      {getKindIcon(kind)}
+                      {kind}
+                    </p>
+                    <Badge variant="outline" className={getTypeColor(kind)}>
+                      {count}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Filters */}
         <Card>
@@ -163,19 +251,19 @@ export default function Activity() {
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-primary" /> Filters
             </CardTitle>
-            <CardDescription>Filter and search the audit log</CardDescription>
+            <CardDescription>Filter and search errors</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex-1 min-w-[200px]">
-                <Label htmlFor="activity-search" className="text-sm">Search</Label>
+                <Label htmlFor="error-search" className="text-sm">Search</Label>
                 <div className="relative mt-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="activity-search"
+                    id="error-search"
                     type="text"
-                    placeholder="Search actions, targets, admins..."
-                    value={filters.search}
+                    placeholder="Search error type or message..."
+                    value={filters.error_type}
                     onChange={handleSearch}
                     className="pl-10"
                   />
@@ -183,37 +271,46 @@ export default function Activity() {
               </div>
 
               <div className="min-w-[180px]">
-                <Label htmlFor="activity-action" className="text-sm">Action</Label>
-                <Select value={filters.action} onValueChange={handleActionChange}>
+                <Label htmlFor="error-kind" className="text-sm">Kind</Label>
+                <Select value={filters.kind} onValueChange={handleKindChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="All actions" />
+                    <SelectValue placeholder="All kinds" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All actions</SelectItem>
-                    {data.actions?.map((action) => (
-                      <SelectItem key={action} value={action}>{action}</SelectItem>
-                    ))}
+                    <SelectItem value="">All kinds</SelectItem>
+                    <SelectItem value="extraction">Extraction</SelectItem>
+                    <SelectItem value="api">API</SelectItem>
+                    <SelectItem value="stream">Stream</SelectItem>
+                    <SelectItem value="database">Database</SelectItem>
+                    <SelectItem value="search_console">Search Console</SelectItem>
+                    <SelectItem value="scheduler">Scheduler</SelectItem>
+                    <SelectItem value="auth">Auth</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="min-w-[180px]">
-                <Label htmlFor="activity-admin" className="text-sm">Admin</Label>
-                <Select value={filters.admin_id} onValueChange={handleAdminChange}>
+                <Label htmlFor="error-type" className="text-sm">Error Type</Label>
+                <Select value={filters.error_type} onValueChange={handleErrorTypeChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="All admins" />
+                    <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All admins</SelectItem>
-                    {data.entries?.map((entry) => (
-                      <SelectItem key={entry.admin_id} value={entry.admin_id}>{entry.admin_email}</SelectItem>
-                    ))}
+                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="timeout">Timeout</SelectItem>
+                    <SelectItem value="network">Network</SelectItem>
+                    <SelectItem value="parse">Parse</SelectItem>
+                    <SelectItem value="validation">Validation</SelectItem>
+                    <SelectItem value="auth">Auth</SelectItem>
+                    <SelectItem value="rate_limit">Rate Limit</SelectItem>
+                    <SelectItem value="not_found">Not Found</SelectItem>
+                    <SelectItem value="server_error">Server Error</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="min-w-[180px]">
-                <Label htmlFor="activity-start" className="text-sm">From Date</Label>
+                <Label htmlFor="error-start" className="text-sm">From Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -235,7 +332,7 @@ export default function Activity() {
               </div>
 
               <div className="min-w-[180px]">
-                <Label htmlFor="activity-end" className="text-sm">To Date</Label>
+                <Label htmlFor="error-end" className="text-sm">To Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -267,41 +364,46 @@ export default function Activity() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5 text-primary" /> Audit Log
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Error Log
             </CardTitle>
             <CardDescription>
-              {data.total} total entries {hasActiveFilters && <span className="text-primary"> (filtered)</span>}
+              {data.total} total errors {hasActiveFilters && <span className="text-primary"> (filtered)</span>}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
               <Skeleton className="h-64 rounded-xl" />
-            ) : data.entries?.length ? (
+            ) : data.errors?.length ? (
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
-                        <th className="pb-2 pr-4 font-medium">Action</th>
-                        <th className="pb-2 pr-4 font-medium">Admin</th>
-                        <th className="pb-2 pr-4 font-medium">Target</th>
+                        <th className="pb-2 pr-4 font-medium">Kind</th>
+                        <th className="pb-2 pr-4 font-medium">Error Type</th>
+                        <th className="pb-2 pr-4 font-medium">Message</th>
                         <th className="pb-2 pr-4 font-medium">Detail</th>
-                        <th className="pb-2 pr-4 font-medium">IP</th>
                         <th className="pb-2 font-medium">When</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.entries.map((entry, i) => (
+                      {data.errors.map((err, i) => (
                         <tr key={i} className="border-b border-border/40 last:border-0 hover:bg-muted/50">
                           <td className="py-2.5 pr-4">
-                            <Badge variant="secondary" className="font-mono text-[10px]">{entry.action}</Badge>
+                            <Badge variant="outline" className={cn("gap-1.5 font-mono text-[10px]", getTypeColor(err.kind))}>
+                              {getKindIcon(err.kind)}
+                              {err.kind}
+                            </Badge>
                           </td>
-                          <td className="py-2.5 pr-4 text-muted-foreground">{entry.admin_email}</td>
-                          <td className="py-2.5 pr-4">{entry.target || "—"}</td>
-                          <td className="max-w-xs truncate py-2.5 pr-4 text-muted-foreground">{entry.detail || "—"}</td>
-                          <td className="py-2.5 pr-4 font-mono text-xs text-muted-foreground">{entry.ip || "—"}</td>
+                          <td className="py-2.5 pr-4">
+                            <Badge variant="outline" className={getErrorTypeColor(err.error_type)}>
+                              {err.error_type}
+                            </Badge>
+                          </td>
+                          <td className="max-w-xs truncate py-2.5 pr-4 text-muted-foreground">{err.message}</td>
+                          <td className="max-w-xs truncate py-2.5 pr-4 text-xs text-muted-foreground font-mono">{err.detail ? JSON.stringify(err.detail) : "—"}</td>
                           <td className="whitespace-nowrap py-2.5 text-xs text-muted-foreground">
-                            {format(new Date(entry.created_at), "PPp")}
+                            {format(new Date(err.created_at), "PPp")}
                           </td>
                         </tr>
                       ))}
@@ -336,9 +438,9 @@ export default function Activity() {
               </>
             ) : (
               <div className="text-center py-12">
-                <History className="h-12 w-12 mx-auto text-muted-foreground/50" />
+                <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground/50" />
                 <p className="mt-3 text-sm text-muted-foreground">
-                  {hasActiveFilters ? "No matching entries found" : "No admin activity recorded yet."}
+                  {hasActiveFilters ? "No matching errors found" : "No errors recorded yet"}
                 </p>
               </div>
             )}

@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import {
   LayoutDashboard,
   BarChart3,
+  BarChart2,
   Cable,
   Shield,
   History,
@@ -15,16 +16,22 @@ import {
   X,
   Crown,
   User,
+  Search,
+  AlertTriangle,
 } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/admin/NotificationBell";
 
 const NAV = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/admin/search-console", label: "Search Console", icon: Search },
   { to: "/admin/extraction", label: "Extraction", icon: Cable },
+  { to: "/admin/extraction-analytics", label: "Extraction Analytics", icon: BarChart2 },
+  { to: "/admin/errors", label: "Errors", icon: AlertTriangle },
   { to: "/admin/admins", label: "Admins", icon: Shield, superOnly: true },
   { to: "/admin/activity", label: "Activity", icon: History },
   { to: "/admin/system", label: "System", icon: Server },
@@ -151,6 +158,7 @@ export default function AdminLayout() {
             <Badge variant="outline" className="hidden sm:inline-flex">
               v2.0.0
             </Badge>
+            <NotificationBell />
           </div>
         </header>
 
