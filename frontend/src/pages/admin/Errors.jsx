@@ -16,6 +16,7 @@ import {
   Server,
   Database,
   Globe,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getErrors, getErrorSummary, exportErrorsCsv } from "@/services/adminApi";
@@ -44,6 +45,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Label } from "@/components/ui/label";
 
 export default function Errors() {
   const [data, setData] = useState({ errors: [], total: 0 });
@@ -57,8 +59,8 @@ export default function Errors() {
   const [filters, setFilters] = useState({
     limit: 50,
     skip: 0,
-    kind: "",
-    error_type: "",
+    kind: "all",
+    error_type: "all",
     start_date: "",
     end_date: "",
   });
@@ -116,8 +118,8 @@ export default function Errors() {
     setFilters({
       limit: 50,
       skip: 0,
-      kind: "",
-      error_type: "",
+      kind: "all",
+      error_type: "all",
       start_date: "",
       end_date: "",
     });
@@ -277,7 +279,7 @@ export default function Errors() {
                     <SelectValue placeholder="All kinds" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All kinds</SelectItem>
+                    <SelectItem value="all">All kinds</SelectItem>
                     <SelectItem value="extraction">Extraction</SelectItem>
                     <SelectItem value="api">API</SelectItem>
                     <SelectItem value="stream">Stream</SelectItem>
@@ -296,7 +298,7 @@ export default function Errors() {
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="timeout">Timeout</SelectItem>
                     <SelectItem value="network">Network</SelectItem>
                     <SelectItem value="parse">Parse</SelectItem>

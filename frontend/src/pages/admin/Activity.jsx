@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Label } from "@/components/ui/label";
 
 export default function Activity() {
   const [data, setData] = useState({ entries: [], total: 0, actions: [] });
@@ -50,8 +51,8 @@ export default function Activity() {
   const [filters, setFilters] = useState({
     limit: 50,
     skip: 0,
-    admin_id: "",
-    action: "",
+    admin_id: "all",
+    action: "all",
     start_date: "",
     end_date: "",
     search: "",
@@ -97,15 +98,15 @@ export default function Activity() {
     setFilters({
       limit: 50,
       skip: 0,
-      admin_id: "",
-      action: "",
+      admin_id: "all",
+      action: "all",
       start_date: "",
       end_date: "",
       search: "",
     });
   };
 
-  const hasActiveFilters = filters.admin_id || filters.action || filters.start_date || filters.end_date || filters.search;
+  const hasActiveFilters = filters.admin_id !== "all" || filters.action !== "all" || filters.start_date || filters.end_date || filters.search;
 
   const handleExport = async () => {
     setExporting(true);
@@ -189,7 +190,7 @@ export default function Activity() {
                     <SelectValue placeholder="All actions" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All actions</SelectItem>
+                    <SelectItem value="all">All actions</SelectItem>
                     {data.actions?.map((action) => (
                       <SelectItem key={action} value={action}>{action}</SelectItem>
                     ))}
@@ -204,7 +205,7 @@ export default function Activity() {
                     <SelectValue placeholder="All admins" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All admins</SelectItem>
+                    <SelectItem value="all">All admins</SelectItem>
                     {data.entries?.map((entry) => (
                       <SelectItem key={entry.admin_id} value={entry.admin_id}>{entry.admin_email}</SelectItem>
                     ))}

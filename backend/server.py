@@ -840,7 +840,7 @@ async def admin_login(payload: AdminLogin, request: Request, response: Response)
         key=ADMIN_SESSION_COOKIE,
         value=token,
         httponly=True,
-        secure=True,
+        secure=os.environ.get("NODE_ENV") == "production",
         samesite="none",
         path="/",
         max_age=7 * 24 * 3600,
