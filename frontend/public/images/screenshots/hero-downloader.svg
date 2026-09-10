@@ -1,0 +1,65 @@
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="675" fill="#0F172A"/>
+  <rect x="100" y="60" width="1000" height="50" rx="8" fill="#1E293B" stroke="#334155"/>
+  <rect x="120" y="72" width="300" height="26" rx="4" fill="#334155"/>
+  <rect x="120" y="100" width="150" height="16" rx="3" fill="#475569"/>
+  <rect x="120" y="124" width="200" height="12" rx="3" fill="#334155"/>
+  
+  <!-- Preview card -->
+  <rect x="100" y="140" width="580" height="450" rx="12" fill="#1E293B" stroke="#334155"/>
+  <rect x="140" y="160" width="500" height="280" rx="8" fill="#000000" stroke="#334155"/>
+  <circle cx="390" cy="300" r="40" fill="#10B981" fill-opacity="0.3" stroke="#10B981" stroke-width="2"/>
+  <path d="M370 295 L390 315 L420 280" stroke="#10B981" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- File info -->
+  <rect x="160" y="460" width="120" height="16" rx="3" fill="#334155"/>
+  <rect x="160" y="485" width="200" height="12" rx="3" fill="#475569"/>
+  <rect x="160" y="505" width="150" height="12" rx="3" fill="#334155"/>
+  
+  <!-- Quality selector -->
+  <rect x="160" y="540" width="200" height="40" rx="8" fill="#3B82F6" fill-opacity="0.1" stroke="#3B82F6"/>
+  <text x="260" y="568" font-family="system-ui" font-size="14" font-weight="600" fill="#3B82F6" text-anchor="middle">1080p ▼</text>
+  
+  <!-- Download button -->
+  <rect x="400" y="540" width="160" height="40" rx="8" fill="#10B981"/>
+  <rect x="420" y="548" width="20" height="24" rx="2" fill="white"/>
+  <path d="M430 555 L430 565" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <rect x="450" y="548" width="100" height="24" rx="2" fill="white" fill-opacity="0.2"/>
+  <text x="500" y="566" font-family="system-ui" font-size="13" font-weight="600" fill="white" text-anchor="middle">Download</text>
+  
+  <!-- ZIP download section -->
+  <rect x="720" y="140" width="380" height="450" rx="12" fill="#1E293B" stroke="#334155"/>
+  <text x="910" y="180" font-family="system-ui" font-size="16" font-weight="600" fill="#E2E8F0" text-anchor="middle">Folder Contents</text>
+  
+  <!-- File list -->
+  <rect x="740" y="200" width="340" height="50" rx="6" fill="#334155"/>
+  <circle cx="765" cy="225" r="8" fill="#10B981" fill-opacity="0.3" stroke="#10B981"/>
+  <rect x="790" y="215" width="150" height="14" rx="3" fill="#E2E8F0"/>
+  <rect x="790" y="235" width="100" height="10" rx="3" fill="#94A3B8"/>
+  
+  <rect x="740" y="260" width="340" height="50" rx="6" fill="#334155"/>
+  <circle cx="765" cy="285" r="8" fill="#10B981" fill-opacity="0.3" stroke="#10B981"/>
+  <rect x="790" y="275" width="180" height="14" rx="3" fill="#E2E8F0"/>
+  <rect x="790" y="295" width="120" height="10" rx="3" fill="#94A3B8"/>
+  
+  <rect x="740" y="320" width="340" height="50" rx="6" fill="#334155"/>
+  <circle cx="765" cy="345" r="8" fill="#10B981" fill-opacity="0.3" stroke="#10B981"/>
+  <rect x="790" y="335" width="160" height="14" rx="3" fill="#E2E8F0"/>
+  <rect x="790" y="355" width="90" height="10" rx="3" fill="#94A3B8"/>
+  
+  <rect x="740" y="380" width="340" height="50" rx="6" fill="#334155"/>
+  <circle cx="765" cy="405" r="8" fill="#10B981" fill-opacity="0.3" stroke="#10B981"/>
+  <rect x="790" y="395" width="200" height="14" rx="3" fill="#E2E8F0"/>
+  <rect x="790" y="415" width="140" height="10" rx="3" fill="#94A3B8"/>
+  
+  <!-- Select all + ZIP -->
+  <rect x="760" y="450" width="300" height="40" rx="8" fill="#3B82F6" fill-opacity="0.1" stroke="#3B82F6" stroke-dasharray="4 4"/>
+  <text x="910" y="478" font-family="system-ui" font-size="13" fill="#3B82F6" text-anchor="middle">☑ Select All  (4 files, 2.1 GB)</text>
+  
+  <rect x="760" y="510" width="300" height="50" rx="8" fill="#8B5CF6"/>
+  <text x="910" y="545" font-family="system-ui" font-size="14" font-weight="600" fill="white" text-anchor="middle">⬇ Download as ZIP</text>
+  
+  <!-- TeraPlayer branding -->
+  <text x="600" y="620" font-family="system-ui" font-size="14" font-weight="600" fill="#94A3B8" text-anchor="middle">TeraPlayer — TeraBox Video Downloader</text>
+  <text x="600" y="640" font-family="system-ui" font-size="11" fill="#64748B" text-anchor="middle">Download supported public TeraBox videos & folders as ZIP</text>
+</svg>

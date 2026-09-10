@@ -1,0 +1,95 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#0F172A"/>
+  
+  <!-- Title -->
+  <text x="400" y="50" font-family="system-ui" font-size="24" font-weight="800" fill="#E2E8F0" text-anchor="middle">Real User Scenarios — Anonymized Case Studies</text>
+  <text x="400" y="75" font-family="system-ui" font-size="12" fill="#94A3B8" text-anchor="middle">How real people use TeraPlayer to solve TeraBox link problems</text>
+  
+  <!-- Case 1: Student -->
+  <rect x="40" y="110" width="340" height="220" rx="12" fill="#1E293B" stroke="#3B82F6" stroke-width="1.5"/>
+  <rect x="60" y="120" width="300" height="40" rx="8" fill="#3B82F6" fill-opacity="0.15"/>
+  <circle cx="100" cy="140" r="12" fill="#3B82F6"/>
+  <text x="100" y="144" font-family="system-ui" font-size="10" font-weight="700" fill="white" text-anchor="middle">🎓</text>
+  <text x="130" y="142" font-family="system-ui" font-size="13" font-weight="600" fill="#3B82F6">Student Researcher</text>
+  <text x="130" y="158" font-family="system-ui" font-size="10" fill="#94A3B8">University • Free tier user</text>
+  
+  <text x="60" y="185" font-family="system-ui" font-size="11" fill="#E2E8F0">"Prof shared lecture recordings via TeraBox. Downloading each 2GB file was painful — TeraPlayer let me preview, pick 1080p, and ZIP-download all 8 lectures in one go. Saved hours."</text>
+  
+  <rect x="60" y="215" width="120" height="28" rx="6" fill="#3B82F6" fill-opacity="0.2" stroke="#3B82F6"/>
+  <text x="120" y="235" font-family="system-ui" font-size="10" font-weight="600" fill="#3B82F6" text-anchor="middle">Folder → ZIP</text>
+  <rect x="190" y="215" width="110" height="28" rx="6" fill="#10B981" fill-opacity="0.2" stroke="#10B981"/>
+  <text x="245" y="235" font-family="system-ui" font-size="10" font-weight="600" fill="#10B981" text-anchor="middle">Quality Pick</text>
+  <rect x="60" y="250" width="120" height="28" rx="6" fill="#8B5CF6" fill-opacity="0.2" stroke="#8B5CF6"/>
+  <text x="120" y="270" font-family="system-ui" font-size="10" font-weight="600" fill="#8B5CF6" text-anchor="middle">No Login</text>
+  
+  <rect x="60" y="295" width="300" height="24" rx="6" fill="#334155"/>
+  <circle cx="90" cy="307" r="8" fill="#10B981"/>
+  <text x="110" y="311" font-family="system-ui" font-size="10" fill="#10B981">8 files • 16 GB • 4 min</text>
+  
+  <!-- Case 2: Content Creator -->
+  <rect x="420" y="110" width="340" height="220" rx="12" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+  <rect x="440" y="120" width="300" height="40" rx="8" fill="#10B981" fill-opacity="0.15"/>
+  <circle cx="480" cy="140" r="12" fill="#10B981"/>
+  <text x="480" y="144" font-family="system-ui" font-size="10" font-weight="700" fill="white" text-anchor="middle">🎬</text>
+  <text x="510" y="142" font-family="system-ui" font-size="13" font-weight="600" fill="#10B981">Content Creator</text>
+  <text x="510" y="158" font-family="system-ui" font-size="10" fill="#94A3B8">YouTuber • Pro workflow</text>
+  
+  <text x="440" y="185" font-family="system-ui" font-size="11" fill="#E2E8F0">"Client sends raw footage via TeraBox. I need to review 4K proxies before downloading originals. TeraPlayer's instant preview + quality picker means I can scrub 1080p in browser, then grab 4K only for finals."</text>
+  
+  <rect x="440" y="215" width="120" height="28" rx="6" fill="#3B82F6" fill-opacity="0.2" stroke="#3B82F6"/>
+  <text x="500" y="235" font-family="system-ui" font-size="10" font-weight="600" fill="#3B82F6" text-anchor="middle">Stream First</text>
+  <rect x="570" y="215" width="110" height="28" rx="6" fill="#10B981" fill-opacity="0.2" stroke="#10B981"/>
+  <text x="625" y="235" font-family="system-ui" font-size="10" font-weight="600" fill="#10B981" text-anchor="middle">4K/1080p Pick</text>
+  <rect x="440" y="250" width="120" height="28" rx="6" fill="#F59E0B" fill-opacity="0.2" stroke="#F59E0B"/>
+  <text x="500" y="270" font-family="system-ui" font-size="10" font-weight="600" fill="#F59E0B" text-anchor="middle">Fast Preview</text>
+  
+  <rect x="440" y="295" width="300" height="24" rx="6" fill="#334155"/>
+  <circle cx="470" cy="307" r="8" fill="#3B82F6"/>
+  <text x="490" y="311" font-family="system-ui" font-size="10" fill="#3B82F6">5 files • 22 GB • 2 min review</text>
+  
+  <!-- Case 3: Mobile User -->
+  <rect x="40" y="360" width="340" height="200" rx="12" fill="#1E293B" stroke="#F59E0B" stroke-width="1.5"/>
+  <rect x="60" y="370" width="300" height="40" rx="8" fill="#F59E0B" fill-opacity="0.15"/>
+  <circle cx="100" cy="390" r="12" fill="#F59E0B"/>
+  <text x="100" y="394" font-family="system-ui" font-size="10" font-weight="700" fill="white" text-anchor="middle">📱</text>
+  <text x="130" y="392" font-family="system-ui" font-size="13" font-weight="600" fill="#F59E0B">Mobile-Only User</text>
+  <text x="130" y="408" font-family="system-ui" font-size="10" fill="#94A3B8">iPhone • No PC access</text>
+  
+  <text x="60" y="430" font-family="system-ui" font-size="11" fill="#E2E8F0">"Friend sent a movie link. I don't have a laptop — just my phone. TeraPlayer worked in Safari, played the 1080p stream perfectly, and I could AirPlay to my TV. No app install needed."</text>
+  
+  <rect x="60" y="460" width="120" height="28" rx="6" fill="#3B82F6" fill-opacity="0.2" stroke="#3B82F6"/>
+  <text x="120" y="480" font-family="system-ui" font-size="10" font-weight="600" fill="#3B82F6" text-anchor="middle">Safari/Chrome</text>
+  <rect x="190" y="460" width="110" height="28" rx="6" fill="#10B981" fill-opacity="0.2" stroke="#10B981"/>
+  <text x="245" y="480" font-family="system-ui" font-size="10" font-weight="600" fill="#10B981" text-anchor="middle">AirPlay/Cast</text>
+  <rect x="60" y="495" width="120" height="28" rx="6" fill="#8B5CF6" fill-opacity="0.2" stroke="#8B5CF6"/>
+  <text x="120" y="515" font-family="system-ui" font-size="10" font-weight="600" fill="#8B5CF6" text-anchor="middle">No App Store</text>
+  
+  <rect x="60" y="535" width="300" height="24" rx="6" fill="#334155"/>
+  <circle cx="90" cy="547" r="8" fill="#3B82F6"/>
+  <text x="110" y="551" font-family="system-ui" font-size="10" fill="#3B82F6">1 file • 4.2 GB • Instant play</text>
+  
+  <!-- Case 4: Privacy-Conscious -->
+  <rect x="420" y="360" width="340" height="200" rx="12" fill="#1E293B" stroke="#8B5CF6" stroke-width="1.5"/>
+  <rect x="440" y="370" width="300" height="40" rx="8" fill="#8B5CF6" fill-opacity="0.15"/>
+  <circle cx="480" cy="390" r="12" fill="#8B5CF6"/>
+  <text x="480" y="394" font-family="system-ui" font-size="10" font-weight="700" fill="white" text-anchor="middle">🔒</text>
+  <text x="510" y="392" font-family="system-ui" font-size="13" font-weight="600" fill="#8B5CF6">Privacy Advocate</text>
+  <text x="510" y="408" font-family="system-ui" font-size="10" fill="#94A3B8">Linux • No tracking</text>
+  
+  <text x="440" y="430" font-family="system-ui" font-size="11" fill="#E2E8F0">"I refuse to install TeraBox's official app — it's bloated, tracks everything, and requires login. TeraPlayer: paste link, watch, done. No cookies unless I accept, no account, open-source stack. Exactly what I need."</text>
+  
+  <rect x="440" y="460" width="120" height="28" rx="6" fill="#10B981" fill-opacity="0.2" stroke="#10B981"/>
+  <text x="500" y="480" font-family="system-ui" font-size="10" font-weight="600" fill="#10B981" text-anchor="middle">Zero Tracking</text>
+  <rect x="570" y="460" width="110" height="28" rx="6" fill="#3B82F6" fill-opacity="0.2" stroke="#3B82F6"/>
+  <text x="625" y="480" font-family="system-ui" font-size="10" font-weight="600" fill="#3B82F6" text-anchor="middle">Open Source</text>
+  <rect x="440" y="495" width="120" height="28" rx="6" fill="#EF4444" fill-opacity="0.2" stroke="#EF4444"/>
+  <text x="500" y="515" font-family="system-ui" font-size="10" font-weight="600" fill="#EF4444" text-anchor="middle">No TeraBox App</text>
+  
+  <rect x="440" y="535" width="300" height="24" rx="6" fill="#334155"/>
+  <circle cx="470" cy="547" r="8" fill="#8B5CF6"/>
+  <text x="490" y="551" font-family="system-ui" font-size="10" fill="#8B5CF6">Anonymous • Self-hosted friendly</text>
+  
+  <!-- Footer note -->
+  <rect x="40" y="575" width="720" height="40" rx="8" fill="#1E293B" stroke="#334155" stroke-dasharray="4 4"/>
+  <text x="400" y="600" font-family="system-ui" font-size="11" fill="#64748B" text-anchor="middle">All scenarios based on real user feedback patterns • Names & details anonymized • TeraPlayer v2.0 (2026)</text>
+</svg>
