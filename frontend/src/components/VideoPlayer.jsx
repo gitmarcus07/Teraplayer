@@ -24,6 +24,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { track } from "../lib/analytics";
+import { useLang } from "../i18n/LanguageContext";
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -44,6 +45,7 @@ function hashStr(str) {
 }
 
 export default function VideoPlayer({ src, poster, title, autoPlay = false, onDownloadInstead, onProcessAnother, onRefreshSource }) {
+  const { t } = useLang();
   const videoRef = useRef(null);
   const wrapRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -444,7 +446,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
   return (
     <div
       ref={wrapRef}
-      className="group relative aspect-video w-full overflow-hidden rounded-2xl border border-border/60 bg-black shadow-2xl shadow-primary/5"
+      className="ds-card group relative aspect-video w-full overflow-hidden !rounded-2xl bg-black shadow-2xl shadow-primary/5"
       onMouseMove={revealControls}
       onMouseLeave={() => playing && setShowControls(false)}
       data-testid="video-player"
@@ -452,7 +454,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
       <video
         ref={videoRef}
         poster={poster}
-        aria-label={title || "Video player"}
+        aria-label={title || t("vp.playerAria")}
         className="h-full w-full object-contain"
         playsInline
         preload="metadata"
@@ -474,12 +476,12 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
         >
           <div className="w-full max-w-sm rounded-2xl border border-border bg-surface-raised p-4 text-center shadow-2xl">
             <div className="text-sm font-semibold text-foreground sm:text-base">
-              Resume from {fmt(resumePos)}?
+              {t("vp.resumeFrom").replace("{pos}", fmt(resumePos))}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Continue where you left off.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("vp.resumeBody")}</p>
             <div className="mt-3 flex gap-2">
               <Button className="flex-1" onClick={resume} data-testid="resume-btn">
-                Resume
+                {t("vp.resumeBtn")}
               </Button>
               <Button
                 variant="outline"
@@ -487,7 +489,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
                 onClick={startOver}
                 data-testid="restart-btn"
               >
-                Start over
+                {t("vp.restartBtn")}
               </Button>
             </div>
           </div>
@@ -504,14 +506,14 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
           <div className="w-full max-w-sm rounded-2xl border border-border bg-surface-raised p-4 text-center shadow-2xl">
             <AlertCircle className="mx-auto mb-2 h-7 w-7 text-destructive" />
             <div className="text-sm font-semibold text-foreground sm:text-base">
-              Video playback couldn't be started.
+              {t("vp.errTitle")}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              The stream didn't respond. You can try again or download the file instead.
+              {t("vp.errBody")}
             </p>
             <div className="mt-3 flex flex-col gap-2">
               <Button onClick={tryAgain} data-testid="player-retry-btn">
-                Try again
+                {t("vp.retry")}
               </Button>
               {onRefreshSource && (
                 <Button
@@ -519,7 +521,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
                   onClick={onRefreshSource}
                   data-testid="player-refresh-btn"
                 >
-                  Refresh link
+                  {t("vp.refresh")}
                 </Button>
               )}
               {onDownloadInstead && (
@@ -528,7 +530,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
                   onClick={onDownloadInstead}
                   data-testid="player-download-btn"
                 >
-                  Download instead
+                  {t("vp.dlInstead")}
                 </Button>
               )}
               {onProcessAnother && (
@@ -537,7 +539,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
                   onClick={onProcessAnother}
                   data-testid="player-process-another-btn"
                 >
-                  Process another link
+                  {t("vp.processAnother")}
                 </Button>
               )}
             </div>
@@ -557,10 +559,10 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
             togglePlay();
           }}
           data-testid="center-play-btn"
-          className="absolute left-1/2 top-1/2 z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 ease-out hover:scale-110 sm:h-20 sm:w-20"
-          aria-label="Play"
+          className="absolute left-1/2 top-1/2 z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-transform duration-normal ease-out hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 sm:h-20 sm:w-20"
+          aria-label={title ? `${t("vp.play")} ${title}` : t("vp.play")}
         >
-          <Play className="h-6 w-6 fill-white sm:h-8 sm:w-8" strokeWidth={0} />
+          <Play className="h-6 w-6 fill-white sm:h-8 sm:w-8" strokeWidth={0} aria-hidden="true" />
         </button>
       )}
 
@@ -599,7 +601,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
           style={{
             background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${progressPct}%, hsl(var(--foreground) / 0.15) ${progressPct}%, hsl(var(--foreground) / 0.15) 100%)`,
           }}
-          aria-label="Seek"
+          aria-label={t("vp.seek")}
         />
 
         <div className="mt-2 flex items-center gap-1.5 text-white sm:gap-3">
@@ -607,7 +609,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
             data-testid="play-btn"
             onClick={togglePlay}
             className="rounded-lg p-2 transition-colors duration-200 hover:bg-white/10"
-            aria-label={playing ? "Pause" : "Play"}
+            aria-label={playing ? t("vp.pause") : t("vp.play")}
           >
             {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
           </button>
@@ -615,7 +617,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
             data-testid="seek-back-btn"
             onClick={() => seek(-10)}
             className="hidden rounded-lg p-2 transition-colors duration-200 hover:bg-white/10 sm:block"
-            aria-label="Rewind 10 seconds"
+            aria-label={t("vp.rew")}
           >
             <RotateCcw className="h-5 w-5" />
           </button>
@@ -623,7 +625,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
             data-testid="seek-fwd-btn"
             onClick={() => seek(10)}
             className="hidden rounded-lg p-2 transition-colors duration-200 hover:bg-white/10 sm:block"
-            aria-label="Forward 10 seconds"
+            aria-label={t("vp.fwd")}
           >
             <RotateCw className="h-5 w-5" />
           </button>
@@ -633,7 +635,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
               data-testid="mute-btn"
               onClick={toggleMute}
               className="rounded-lg p-2 transition-colors duration-200 hover:bg-white/10"
-              aria-label={muted ? "Unmute" : "Mute"}
+              aria-label={muted ? t("vp.unmute") : t("vp.mute")}
             >
               {muted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </button>
@@ -646,7 +648,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
               value={muted ? 0 : volume}
               onChange={(e) => changeVolume(Number(e.target.value))}
               className="tp-range hidden w-20 sm:block"
-              aria-label="Volume"
+              aria-label={t("vp.vol")}
             />
           </div>
 
@@ -660,14 +662,14 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
                 <button
                   data-testid="speed-btn"
                   className="rounded-lg px-2 py-2 text-sm transition-colors duration-200 hover:bg-white/10"
-                  aria-label="Playback speed"
+                  aria-label={t("vp.speed")}
                 >
                   <Gauge className="mr-1 inline h-4 w-4" />
                   {rate}x
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Playback speed</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("vp.speed")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {SPEEDS.map((s) => (
                   <DropdownMenuItem
@@ -684,7 +686,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
               data-testid="pip-btn"
               onClick={enterPip}
               className="hidden rounded-lg p-2 transition-colors duration-200 hover:bg-white/10 sm:block"
-              aria-label="Picture in picture"
+              aria-label={t("vp.pip")}
             >
               <PictureInPicture2 className="h-5 w-5" />
             </button>
@@ -692,7 +694,7 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
               data-testid="fullscreen-btn"
               onClick={enterFullscreen}
               className="rounded-lg p-2 transition-colors duration-200 hover:bg-white/10"
-              aria-label="Fullscreen"
+              aria-label={t("vp.fs")}
             >
               {fullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
             </button>

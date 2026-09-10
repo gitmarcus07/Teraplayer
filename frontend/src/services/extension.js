@@ -88,11 +88,11 @@ export async function runExtensionExtraction({
   signal,
 } = {}) {
   if (!url) {
-    onStatus(EXT_STATUS.ERROR, "No link provided for browser extraction.");
+    onStatus(EXT_STATUS.ERROR, "extm.noLink");
     return { status: EXT_STATUS.ERROR };
   }
 
-  onStatus(EXT_STATUS.CREATING, "Preparing browser extraction…");
+  onStatus(EXT_STATUS.CREATING, "extm.preparing");
 
   let created;
   try {
@@ -107,7 +107,7 @@ export async function runExtensionExtraction({
   }
   const { job } = created;
 
-  onStatus(EXT_STATUS.OPENING, "Opening TeraBox with your session…");
+  onStatus(EXT_STATUS.OPENING, "ext.opening");
 
   const startedAt = Date.now();
   let consecutiveFailures = 0;
@@ -126,46 +126,34 @@ export async function runExtensionExtraction({
       consecutiveFailures = 0;
     } catch (err) {
       if (err?.response?.status === 404) {
-        onStatus(
-          EXT_STATUS.ERROR,
-          "The extraction job expired before a result was submitted. Please try again."
-        );
+        onStatus(EXT_STATUS.ERROR, "extm.expired");
         return { status: EXT_STATUS.ERROR };
       }
       consecutiveFailures += 1;
       if (consecutiveFailures >= 5) {
-        onStatus(
-          EXT_STATUS.ERROR,
-          "Lost contact with the extraction service. Please try again."
-        );
+        onStatus(EXT_STATUS.ERROR, "extm.lost");
         return { status: EXT_STATUS.ERROR };
       }
       continue;
     }
 
     if (result?.status === "done" && result.preview) {
-      onStatus(EXT_STATUS.DONE, "Extraction complete.");
+      onStatus(EXT_STATUS.DONE, "extm.done");
       return { status: EXT_STATUS.DONE, preview: result.preview, job };
     }
 
     const elapsed = Date.now() - startedAt;
     if (elapsed >= verifyGraceMs && !showedVerification) {
       showedVerification = true;
-      onStatus(
-        EXT_STATUS.VERIFICATION,
-        "Complete verification in the TeraBox tab, then click Retry."
-      );
+      onStatus(EXT_STATUS.VERIFICATION, "extm.verify");
     } else if (!showedVerification && elapsed >= openingDurationMs) {
-      onStatus(EXT_STATUS.EXTRACTING, "Extracting link with your TeraBox session…");
+      onStatus(EXT_STATUS.EXTRACTING, "ext.extracting");
     }
   }
 
   // Still pending after the hard timeout: the extension was never picked up
   // (or never submitted). This is the reliable signal that the extension is
   // missing, because content-teraplayer.js only forwards jobs when installed.
-  onStatus(
-    EXT_STATUS.EXTENSION_REQUIRED,
-    "The TeraPlayer browser extension is required to extract this link. Install it, then try again."
-  );
+  onStatus(EXT_STATUS.EXTENSION_REQUIRED, "extm.required");
   return { status: EXT_STATUS.EXTENSION_REQUIRED, job };
 }

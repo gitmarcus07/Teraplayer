@@ -1,86 +1,119 @@
 import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import Logo from "./Logo";
+import { useLang } from "../i18n/LanguageContext";
 
 const LEGAL_LINKS = [
-  { to: "/privacy", label: "Privacy Policy" },
-  { to: "/terms", label: "Terms of Service" },
-  { to: "/about-teraplayer", label: "About TeraPlayer" },
-  { to: "/copyright", label: "Copyright" },
+  { to: "/privacy", key: "footer.privacy" },
+  { to: "/terms", key: "footer.terms" },
+  { to: "/about-teraplayer", key: "footer.aboutTp" },
+  { to: "/copyright", key: "footer.copyright" },
 ];
 
-const POPULAR_LINKS = [
-  { to: "/terabox-video-player", label: "TeraBox Video Player" },
-  { to: "/terabox-video-downloader", label: "TeraBox Video Downloader" },
-  { to: "/terabox-public-link", label: "Open a TeraBox Link" },
-  { to: "/terabox-zip-download", label: "TeraBox ZIP Download" },
-  { to: "/how-to-watch-terabox-videos", label: "How to Watch TeraBox Videos" },
+const TOOL_LINKS = [
+  { to: "/terabox-video-player", key: "explore.player" },
+  { to: "/terabox-video-downloader", key: "explore.downloader" },
+  { to: "/help-center", key: "explore.help" },
+  { to: "/about-teraplayer", key: "footer.aboutTp" },
+];
+
+const SUPPORT_LINKS = [
+  { to: "/contact", key: "footer.contactUs" },
+  { to: "/about", key: "footer.about" },
+  { to: "/help-center", key: "footer.support" },
 ];
 
 export function FooterLegalLinks() {
+  const { t } = useLang();
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-border/40 pt-5 text-xs text-muted-foreground">
+    <nav aria-label="Legal" className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-border/40 pt-5 text-xs text-muted-foreground">
       {LEGAL_LINKS.map((l) => (
         <Link
           key={l.to}
           to={l.to}
-          className="transition-colors duration-200 hover:text-foreground"
+          className="min-h-[32px] rounded-md px-1 py-1 transition-colors duration-fast hover:text-foreground"
         >
-          {l.label}
+          {t(l.key)}
         </Link>
       ))}
-    </div>
+    </nav>
   );
 }
 
 export default function Footer() {
+  const { t } = useLang();
   return (
-    <footer className="border-t border-border/40 bg-surface-raised/50">
-      <div className="tp-container py-10">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
-            <div className="flex items-center gap-2">
-              <span className="font-display text-base font-semibold text-foreground">
-                Tera<span className="text-primary">Player</span>
-              </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">Free to use · no account required</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <a
-                href="mailto:teraplayer.contact@gmail.com"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
-              >
-                <Mail className="h-4 w-4" />
-                Contact
-              </a>
-              <Link to="/about" className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">
-                About
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <p className="text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Popular
+    <footer className="mt-16 border-t border-slate-200 bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-12">
+          <div className="col-span-1 md:col-span-1">
+            <Logo />
+            <p className="mt-4 text-sm leading-relaxed text-slate-600">
+              {t("footer.tagline")}
             </p>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
-              {POPULAR_LINKS.map((l) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  className="transition-colors duration-200 hover:text-foreground"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
+            <a
+              href="mailto:teraplayer.contact@gmail.com"
+              className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-lg text-sm text-slate-600 transition-colors hover:text-indigo-600"
+            >
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              teraplayer.contact@gmail.com
+            </a>
           </div>
-
-          <FooterLegalLinks />
-
-          <div className="mt-6 text-center text-xs text-muted-foreground opacity-70">
-            Only supports public TeraBox links. Respect the original owners.
+          <div className="col-span-1 flex flex-col gap-8 md:col-span-2 md:flex-row md:gap-16 md:justify-end">
+            <nav aria-label={t("footer.tools")}>
+              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">{t("footer.tools")}</p>
+              <ul className="space-y-3">
+                {TOOL_LINKS.map((l) => (
+                  <li key={l.to}>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-slate-600 transition-colors hover:text-indigo-600"
+                    >
+                      {t(l.key)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <nav aria-label={t("footer.legal")}>
+              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">{t("footer.legal")}</p>
+              <ul className="space-y-3">
+                {LEGAL_LINKS.map((l) => (
+                  <li key={l.to}>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-slate-600 transition-colors hover:text-indigo-600"
+                    >
+                      {t(l.key)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <nav aria-label={t("footer.support")}>
+              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">{t("footer.support")}</p>
+              <ul className="space-y-3">
+                {SUPPORT_LINKS.map((l) => (
+                  <li key={l.to}>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-slate-600 transition-colors hover:text-indigo-600"
+                    >
+                      {t(l.key)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 md:flex-row">
+          <p className="max-w-2xl text-center text-xs text-slate-500 md:text-left">
+            <strong>TeraPlayer</strong> {t("footer.dis1b")}<br /><br />
+            {t("footer.dis2")}
+          </p>
+          <p className="whitespace-nowrap text-xs text-slate-500">{t("footer.rights").replace("{year}", String(new Date().getFullYear()))}</p>
         </div>
       </div>
     </footer>

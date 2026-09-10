@@ -35,6 +35,7 @@ import {
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
 import { Badge } from "./ui/badge";
+import { useLang } from "../i18n/LanguageContext";
 
 const ICONS = {
   video: FileVideo,
@@ -45,22 +46,22 @@ const ICONS = {
   file: FileIcon,
 };
 
-const TYPE_LABELS = {
-  video: "Video",
-  image: "Image",
-  audio: "Audio",
-  document: "Document",
-  archive: "Archive",
-  folder: "Folder",
-  file: "File",
+const TYPE_LABEL_KEYS = {
+  video: "pc.type.video",
+  image: "pc.type.image",
+  audio: "pc.type.audio",
+  document: "pc.type.document",
+  archive: "pc.type.archive",
+  folder: "pc.type.folder",
+  file: "pc.type.file",
 };
 
 const SORTS = [
-  { id: "name-asc", label: "Name A–Z" },
-  { id: "name-desc", label: "Name Z–A" },
-  { id: "size-desc", label: "Largest first" },
-  { id: "size-asc", label: "Smallest first" },
-  { id: "type", label: "Type" },
+  { id: "name-asc", key: "fb.sortNameAsc" },
+  { id: "name-desc", key: "fb.sortNameDesc" },
+  { id: "size-desc", key: "fb.sortSizeDesc" },
+  { id: "size-asc", key: "fb.sortSizeAsc" },
+  { id: "type", key: "fb.sortType" },
 ];
 
 function sizeToNum(entry) {
@@ -75,6 +76,7 @@ function sizeToNum(entry) {
 }
 
 export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx }) {
+  const { t } = useLang();
   const [view, setView] = useState("grid"); // grid | list
   const [query, setQuery] = useState("");
   const [sortId, setSortId] = useState("name-asc");
@@ -139,7 +141,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
       .filter((f) => selected.has(f._idx) && (f.download_url || f.stream_url));
 
     if (!items.length) {
-      toast.error("Select at least one file with a direct link");
+      toast.error(t("fb.toastMin"));
       return;
     }
 
@@ -150,7 +152,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
     try {
       for (let i = 0; i < items.length; i += 1) {
         const item = items[i];
-        toast.info(`Downloading ${item.name || "file"} (${i + 1}/${items.length})…`);
+        toast.info(t("fb.toastDl").replace("{name}", item.name || "file").replace("{i}", String(i + 1)).replace("{n}", String(items.length)));
         const resp = await fetch(streamProxyUrl(item.download_url || item.stream_url));
         if (!resp.ok) throw new Error(`Failed on ${item.name}`);
         const blob = await resp.blob();
@@ -161,11 +163,11 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
         setZipProgress(60 + Math.round(meta.percent * 0.4));
       });
       saveAs(content, `${folderName || "TeraPlayer"}.zip`);
-      toast.success("ZIP ready");
+      toast.success(t("fb.zipReady"));
       setSelected(new Set());
     } catch (e) {
-      console.error(e.message || "ZIP failed");
-      toast.error(e.message || "ZIP failed");
+      console.error(e.message || t("fb.zipFail"));
+      toast.error(e.message || t("fb.zipFail"));
     } finally {
       setZipping(false);
       setZipProgress(0);
@@ -175,7 +177,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
   const downloadOne = (item) => {
     const url = item.download_url || item.stream_url;
     if (!url) {
-      toast.error("No direct link for this file");
+      toast.error(t("fb.noDirect"));
       return;
     }
     const a = document.createElement("a");
@@ -187,17 +189,18 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
   };
 
   const currentSort = SORTS.find((s) => s.id === sortId) || SORTS[0];
+  const currentSortLabel = t(currentSort.key);
 
   return (
     <div className="rounded-2xl border border-border bg-surface-raised p-3 sm:p-4 md:p-6" data-testid="folder-browser">
       {/* Breadcrumbs */}
-      <nav className="mb-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground sm:mb-4 sm:text-xs" aria-label="Breadcrumb">
+      <nav className="mb-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground sm:mb-4 sm:text-xs" aria-label={t("fb.crumbAria")}>
         <HomeIcon className="h-3.5 w-3.5" />
         <span className="font-medium text-foreground">TeraBox</span>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="line-clamp-1 max-w-[150px] font-medium text-foreground sm:max-w-none" title={folderName || "Shared folder"}>{folderName || "Shared folder"}</span>
+        <span className="line-clamp-1 max-w-[150px] font-medium text-foreground sm:max-w-none" title={folderName || t("fb.sharedFolder")}>{folderName || t("fb.sharedFolder")}</span>
         <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs">
-          {safeFiles.length} items
+          {safeFiles.length} {t("pc.items")}
         </Badge>
       </nav>
 
@@ -208,8 +211,8 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search in this folder…"
-            aria-label="Search files in this folder"
+            placeholder={t("fb.searchPh")}
+            aria-label={t("fb.searchAria")}
             className="pl-9"
             data-testid="folder-search"
           />
@@ -219,11 +222,11 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" data-testid="folder-sort-btn" className="flex-1 text-xs sm:flex-none">
-                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" /> <span className="truncate">{currentSort.label}</span>
+                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5" /> <span className="truncate">{currentSortLabel}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("fb.sortBy")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {SORTS.map((s) => (
                 <DropdownMenuItem
@@ -231,7 +234,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                   onClick={() => setSortId(s.id)}
                   data-testid={`sort-${s.id}`}
                 >
-                  {s.label} {s.id === sortId && "•"}
+                  {t(s.key)} {s.id === sortId && "•"}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -244,7 +247,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
               className={`px-2.5 py-1.5 text-xs transition-colors duration-200 ${
                 view === "grid" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60"
               }`}
-              aria-label="Grid view"
+              aria-label={t("fb.gridAria")}
             >
               <Grid3x3 className="h-4 w-4" />
             </button>
@@ -254,7 +257,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
               className={`px-2.5 py-1.5 text-xs transition-colors duration-200 ${
                 view === "list" ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60"
               }`}
-              aria-label="List view"
+              aria-label={t("fb.listAria")}
             >
               <ListIcon className="h-4 w-4" />
             </button>
@@ -269,11 +272,11 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
             <>
               <CheckSquare className="h-4 w-4 shrink-0 text-primary" />
               <span className="truncate" data-testid="selected-count">
-                {selected.size} {selected.size === 1 ? "file" : "files"} selected
+                {t("fb.selectedN").replace("{count}", String(selected.size))}
               </span>
             </>
           ) : (
-            <span>Select files to download as ZIP</span>
+            <span>{t("fb.zipHint")}</span>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -290,7 +293,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
             ) : (
               <Square className="h-4 w-4" />
             )}
-            {allSelected ? "Deselect all" : "Select all"}
+            {allSelected ? t("fb.deselectAll") : t("fb.selectAll")}
           </button>
           {selected.size > 0 && (
             <button
@@ -298,7 +301,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
               data-testid="clear-selection-btn"
               className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Clear
+              {t("fb.clear")}
             </button>
           )}
           <Button
@@ -326,14 +329,14 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
       {safeFiles.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <FolderOpen className="mx-auto mb-2 h-8 w-8 text-muted-foreground" strokeWidth={1.25} />
-          <div className="text-sm font-medium">This folder is empty</div>
+          <div className="text-sm font-medium">{t("fb.emptyT")}</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            No files were found in this shared folder.
+            {t("fb.emptyB")}
           </p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          No files match your search.
+          {t("fb.noMatch")}
         </div>
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -357,7 +360,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                 <button
                   onClick={() => toggle(f._idx)}
                   className="absolute left-2 top-2 z-10 rounded-md bg-black/50 p-1 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                  aria-label={isSel ? "Deselect file" : "Select file"}
+                  aria-label={isSel ? t("fb.deselectAria") : t("fb.selectAria")}
                   aria-pressed={isSel}
                   data-testid="folder-select-btn"
                 >
@@ -375,7 +378,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                     <button
                       onClick={() => onPlayFile?.(f)}
                       className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-[background-color,opacity] duration-200 hover:bg-black/40 hover:opacity-100 focus-visible:bg-black/40 focus-visible:opacity-100"
-                      aria-label="Play"
+                      aria-label={t("fb.playAria")}
                     >
                       <span className="rounded-full bg-white/20 p-3 backdrop-blur-md transition-transform duration-200 hover:scale-110">
                         <Play className="h-5 w-5 fill-white text-white" strokeWidth={0} />
@@ -383,10 +386,10 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                     </button>
                   )}
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <div className="line-clamp-1 text-xs font-medium text-white">{f.name || "Untitled"}</div>
+                    <div className="line-clamp-1 text-xs font-medium text-white">{f.name || t("fb.untitled")}</div>
                     {isActive && (
                       <span className="shrink-0 rounded bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-white">
-                        Previewing
+                        {t("fb.previewing")}
                       </span>
                     )}
                   </div>
@@ -394,13 +397,13 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                 <div className="flex items-center justify-between gap-2 p-3">
                   <div className="text-xs text-muted-foreground">
                     {f.size_str || "—"}
-                    {f.file_type ? ` · ${TYPE_LABELS[f.file_type] || f.file_type}` : ""}
+                    {f.file_type ? ` · ${t(TYPE_LABEL_KEYS[f.file_type] || "pc.type.file")}` : ""}
                   </div>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => downloadOne(f)}
-                    aria-label="Download"
+                    aria-label={t("fb.dlAria")}
                     data-testid="folder-download-btn"
                   >
                     <Download className="h-4 w-4" />
@@ -427,7 +430,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                 <button
                   onClick={() => toggle(f._idx)}
                   data-testid="folder-select-btn"
-                  aria-label={isSel ? "Deselect file" : "Select file"}
+                  aria-label={isSel ? t("fb.deselectAria") : t("fb.selectAria")}
                   aria-pressed={isSel}
                   className="p-1.5 text-muted-foreground hover:text-foreground"
                 >
@@ -451,15 +454,15 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                   className="min-w-0 flex-1 text-left"
                   data-testid="folder-open-btn"
                 >
-                  <div className="line-clamp-1 text-sm font-medium" title={f.name || "Untitled"}>{f.name || "Untitled"}</div>
+                  <div className="line-clamp-1 text-sm font-medium" title={f.name || t("fb.untitled")}>{f.name || t("fb.untitled")}</div>
                   <div className="text-xs text-muted-foreground">
                     {f.size_str || "—"}
-                    {f.file_type ? ` · ${TYPE_LABELS[f.file_type] || f.file_type}` : ""}
+                    {f.file_type ? ` · ${t(TYPE_LABEL_KEYS[f.file_type] || "pc.type.file")}` : ""}
                   </div>
                 </button>
                 {isActive && (
                   <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
-                    Previewing
+                    {t("fb.previewing")}
                   </span>
                 )}
                 <Button

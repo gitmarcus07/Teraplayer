@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 
-const KEY = "teraplayer.theme";
+const KEY = "teraplayer.theme.v2";
 const ThemeCtx = createContext(null);
 
 function applyTheme(mode) {
@@ -16,9 +16,9 @@ function applyTheme(mode) {
 export function ThemeProvider({ children }) {
   const [mode, setMode] = useState(() => {
     try {
-      return localStorage.getItem(KEY) || "dark";
+      return localStorage.getItem(KEY) || "light";
     } catch {
-      return "dark";
+      return "light";
     }
   });
 

@@ -9,19 +9,21 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { EXT_STATUS } from "../services/extension";
+import { useLang } from "../i18n/LanguageContext";
 
 const META = {
-  [EXT_STATUS.CREATING]: { title: "Preparing browser extraction", icon: Loader2, spin: true },
-  [EXT_STATUS.OPENING]: { title: "Opening TeraBox", icon: ExternalLink, spin: false },
-  [EXT_STATUS.EXTRACTING]: { title: "Extracting link", icon: Loader2, spin: true },
-  [EXT_STATUS.VERIFICATION]: { title: "Verification required", icon: ShieldAlert, spin: false },
-  [EXT_STATUS.DONE]: { title: "Extraction complete", icon: CheckCircle2, spin: false },
-  [EXT_STATUS.ERROR]: { title: "Extraction failed", icon: AlertTriangle, spin: false },
-  [EXT_STATUS.EXTENSION_REQUIRED]: { title: "Browser extension required", icon: Puzzle, spin: false },
-  [EXT_STATUS.IDLE]: { title: "Browser extraction", icon: Loader2, spin: false },
+  [EXT_STATUS.CREATING]: { titleKey: "ext.creating", icon: Loader2, spin: true },
+  [EXT_STATUS.OPENING]: { titleKey: "ext.opening", icon: ExternalLink, spin: false },
+  [EXT_STATUS.EXTRACTING]: { titleKey: "ext.extracting", icon: Loader2, spin: true },
+  [EXT_STATUS.VERIFICATION]: { titleKey: "ext.verify", icon: ShieldAlert, spin: false },
+  [EXT_STATUS.DONE]: { titleKey: "ext.done", icon: CheckCircle2, spin: false },
+  [EXT_STATUS.ERROR]: { titleKey: "ext.error", icon: AlertTriangle, spin: false },
+  [EXT_STATUS.EXTENSION_REQUIRED]: { titleKey: "ext.required", icon: Puzzle, spin: false },
+  [EXT_STATUS.IDLE]: { titleKey: "ext.idle", icon: Loader2, spin: false },
 };
 
 export default function ExtensionStatus({ status, message, onRetry, retrying = false }) {
+  const { t } = useLang();
   const meta = META[status] || META[EXT_STATUS.IDLE];
   const Icon = meta.icon;
 
@@ -52,19 +54,18 @@ export default function ExtensionStatus({ status, message, onRetry, retrying = f
           }`}
         />
         <div className="flex-1">
-          <div className="font-semibold">{meta.title}</div>
-          {message && <p className="mt-1 text-sm opacity-90">{message}</p>}
+          <div className="font-semibold">{t(meta.titleKey)}</div>
+          {message && <p className="mt-1 text-sm opacity-90">{t(message)}</p>}
 
           {status === EXT_STATUS.VERIFICATION && (
             <p className="mt-1 text-xs opacity-70">
-              TeraBox will never be automated — complete the verification yourself, then retry.
+              {t("ext.verifyNote")}
             </p>
           )}
 
           {status === EXT_STATUS.EXTENSION_REQUIRED && (
             <p className="mt-1 text-xs opacity-70">
-              Install the TeraPlayer browser extension and make sure you are logged into TeraBox
-              in this browser.
+              {t("ext.extNote")}
             </p>
           )}
 
@@ -77,7 +78,7 @@ export default function ExtensionStatus({ status, message, onRetry, retrying = f
               disabled={retrying}
               data-testid="extension-retry-btn"
             >
-              {retrying ? "Retrying…" : "Retry"}
+              {retrying ? t("ext.retrying") : t("ext.retry")}
             </Button>
           )}
         </div>

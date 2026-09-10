@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Button } from "../components/ui/button";
+import { useLang } from "../i18n/LanguageContext";
 
 const fadeUp = {
   initial: { opacity: 0, scale: 0.97 },
@@ -28,73 +29,41 @@ const fadeUp = {
 const SECTIONS = [
   {
     icon: Copyright,
-    title: "Respecting Copyright",
-    paragraphs: [
-      "TeraPlayer respects copyright and intellectual-property rights. We do not claim ownership of content hosted by third-party services, and we do not host or store the files that flow through the service.",
-      "You are responsible for making sure you have permission to access or download any content you use with TeraPlayer.",
-      "TeraPlayer only processes publicly shared links. We do not bypass paywalls, DRM, authentication, or any other access controls. If a share is not public, TeraPlayer cannot access it.",
-    ],
+    titleKey: "cpr.s1t",
+    paragraphsKeys: ["cpr.s1p1", "cpr.s1p2", "cpr.s1p3"],
   },
   {
     icon: TriangleAlert,
-    title: "If You Believe Content Infringes",
-    paragraphs: [
-      "If you believe that content accessed through TeraPlayer infringes your rights, you can reach out to us through the existing Contact page — we do not operate a separate legal complaints portal.",
-      "To help us review a request, please include:",
-    ],
-    bullets: [
-      "Identification of the copyrighted work you believe is affected",
-      "The specific TeraPlayer link or material you believe is involved",
-      "Your contact information so we can respond",
-      "A statement, made in good faith, that you believe the use is not authorized",
-      "A statement that the information you provide is accurate, and that you are authorized to act on behalf of the rights owner",
-    ],
+    titleKey: "cpr.s2t",
+    paragraphsKeys: ["cpr.s2p1", "cpr.s2p2"],
+    bulletsKeys: ["cpr.s2b1", "cpr.s2b2", "cpr.s2b3", "cpr.s2b4", "cpr.s2b5"],
   },
   {
     icon: Scale,
-    title: "Counter-Notice",
-    paragraphs: [
-      "If you believe something was reported in error, you may also contact us with the same details and we'll review it.",
-      "Note: TeraPlayer handles these requests informally as an independent tool. We do not operate a formal legal process such as a DMCA filing system, and we cannot act as an intermediary in disputes between users and rights holders.",
-    ],
+    titleKey: "cpr.s3t",
+    paragraphsKeys: ["cpr.s3p1", "cpr.s3p2"],
   },
   {
     icon: ShieldCheck,
-    title: "What TeraPlayer Does Not Do",
-    paragraphs: [
-      "To avoid misunderstandings, it is worth being explicit about what TeraPlayer is not:",
-    ],
-    bullets: [
-      "TeraPlayer is not a file host — we do not store or serve the media files you access",
-      "TeraPlayer is not a piracy tool — we only work with publicly shared links from supported domains",
-      "TeraPlayer does not circumvent DRM, passwords, or authentication",
-      "TeraPlayer does not guarantee that any specific link will always work — share availability changes over time",
-      "TeraPlayer is not affiliated with TeraBox, Flextech, or any cloud storage provider",
-    ],
+    titleKey: "cpr.s4t",
+    paragraphsKeys: ["cpr.s4p1"],
+    bulletsKeys: ["cpr.s4b1", "cpr.s4b2", "cpr.s4b3", "cpr.s4b4", "cpr.s4b5"],
   },
   {
     icon: FileText,
-    title: "User Responsibilities",
-    paragraphs: [
-      "When you use TeraPlayer, you agree to:",
-    ],
-    bullets: [
-      "Only use the service with public links you are permitted to access",
-      "Respect the intellectual property rights of content owners",
-      "Comply with the laws of your jurisdiction regarding copyright and digital content",
-      "Not use TeraPlayer to circumvent access controls or distribute unauthorized copies",
-    ],
+    titleKey: "cpr.s5t",
+    paragraphsKeys: ["cpr.s5p1"],
+    bulletsKeys: ["cpr.s5b1", "cpr.s5b2", "cpr.s5b3", "cpr.s5b4"],
   },
   {
     icon: Mail,
-    title: "Contact",
-    paragraphs: [
-      "Please direct copyright inquiries through the Contact page, or email us directly at teraplayer.contact@gmail.com.",
-    ],
+    titleKey: "cpr.s6t",
+    paragraphsKeys: ["cpr.s6p1"],
   },
 ];
 
 export default function CopyrightPage() {
+  const { t } = useLang();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -115,8 +84,8 @@ export default function CopyrightPage() {
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border/40">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <section className="relative overflow-hidden">
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-full max-w-3xl -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -126,14 +95,13 @@ export default function CopyrightPage() {
             <div className="mx-auto max-w-3xl text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted-foreground">
                 <Copyright className="h-3.5 w-3.5 text-primary" />
-                Legal
+                {t("cpr.eyebrow")}
               </div>
               <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl">
-                <span className="text-primary">Copyright</span> & Intellectual Property
+                <span className="text-primary">Copyright</span> {t("cpr.titleB")}
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-                A clear page about intellectual property, what TeraPlayer does and doesn't do, and how to get in touch
-                if you think something is wrong.
+                {t("cpr.sub")}
               </p>
             </div>
           </motion.div>
@@ -144,7 +112,7 @@ export default function CopyrightPage() {
           <div className="mx-auto max-w-3xl space-y-4">
             {SECTIONS.map((s, i) => (
               <motion.div
-                key={s.title}
+                key={s.titleKey}
                 {...fadeUp}
                 transition={{ duration: 0.4, delay: 0.05 * i }}
                 className="rounded-2xl border border-border bg-surface-raised p-6 sm:p-7"
@@ -153,21 +121,21 @@ export default function CopyrightPage() {
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                     <s.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
                   </span>
-                  {s.title}
+                  {t(s.titleKey)}
                 </h2>
-                {s.paragraphs && (
+                {s.paragraphsKeys && (
                   <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    {s.paragraphs.map((p, idx) => (
-                      <p key={idx}>{p}</p>
+                    {s.paragraphsKeys.map((k) => (
+                      <p key={k}>{t(k)}</p>
                     ))}
                   </div>
                 )}
-                {s.bullets && (
+                {s.bulletsKeys && (
                   <ul className="mt-4 space-y-2">
-                    {s.bullets.map((b) => (
-                      <li key={b} className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    {s.bulletsKeys.map((k) => (
+                      <li key={k} className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
                         <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span>{b}</span>
+                        <span>{t(k)}</span>
                       </li>
                     ))}
                   </ul>
@@ -188,15 +156,15 @@ export default function CopyrightPage() {
               className="mx-auto max-w-2xl"
             >
               <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-                Need to <span className="text-primary">report</span> something?
+                {t("cpr.ctaT")}
               </h2>
               <p className="mt-3 text-muted-foreground">
-                Send it through the Contact page — we'll review it.
+                {t("cpr.ctaB")}
               </p>
               <Button asChild className="mt-6 h-12 px-8 text-base" size="lg">
                 <Link to="/contact">
                   <Mail className="mr-2 h-5 w-5" />
-                  Contact us
+                  {t("cpr.ctaBtn")}
                 </Link>
               </Button>
             </motion.div>

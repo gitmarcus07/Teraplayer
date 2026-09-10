@@ -2,6 +2,7 @@
 // user-facing category so the rest of the UI renders a single consistent
 // error presentation.
 //
+import { dictionaries } from "../i18n/translations";
 // The backend returns either:
 //   - HTTP 200 with { ok: false, error: "...", password_required, ... } for
 //     extraction-level failures, or
@@ -109,48 +110,68 @@ export function classifyPreviewError(error, data) {
   return { category: ERROR_CATEGORIES.UNKNOWN };
 }
 
-// safePreviewError — returns ERROR_COPY (title + description) for a raw
+// safePreviewError — returns resolved copy (title + description) for a raw
 // extraction error string. It never surfaces backend/extractor internals to
 // users; raw text is used only for classification. Falls back to friendly
 // generic copy for anything unrecognized.
-export function safePreviewError(rawError, passwordRequired = false) {
+export function safePreviewError(rawError, passwordRequired = false, t) {
   const cls = classifyPreviewError(null, {
     error: rawError || "",
     password_required: passwordRequired,
   });
-  if (!cls) return ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
-  return ERROR_COPY[cls.category] || ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
+  if (!cls) return resolveErrorCopy(ERROR_CATEGORIES.UNKNOWN, t);
+  return resolveErrorCopy(cls.category, t);
 }
 
 export const ERROR_COPY = {
   [ERROR_CATEGORIES.INVALID_LINK]: {
-    title: "That doesn't look like a valid TeraBox link.",
-    description: "Check the link and try again, or paste a public TeraBox share link.",
-    actionLabel: "Check link",
+    titleKey: "err.invT",
+    descKey: "err.invD",
+    actionKey: "err.invA",
   },
   [ERROR_CATEGORIES.UNAVAILABLE]: {
-    title: "This content is unavailable or the link may have expired.",
-    description: "The owner may have removed it or made it private.",
-    actionLabel: "Try again",
+    titleKey: "err.unaT",
+    descKey: "err.unaD",
+    actionKey: "err.unaA",
   },
   [ERROR_CATEGORIES.TEMPORARY]: {
-    title: "TeraPlayer is temporarily unavailable.",
-    description: "We're having trouble reaching the service right now. This usually resolves in a few moments.",
-    actionLabel: "Retry",
+    titleKey: "err.tmpT",
+    descKey: "err.tmpD",
+    actionKey: "err.tmpA",
   },
   [ERROR_CATEGORIES.RATE_LIMITED]: {
-    title: "Too many requests",
-    description: "Please wait a moment before trying again.",
-    actionLabel: "Try again",
+    titleKey: "err.rateT",
+    descKey: "err.rateD",
+    actionKey: "err.rateA",
   },
   [ERROR_CATEGORIES.NETWORK]: {
-    title: "Couldn't connect to TeraPlayer.",
-    description: "Check your internet connection and try again.",
-    actionLabel: "Retry",
+    titleKey: "err.netT",
+    descKey: "err.netD",
+    actionKey: "err.netA",
   },
   [ERROR_CATEGORIES.UNKNOWN]: {
-    title: "Something went wrong while preparing your video.",
-    description: "This usually resolves in a few moments.",
-    actionLabel: "Retry",
+    titleKey: "err.unkT",
+    descKey: "err.unkD",
+    actionKey: "err.unkA",
   },
 };
+
+// Resolve ERROR_COPY keys through t(). Pass the `t` function from useLang().
+// Falls back to English text when no translator is supplied (e.g. toasts
+// fired outside React render).
+export function resolveErrorCopy(category, t) {
+  const copy = ERROR_COPY[category] || ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
+  if (typeof t !== "function") {
+    const en = dictionaries.en;
+    return {
+      title: en[copy.titleKey],
+      description: en[copy.descKey],
+      actionLabel: en[copy.actionKey],
+    };
+  }
+  return {
+    title: t(copy.titleKey),
+    description: t(copy.descKey),
+    actionLabel: t(copy.actionKey),
+  };
+}

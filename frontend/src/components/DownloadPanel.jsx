@@ -4,6 +4,7 @@ import { Download, Check, Loader2, XCircle, ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { track } from "../lib/analytics";
+import { useLang } from "../i18n/LanguageContext";
 
 export function humanBytes(n) {
   if (!n && n !== 0) return "—";
@@ -111,7 +112,7 @@ export function useDownload({ url, filename, sizeHint }) {
           return;
         }
         setStatus("error");
-        setError("Download couldn't be completed.");
+        setError("failed");
         track("download_failed");
       } finally {
         startingRef.current = false;
@@ -144,6 +145,7 @@ export function useDownload({ url, filename, sizeHint }) {
 }
 
 export default function DownloadPanel({ url, filename, sizeHint, onClose, autoStart = false }) {
+  const { t } = useLang();
   const dl = useDownload({ url, filename, sizeHint });
   const autoStartedRef = useRef(false);
 
@@ -166,23 +168,23 @@ export default function DownloadPanel({ url, filename, sizeHint, onClose, autoSt
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            Download
+            {t("dlp.label")}
           </div>
           <div className="truncate font-medium" data-testid="download-filename">
-            {filename || "TeraBox file"}
+            {filename || t("dlp.fallback")}
           </div>
           <div className="mt-1 text-xs text-muted-foreground" aria-live="polite">
             {dl.status === "downloading" && (
               <>
-                <span className="font-medium text-foreground">Downloading…</span>{" "}
+                <span className="font-medium text-foreground">{t("dlp.downloading")}</span>{" "}
                 {humanBytes(dl.received)} {dl.total ? `/ ${humanBytes(dl.total)}` : ""} · {humanSpeed(dl.speed)}
                 {dl.eta ? ` · ETA ${Math.max(0, Math.round(dl.eta))}s` : ""}
               </>
             )}
-            {dl.status === "idle" && (dl.total ? humanBytes(dl.total) : "Ready to start")}
-            {dl.status === "done" && "Download complete"}
+            {dl.status === "idle" && (dl.total ? humanBytes(dl.total) : t("dlp.ready"))}
+            {dl.status === "done" && t("dlp.done")}
             {dl.status === "error" && (
-              <span className="text-destructive">{dl.error}</span>
+              <span className="text-destructive">{t("dlp.errFailed")}</span>
             )}
           </div>
         </div>
@@ -190,11 +192,11 @@ export default function DownloadPanel({ url, filename, sizeHint, onClose, autoSt
           {dl.status === "idle" && (
             <>
               <Button onClick={dl.start} size="sm" data-testid="download-start-btn" className="flex-1 sm:flex-none">
-                <Download className="mr-1.5 h-4 w-4" /> Start
+                <Download className="mr-1.5 h-4 w-4" /> {t("dlp.start")}
               </Button>
               <Button asChild size="sm" variant="outline" className="flex-1 sm:flex-none">
                 <a href={url} target="_blank" rel="noreferrer" data-testid="download-direct-link">
-                  <ExternalLink className="mr-1.5 h-4 w-4" /> Direct
+                  <ExternalLink className="mr-1.5 h-4 w-4" /> {t("dlp.direct")}
                 </a>
               </Button>
             </>
@@ -206,17 +208,17 @@ export default function DownloadPanel({ url, filename, sizeHint, onClose, autoSt
               size="sm"
               data-testid="download-cancel-btn"
             >
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Cancel
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t("dlp.cancel")}
             </Button>
           )}
           {dl.status === "done" && (
             <Button variant="outline" size="sm" onClick={onClose} data-testid="download-close-btn">
-              <Check className="mr-1.5 h-4 w-4 text-primary" /> Close
+              <Check className="mr-1.5 h-4 w-4 text-primary" /> {t("dlp.close")}
             </Button>
           )}
           {dl.status === "error" && (
             <Button onClick={dl.start} size="sm" variant="destructive" data-testid="download-retry-btn">
-              <XCircle className="mr-1.5 h-4 w-4" /> Retry
+              <XCircle className="mr-1.5 h-4 w-4" /> {t("dlp.retry")}
             </Button>
           )}
         </div>

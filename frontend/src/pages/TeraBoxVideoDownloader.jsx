@@ -10,12 +10,18 @@ import {
   ShieldCheck,
   Zap,
   Smartphone,
-  ChevronRight,
   Puzzle,
   KeyRound,
+  Check,
+  X,
+  Minus,
+  Monitor,
+  Cpu,
 } from "lucide-react";
 
 import Header from "../components/Header";
+import FaqCards from "../components/FaqCards";
+import { useLang } from "../i18n/LanguageContext";
 import HeroInput from "../components/HeroInput";
 import PreviewCard from "../components/PreviewCard";
 import VideoPlayer from "../components/VideoPlayer";
@@ -31,34 +37,16 @@ import { runExtensionExtraction, EXT_STATUS } from "../services/extension";
 import { safePreviewError } from "../utils/errorHandling";
 
 const faqItems = [
-  {
-    q: "What is a TeraBox video downloader?",
-    a: "A TeraBox video downloader is a tool that lets you save video files from public TeraBox share links directly to your device—without installing the TeraBox app or creating an account.",
-  },
-  {
-    q: "How do I download a TeraBox video?",
-    a: "Copy a public TeraBox share link, paste it into TeraPlayer's input field, and click Watch Now. Once the preview loads, select your preferred quality (where available) and click the Download button.",
-  },
-  {
-    q: "Do I need a TeraPlayer account?",
-    a: "No. TeraPlayer works entirely in your browser. You can preview, watch, and download from public TeraBox links without signing in.",
-  },
-  {
-    q: "Can I watch a video before downloading it?",
-    a: "Yes. After pasting a TeraBox link, TeraPlayer shows a preview with a built-in player so you can stream the video before choosing to download.",
-  },
-  {
-    q: "Can I download TeraBox folders?",
-    a: "Yes. When a TeraBox share contains multiple files, TeraPlayer detects the folder structure and lets you browse it. You can select multiple files and download them all as a single ZIP archive.",
-  },
-  {
-    q: "Can I use TeraPlayer on mobile?",
-    a: "Yes. TeraPlayer is built with a responsive, mobile-friendly interface that works in any modern mobile browser—no app install required.",
-  },
-  {
-    q: "Does TeraPlayer work with every TeraBox link?",
-    a: "TeraPlayer supports public TeraBox share links from supported domains. Some links may be expired, private, or restricted by the content owner and cannot be accessed.",
-  },
+  { qk: "d.q1", ak: "d.a1" },
+  { qk: "d.q2", ak: "d.a2" },
+  { qk: "d.q3", ak: "d.a3" },
+  { qk: "d.q4", ak: "d.a4" },
+  { qk: "d.q5", ak: "d.a5" },
+  { qk: "d.q6", ak: "d.a6" },
+  { qk: "d.q7", ak: "d.a7" },
+  { qk: "d.q8", ak: "d.a8" },
+  { qk: "d.q9", ak: "d.a9" },
+  { qk: "d.q10", ak: "d.a10" },
 ];
 
 function buildQualityOptions(preview) {
@@ -82,6 +70,7 @@ function buildQualityOptions(preview) {
 }
 
 export default function TeraBoxVideoDownloader() {
+  const { t } = useLang();
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [watching, setWatching] = useState(false);
@@ -114,18 +103,18 @@ export default function TeraBoxVideoDownloader() {
         if (!data.ok) {
           if (data.password_required) {
             const wasIncorrect = !!data.password_incorrect;
-            if (wasIncorrect) toast.error("Incorrect password. Please try again.");
+            if (wasIncorrect) toast.error(t("toast.incorrectPw"));
             setPwdDialog({ open: true, url, incorrect: wasIncorrect });
           } else {
-            toast.error(safePreviewError(data.error).title);
+            toast.error(safePreviewError(data.error, false, t).title);
           }
         } else {
-          toast.success("Link resolved");
+          toast.success(t("toast.linkResolved"));
         }
         setSearchParams({ url });
       } catch (e) {
         console.error(e?.message || "Request failed");
-        toast.error("Network error. Please try again.");
+        toast.error(t("toast.netErr"));
       } finally {
         setLoading(false);
       }
@@ -145,7 +134,7 @@ export default function TeraBoxVideoDownloader() {
       setSelectedQualityId("");
       setExtRetrying(false);
       setExtRunning(true);
-      setExtStatus({ state: EXT_STATUS.CREATING, message: "Preparing browser extraction…" });
+      setExtStatus({ state: EXT_STATUS.CREATING, message: "extm.preparing" });
       setSearchParams({ url });
 
       const res = await runExtensionExtraction({
@@ -159,7 +148,7 @@ export default function TeraBoxVideoDownloader() {
         setPreview(enriched);
         setExtStatus(null);
         if (res.preview.ok) {
-          toast.success("Link resolved via browser");
+          toast.success(t("toast.linkResolvedBrowser"));
         } else if (res.preview.password_required) {
           setPwdDialog({
             open: true,
@@ -167,7 +156,7 @@ export default function TeraBoxVideoDownloader() {
             incorrect: !!res.preview.password_incorrect,
           });
         } else {
-          toast.error(safePreviewError(res.preview.error).title);
+          toast.error(safePreviewError(res.preview.error, false, t).title);
         }
       }
       setExtRunning(false);
@@ -193,9 +182,9 @@ export default function TeraBoxVideoDownloader() {
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(preview.sourceUrl);
-      toast.success("Link copied");
+      toast.success(t("toast.linkCopied"));
     } catch {
-      toast.error("Could not copy link");
+      toast.error(t("toast.copyFail"));
     }
   };
 
@@ -205,7 +194,7 @@ export default function TeraBoxVideoDownloader() {
       if (navigator.share) await navigator.share({ title: preview.title, url: shareUrl });
       else {
         await navigator.clipboard.writeText(shareUrl);
-        toast.success("Shareable link copied");
+        toast.success(t("toast.shareCopied"));
       }
     } catch {
       /* cancelled */
@@ -228,8 +217,8 @@ export default function TeraBoxVideoDownloader() {
 
   const faqSchema = faqItems.map((item) => ({
     "@type": "Question",
-    name: item.q,
-    acceptedAnswer: { "@type": "Answer", text: item.a },
+    name: t(item.qk),
+    acceptedAnswer: { "@type": "Answer", text: t(item.ak) },
   }));
 
   return (
@@ -262,6 +251,19 @@ export default function TeraBoxVideoDownloader() {
             mainEntity: faqSchema,
           })}
         </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            name: "How to Download a TeraBox Video",
+            description: "Save a supported public TeraBox video to your device with TeraPlayer.",
+            step: [
+              { "@type": "HowToStep", position: 1, name: t("d.s1t"), text: t("d.s1d") },
+              { "@type": "HowToStep", position: 2, name: t("d.s2t"), text: t("d.s2d") },
+              { "@type": "HowToStep", position: 3, name: t("d.s3t"), text: t("d.s3d") },
+            ],
+          })}
+        </script>
       </Seo>
 
       <Header />
@@ -269,7 +271,8 @@ export default function TeraBoxVideoDownloader() {
       <main id="main" className="tp-container">
         {/* HERO */}
         <section className="relative flex min-h-[calc(100vh-3rem)] flex-col items-center justify-start pt-12 pb-4 md:min-h-[calc(100vh-4rem)] md:pt-16 md:pb-6">
-          <div className="mx-auto w-full max-w-3xl px-5">
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-full max-w-3xl -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
+          <div className="relative mx-auto w-full max-w-3xl px-5">
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -278,8 +281,8 @@ export default function TeraBoxVideoDownloader() {
             >
               <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:mb-4 sm:px-3 sm:py-1 sm:text-xs">
                 <Download className="h-3 w-3 text-primary sm:h-3.5 sm:w-3.5" />
-                <span className="hidden sm:inline">Free • No login • No app</span>
-                <span className="sm:hidden">Free • No login</span>
+                <span className="hidden sm:inline">{t("d.eyebrow")}</span>
+                <span className="sm:hidden">{t("d.eyebrowSm")}</span>
               </div>
 
               <h1
@@ -287,14 +290,14 @@ export default function TeraBoxVideoDownloader() {
                 style={{ fontSize: "clamp(2.25rem, 7vw, 5rem)" }}
                 data-testid="hero-title"
               >
-                <span className="text-primary">TeraBox</span> Video Downloader
+                <span className="text-primary">TeraBox</span> {t("d.titleB")}
               </h1>
 
               <p className="mx-auto mt-5 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                Download supported TeraBox videos directly from your browser. Paste a public TeraBox link, preview the content, and download in your preferred quality.
+                {t("d.sub")}
               </p>
               <p className="mx-auto mt-2 max-w-2xl text-xs text-muted-foreground italic sm:text-sm">
-                Works with public share links. Password-protected links are also supported.
+                {t("d.subNote")}
               </p>
             </motion.div>
 
@@ -316,7 +319,7 @@ export default function TeraBoxVideoDownloader() {
                   data-testid="browser-extraction-link"
                 >
                   <Puzzle className="h-3 w-3" />
-                  Link not resolving? Extract with Browser
+                  {t("d.extract")}
                 </button>
               </div>
             )}
@@ -330,19 +333,19 @@ export default function TeraBoxVideoDownloader() {
               >
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
                   <Zap className="h-3 w-3 text-primary" />
-                  HD &amp; 4K when available
+                  {t("d.chip1")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
                   <FolderOpen className="h-3 w-3 text-primary" />
-                  Folder support
+                  {t("d.chip2")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
                   <Archive className="h-3 w-3 text-primary" />
-                  ZIP downloads
+                  {t("d.chip3")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-1 text-[10px] text-muted-foreground sm:text-xs">
                   <ShieldCheck className="h-3 w-3 text-primary" />
-                  No login required
+                  {t("d.chip4")}
                 </span>
               </motion.div>
             )}
@@ -369,9 +372,9 @@ export default function TeraBoxVideoDownloader() {
               <div className="flex items-start gap-3">
                 <Puzzle className="mt-0.5 h-5 w-5 shrink-0" />
                 <div>
-                  <div className="font-semibold">We couldn't extract this link</div>
+                  <div className="font-semibold">{t("d.extractFailT")}</div>
                   <p className="mt-1 text-sm opacity-90">
-                    {safePreviewError(preview.error).description}
+                    {safePreviewError(preview.error, false, t).description}
                   </p>
                   <Button
                     className="mt-3"
@@ -384,7 +387,7 @@ export default function TeraBoxVideoDownloader() {
                     data-testid="extract-with-browser-btn"
                   >
                     <Puzzle className="mr-1.5 h-4 w-4" />
-                    Extract with Browser
+                    {t("d.extractBtn")}
                   </Button>
                 </div>
               </div>
@@ -401,9 +404,9 @@ export default function TeraBoxVideoDownloader() {
               <div className="flex items-start gap-3">
                 <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div className="flex-1">
-                  <div className="font-semibold">This link is password protected</div>
+                  <div className="font-semibold">{t("result.protected")}</div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Enter the password to unlock the file preview.
+                    {t("result.protectedBody")}
                   </p>
                   <Button
                     className="mt-3"
@@ -417,7 +420,7 @@ export default function TeraBoxVideoDownloader() {
                     }
                     data-testid="open-password-btn"
                   >
-                    Enter password
+                    {t("result.enterPw")}
                   </Button>
                 </div>
               </div>
@@ -477,7 +480,7 @@ export default function TeraBoxVideoDownloader() {
                     data={preview}
                     onWatch={() => {
                       if (!streamViaProxy) {
-                        toast.error("No stream URL available");
+                        toast.error(t("toast.noStream"));
                         return;
                       }
                       setWatching(true);
@@ -535,10 +538,10 @@ export default function TeraBoxVideoDownloader() {
         >
           <div className="mx-auto max-w-3xl px-5">
             <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              How to download <span className="text-primary">TeraBox videos</span>
+              {t("d.howA")} <span className="text-primary">{t("d.howB")}</span>
             </h2>
             <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Getting your videos is a three-step process:
+              {t("d.howSub")}
             </p>
           </div>
 
@@ -553,9 +556,9 @@ export default function TeraBoxVideoDownloader() {
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <span className="flex h-10 w-10 items-center justify-center text-xl font-bold text-primary">1</span>
               </div>
-              <h3 className="text-sm font-semibold">Copy your link</h3>
+              <h3 className="text-sm font-semibold">{t("d.s1t")}</h3>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Copy any public TeraBox share link from the app or website.
+                {t("d.s1d")}
               </p>
             </motion.div>
 
@@ -569,9 +572,9 @@ export default function TeraBoxVideoDownloader() {
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <span className="flex h-10 w-10 items-center justify-center text-xl font-bold text-primary">2</span>
               </div>
-              <h3 className="text-sm font-semibold">Paste &amp; resolve</h3>
+              <h3 className="text-sm font-semibold">{t("d.s2t")}</h3>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Paste the link above and TeraPlayer resolves the preview instantly.
+                {t("d.s2d")}
               </p>
             </motion.div>
 
@@ -585,9 +588,9 @@ export default function TeraBoxVideoDownloader() {
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <span className="flex h-10 w-10 items-center justify-center text-xl font-bold text-primary">3</span>
               </div>
-              <h3 className="text-sm font-semibold">Download</h3>
+              <h3 className="text-sm font-semibold">{t("d.s3t")}</h3>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Choose your quality and start the download.
+                {t("d.s3d")}
               </p>
             </motion.div>
           </div>
@@ -609,48 +612,24 @@ export default function TeraBoxVideoDownloader() {
               className="mx-auto mb-10 max-w-2xl text-center"
             >
               <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-                Built for <span className="text-primary">downloading</span>
+                {t("d.featA")} <span className="text-primary">{t("d.featB")}</span>
               </h2>
               <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-                Tools and features designed around the download workflow.
+                {t("d.featSub")}
               </p>
             </motion.div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                {
-                  icon: Zap,
-                  title: "Instant Preview",
-                  body: "Get thumbnail, title, and file size in under two seconds.",
-                },
-                {
-                  icon: Download,
-                  title: "Quality Selection",
-                  body: "Download in 240p up to 4K when multiple versions are available.",
-                },
-                {
-                  icon: Archive,
-                  title: "ZIP Downloads",
-                  body: "Select multiple files from a folder and download them as one ZIP archive.",
-                },
-                {
-                  icon: FolderOpen,
-                  title: "Folder Browsing",
-                  body: "Navigate shared folders with breadcrumbs and in-folder search.",
-                },
-                {
-                  icon: ShieldCheck,
-                  title: "No Login Required",
-                  body: "Use the downloader without an account. Works entirely in your browser.",
-                },
-                {
-                  icon: Smartphone,
-                  title: "Mobile-Friendly",
-                  body: "Download directly on your phone or tablet — no app install needed.",
-                },
+                { icon: Zap, tk: "d.f1t", dk: "d.f1d" },
+                { icon: Download, tk: "d.f2t", dk: "d.f2d" },
+                { icon: Archive, tk: "d.f3t", dk: "d.f3d" },
+                { icon: FolderOpen, tk: "d.f4t", dk: "d.f4d" },
+                { icon: ShieldCheck, tk: "d.f5t", dk: "d.f5d" },
+                { icon: Smartphone, tk: "d.f6t", dk: "d.f6d" },
               ].map((f, i) => (
                 <motion.div
-                  key={f.title}
+                  key={f.tk}
                   initial={{ opacity: 0, scale: 0.96 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
@@ -660,11 +639,202 @@ export default function TeraBoxVideoDownloader() {
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                     <f.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
                   </div>
-                  <h3 className="text-sm font-semibold">{f.title}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{f.body}</p>
+                  <h3 className="text-sm font-semibold">{t(f.tk)}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t(f.dk)}</p>
                 </motion.div>
               ))}
             </div>
+          </div>
+        </motion.section>
+
+        {/* ON ANY DEVICE — absorbs the mobile + PC download guides */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="tp-container py-14"
+          id="devices"
+        >
+          <div className="mx-auto max-w-4xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                {t("d.devA")} <span className="text-primary">{t("d.devB")}</span>
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+                {t("d.devSub")}
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border bg-surface-raised p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Smartphone className="h-5 w-5 text-primary" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-sm font-semibold">{t("d.mobT")}</h3>
+                <ul className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t("d.mob1")}</li>
+                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t("d.mob2")}</li>
+                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t("d.mob3")}</li>
+                </ul>
+              </div>
+              <div className="rounded-2xl border border-border bg-surface-raised p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Monitor className="h-5 w-5 text-primary" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-sm font-semibold">{t("d.pcT")}</h3>
+                <ul className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t("d.pc1")}</li>
+                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t("d.pc2")}</li>
+                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t("d.pc3")}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* FOLDERS & ZIP — absorbs the folder + ZIP download guides */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="border-y border-border/40 tp-container py-14"
+          id="folders-zip"
+        >
+          <div className="mx-auto max-w-4xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                {t("d.foldA")} <span className="text-primary">{t("d.foldB")}</span>
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+                {t("d.foldSub")}
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border bg-surface-raised p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <FolderOpen className="h-5 w-5 text-primary" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-sm font-semibold">{t("d.faT")}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  {t("d.faD")}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-surface-raised p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Archive className="h-5 w-5 text-primary" strokeWidth={1.75} />
+                </div>
+                <h3 className="text-sm font-semibold">{t("d.fbT")}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  {t("d.fbD")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* COMPARISON — original analysis, not a copied chart */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="tp-container py-14"
+        >
+          <div className="mx-auto max-w-4xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                {t("d.cmpA")} <span className="text-primary">{t("d.cmpB")}</span>
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+                {t("d.cmpSub")}
+              </p>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-border">
+              <table className="w-full min-w-[560px] border-collapse bg-surface-raised text-left text-xs sm:text-sm">
+                <caption className="sr-only">{t("d.cmpCap")}</caption>
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground">
+                    <th scope="col" className="p-4 font-semibold">{t("d.cmpCol")}</th>
+                    <th scope="col" className="p-4 font-semibold">{t("d.cmpTera")}</th>
+                    <th scope="col" className="p-4 font-semibold">{t("d.cmpApp")}</th>
+                    <th scope="col" className="p-4 font-semibold">{t("d.cmpSites")}</th>
+                  </tr>
+                </thead>
+                <tbody className="[&_tr]:border-b [&_tr]:border-border/60 [&_tr:last-child]:border-0">
+                  <tr>
+                    <th scope="row" className="p-4 font-medium">{t("d.cmpR1")}</th>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><X className="h-4 w-4 text-destructive" aria-label={t("d.no")} /></td>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" className="p-4 font-medium">{t("d.cmpR2")}</th>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><X className="h-4 w-4 text-destructive" aria-label={t("d.no")} /></td>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" className="p-4 font-medium">{t("d.cmpR3")}</th>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><Minus className="h-4 w-4 text-muted-foreground" aria-label={t("d.rare")} /></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" className="p-4 font-medium">{t("d.cmpR4")}</th>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><X className="h-4 w-4 text-destructive" aria-label={t("d.no")} /></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" className="p-4 font-medium">{t("d.cmpR5")}</th>
+                    <td className="p-4"><Check className="h-4 w-4 text-primary" aria-label={t("d.yes")} /></td>
+                    <td className="p-4"><X className="h-4 w-4 text-destructive" aria-label={t("d.no")} /></td>
+                    <td className="p-4"><X className="h-4 w-4 text-destructive" aria-label={t("d.no")} /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* DEEP DIVE — how extraction actually works */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="border-y border-border/40 tp-container py-14"
+          id="how-extraction-works"
+        >
+          <div className="mx-auto max-w-4xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                {t("d.deepA")} <span className="text-primary">{t("d.deepB")}</span>
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+                {t("d.deepSub")}
+              </p>
+            </div>
+            <ol className="grid gap-4 sm:grid-cols-3">
+              {[
+                { n: "01", tk: "d.d1t", dk: "d.d1d" },
+                { n: "02", tk: "d.d2t", dk: "d.d2d" },
+                { n: "03", tk: "d.d3t", dk: "d.d3d" },
+              ].map((s) => (
+                <li key={s.n} className="rounded-2xl border border-border bg-surface-raised p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">{s.n}</span>
+                    <Cpu className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold">{t(s.tk)}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">{t(s.dk)}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="mx-auto mt-6 max-w-2xl text-center text-xs text-muted-foreground sm:text-sm">
+              {t("d.deepNote")}
+            </p>
           </div>
         </motion.section>
 
@@ -678,31 +848,14 @@ export default function TeraBoxVideoDownloader() {
         >
           <div className="mx-auto max-w-3xl px-5">
             <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              Frequently Asked Questions
+              {t("faq.title")}
             </h2>
             <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Answers to common questions about downloading TeraBox videos.
+              {t("d.faqSub")}
             </p>
 
-            <div className="mt-8 space-y-3">
-              {faqItems.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.05 * i }}
-                  className="rounded-2xl border border-border bg-surface-raised p-4"
-                >
-                  <h3 className="flex items-start gap-3 text-sm font-semibold">
-                    <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    {item.q}
-                  </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    {item.a}
-                  </p>
-                </motion.div>
-              ))}
+            <div className="mt-8">
+              <FaqCards items={faqItems.map((item) => ({ q: t(item.qk), a: t(item.ak) }))} />
             </div>
           </div>
         </motion.section>
@@ -722,29 +875,29 @@ export default function TeraBoxVideoDownloader() {
               viewport={{ once: true }}
               className="inline-block rounded-full border border-border bg-surface-raised px-4 py-1.5 text-xs font-medium text-muted-foreground"
             >
-              <Smartphone className="inline h-3 w-3 text-primary" /> Looking to stream instead?
+              <Smartphone className="inline h-3 w-3 text-primary" /> {t("d.crossChip")}
             </motion.div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Prefer to watch TeraBox videos online rather than download them?
+              {t("d.crossText")}
             </p>
             <Button asChild className="mt-3 h-9 px-6 text-sm">
-              <Link to="/terabox-video-player">TeraBox video player</Link>
+              <Link to="/terabox-video-player">{t("d.crossBtn")}</Link>
             </Button>
           </div>
         </motion.section>
       </main>
 
-      <footer className="border-t border-border/40 bg-surface-raised/50">
+      <footer className="border-t border-slate-200 bg-white">
         <div className="tp-container py-6">
           <div className="mx-auto max-w-4xl text-center text-xs text-muted-foreground">
             <p>
               <span className="font-display text-sm font-semibold text-foreground">
-                Tera<span className="text-primary">Player</span>
+                Tera<span className="text-gradient">Player</span><span className="text-xs font-bold text-slate-400">.in</span>
               </span>
               <span className="mx-1">·</span>
-              Free to use — no account required
+              {t("homefoot.tag")}
               <span className="mx-1">·</span>
-              Only supports public TeraBox links. Respect the original owners.
+              {t("homefoot.note")}{t("homefoot.noteExt")}
             </p>
           </div>
         </div>

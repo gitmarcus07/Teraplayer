@@ -23,6 +23,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import { FooterLegalLinks } from "../components/Footer";
 import { Button } from "../components/ui/button";
+import { useLang } from "../i18n/LanguageContext";
 
 const fadeUp = {
   initial: { opacity: 0, scale: 0.97 },
@@ -32,54 +33,31 @@ const fadeUp = {
 };
 
 const features = [
-  {
-    icon: Eye,
-    title: "Instant Preview",
-    body: "Paste any public TeraBox link and get an instant rich preview — thumbnail, title, file size, and type — in under two seconds.",
-  },
-  {
-    icon: Film,
-    title: "Cinematic Player",
-    body: "A custom-built video player with keyboard shortcuts, picture-in-picture mode, playback speed control, and fullscreen.",
-  },
-  {
-    icon: FolderOpen,
-    title: "Folder Browsing",
-    body: "Navigate shared folders with breadcrumbs, list/grid views, sort by name/size/type, and in-folder search.",
-  },
-  {
-    icon: Archive,
-    title: "ZIP Downloads",
-    body: "Select multiple files from a folder and download them all as a single ZIP archive with real-time progress.",
-  },
-  {
-    icon: Download,
-    title: "Direct Downloads",
-    body: "Download individual files directly with resume support and progress tracking.",
-  },
-  {
-    icon: Shield,
-    title: "Privacy First",
-    body: "No sign-up required. Privacy-conscious by design. Optional Google sign-in syncs across devices only if you choose.",
-  },
+  { icon: Eye, tk: "ab.f1t", dk: "ab.f1d" },
+  { icon: Film, tk: "ab.f2t", dk: "ab.f2d" },
+  { icon: FolderOpen, tk: "ab.f3t", dk: "ab.f3d" },
+  { icon: Archive, tk: "ab.f4t", dk: "ab.f4d" },
+  { icon: Download, tk: "ab.f5t", dk: "ab.f5d" },
+  { icon: Shield, tk: "ab.f6t", dk: "ab.f6d" },
 ];
 
 const roadmap = [
   {
     quarter: "Q3 2026",
-    items: ["Nested subfolder navigation", "Server-side ZIP generation for large folders", "Progressive image thumbnails"],
+    itemsKeys: ["ab.r11", "ab.r12", "ab.r13"],
   },
   {
     quarter: "Q4 2026",
-    items: ["User-created share collections", "Analytics dashboard (opt-in)"],
+    itemsKeys: ["ab.r21", "ab.r22"],
   },
   {
     quarter: "2027",
-    items: ["Mobile native apps (iOS / Android)", "API for developers", "PostgreSQL adapter for self-hosters"],
+    itemsKeys: ["ab.r31", "ab.r32", "ab.r33"],
   },
 ];
 
 export default function About() {
+  const { t } = useLang();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -100,8 +78,8 @@ export default function About() {
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <section className="relative overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-full max-w-3xl -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -111,18 +89,14 @@ export default function About() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              About TeraPlayer
+              {t("ab.eyebrow")}
             </div>
             <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl lg:text-6xl">
-              Watch TeraBox links like a{" "}
-              <span className="relative inline-block">
-                <span className="text-primary">streaming platform.</span>
-                <span className="absolute inset-x-0 -bottom-1 h-1 bg-primary/40" />
-              </span>
+              {t("ab.titleA")}{" "}
+              <span className="text-primary">{t("ab.titleB")}</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              TeraPlayer is a modern, open-web tool that transforms public TeraBox share links into a premium
-              streaming experience — no account required, no trackers, no hassle.
+              {t("ab.sub")}
             </p>
           </div>
         </motion.div>
@@ -131,22 +105,17 @@ export default function About() {
       {/* What is TeraPlayer */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl">
-          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-            <span className="text-primary">What</span> is TeraPlayer?
-          </h2>
-          <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            <p>
-              TeraPlayer is a <span className="font-medium text-foreground">free, open-web application</span> that lets
-              you watch and download files from public TeraBox shares instantly. Instead of downloading a file before
-              knowing what it is, TeraPlayer gives you a rich preview — thumbnail, title, size — and lets you stream
-              video directly in your browser.
-            </p>
-            <p>
-              It uses a multi-layered extraction pipeline: a native HTTP scraper, a self-hosted Cloudflare Worker, and
-              community fallback APIs. If one fails, the next takes over automatically. The result is <span className="font-medium text-foreground">the most
-              reliable way to access TeraBox content</span> outside the official site.
-            </p>
-          </div>
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+              <span className="text-primary">{t("ab.wA")}</span>{t("ab.wB")}
+            </h2>
+            <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p>
+                {t("ab.wP1a")} <span className="font-medium text-foreground">{t("ab.wP1b")}</span> {t("ab.wP1c")}
+              </p>
+              <p>
+                {t("ab.wP2a")} <span className="font-medium text-foreground">{t("ab.wP2b")}</span> {t("ab.wP2c")}
+              </p>
+            </div>
         </motion.div>
       </section>
 
@@ -160,12 +129,10 @@ export default function About() {
               </div>
               <div>
                 <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-                  Our <span className="text-primary">Mission</span>
+                  {t("ab.mA")} <span className="text-primary">{t("ab.mB")}</span>
                 </h2>
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  Make TeraBox content accessible without friction. No downloads required just to preview a file. No
-                  account necessary just to watch a video. No annoying ads. We believe sharing should be simple,
-                  beautiful, and private — and that a paste input + a stunning player is all anyone needs.
+                  {t("ab.mBody")}
                 </p>
               </div>
             </div>
@@ -176,18 +143,18 @@ export default function About() {
       {/* Features Grid */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl text-center">
-          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-            Everything you <span className="text-primary">need</span>
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            A thoughtfully crafted set of features for casual viewers and power users alike.
-          </p>
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+              {t("ab.fA")} <span className="text-primary">{t("ab.fB")}</span>
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              {t("ab.fSub")}
+            </p>
         </motion.div>
 
         <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <motion.div
-              key={f.title}
+              key={f.tk}
               initial={{ opacity: 0, scale: 0.96 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -197,8 +164,8 @@ export default function About() {
               <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
                 <f.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
               </div>
-              <h3 className="text-sm font-semibold">{f.title}</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{f.body}</p>
+              <h3 className="text-sm font-semibold">{t(f.tk)}</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t(f.dk)}</p>
             </motion.div>
           ))}
         </div>
@@ -209,10 +176,10 @@ export default function About() {
         <div className="tp-container py-16 md:py-20">
           <motion.div {...fadeUp} className="mx-auto max-w-4xl">
             <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              Supported <span className="text-primary">Links</span>
+              {t("ab.supA")} <span className="text-primary">{t("ab.supB")}</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
-              TeraPlayer works with any public share link from the following TeraBox domains and mirrors:
+              {t("ab.supSub")}
             </p>
             <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {[
@@ -236,8 +203,7 @@ export default function About() {
               ))}
             </div>
             <p className="mt-6 text-sm text-muted-foreground">
-              Both single-file shares and multi-file folder shares are supported. Password-protected links are supported
-              via an inline password dialog.
+              {t("ab.supNote")}
             </p>
           </motion.div>
         </div>
@@ -248,7 +214,7 @@ export default function About() {
         <div className="mx-auto max-w-4xl">
           <motion.div {...fadeUp}>
             <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              <span className="text-primary">Folder</span> Support &amp; <span className="text-primary">ZIP</span> Downloads
+              <span className="text-primary">{t("ab.foldA")}</span>{t("ab.foldB")}<span className="text-primary">{t("ab.foldC")}</span>{t("ab.foldD")}
             </h2>
           </motion.div>
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
@@ -260,9 +226,9 @@ export default function About() {
               className="rounded-2xl border border-border bg-surface-raised p-6"
             >
               <FolderOpen className="mb-3 h-6 w-6 text-primary" />
-              <h3 className="font-semibold">Folder Browser</h3>
+              <h3 className="font-semibold">{t("ab.foldBrowserT")}</h3>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                {["Breadcrumb navigation", "List and grid view toggle", "Sort by name, size, or type", "In-folder search"].map(
+                {[t("ab.foldB1"), t("ab.foldB2"), t("ab.foldB3"), t("ab.foldB4")].map(
                   (item) => (
                     <li key={item} className="flex items-start gap-2">
                       <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
@@ -280,9 +246,9 @@ export default function About() {
               className="rounded-2xl border border-border bg-surface-raised p-6"
             >
               <Archive className="mb-3 h-6 w-6 text-primary" />
-              <h3 className="font-semibold">ZIP Downloads</h3>
+              <h3 className="font-semibold">{t("ab.zipT")}</h3>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                {["Select multiple files at once", "Client-side ZIP via JSZip", "Real-time download progress", "Works with the streaming proxy"].map(
+                {[t("ab.zipB1"), t("ab.zipB2"), t("ab.zipB3"), t("ab.zipB4")].map(
                   (item) => (
                     <li key={item} className="flex items-start gap-2">
                       <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
@@ -306,26 +272,22 @@ export default function About() {
               </div>
               <div>
                 <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-                  Privacy-<span className="text-primary">First</span> Approach
+                  {t("ab.pA")}<span className="text-primary">{t("ab.pB")}</span>
                 </h2>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground">
                   <p>
-                    TeraPlayer was built with privacy as a core principle, not an afterthought.{" "}
-                    <span className="font-medium text-foreground">You don't need an account</span> to use it — just paste
-                    a link and go. We keep analytics lightweight, never send the links you open to analytics tools, and
-                    never sell personal data. See our{" "}
+                    {t("ab.pP1a")}{" "}
+                    <span className="font-medium text-foreground">{t("ab.pP1b")}</span> {t("ab.pP1c")}{" "}
                     <Link to="/privacy" className="font-medium text-primary hover:underline">
-                      Privacy Policy
+                      {t("ab.pP1d")}
                     </Link>{" "}
-                    for full details.
+                    {t("ab.pP1e")}
                   </p>
                   <p>
-                    Sign in with Google (optional) to sync your preferences across devices. You can
-                    clear all stored data at any time.
+                    {t("ab.pP2")}
                   </p>
                   <p>
-                    The extraction pipeline fetches metadata on our server — your IP is never exposed to third-party
-                    APIs directly. The streaming proxy keeps your identity private when playing media.
+                    {t("ab.pP3")}
                   </p>
                 </div>
               </div>
@@ -337,12 +299,12 @@ export default function About() {
       {/* Roadmap */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl">
-          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-            What's <span className="text-primary">Next</span>
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            A look at what we're building for the future of TeraPlayer.
-          </p>
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+              {t("ab.rA")} <span className="text-primary">{t("ab.rB")}</span>
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              {t("ab.rSub")}
+            </p>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {roadmap.map((phase) => (
@@ -358,10 +320,10 @@ export default function About() {
                   {phase.quarter}
                 </div>
                 <ul className="space-y-2">
-                  {phase.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  {phase.itemsKeys.map((k) => (
+                    <li key={k} className="flex items-start gap-2 text-sm text-muted-foreground">
                       <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                      {item}
+                      {t(k)}
                     </li>
                   ))}
                 </ul>
@@ -381,40 +343,31 @@ export default function About() {
               </div>
               <div>
                 <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-                  Trust & <span className="text-primary">Transparency</span>
+                  {t("ab.tA")} <span className="text-primary">{t("ab.tB")}</span>
                 </h2>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
                   <p>
-                    TeraPlayer is an independent project built by a single developer. We believe in being upfront about
-                    what this service is, how it works, and what its limitations are.
+                    {t("ab.tP1")}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">No official partnership:</span> TeraPlayer is not
-                    affiliated with, endorsed by, or sponsored by TeraBox, Flextech, or any cloud storage provider. All
-                    trademarks belong to their respective owners.
+                    <span className="font-medium text-foreground">{t("ab.tP2a")}</span> {t("ab.tP2b")}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">No guarantees:</span> We do not promise that every
-                    TeraBox link will work. Share availability changes, links expire, and some domains are not
-                    supported. We are transparent when things don't work.
+                    <span className="font-medium text-foreground">{t("ab.tP3a")}</span> {t("ab.tP3b")}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">Open about the stack:</span> TeraPlayer runs on
-                    React, Python/FastAPI, Cloudflare Workers, and MongoDB. The extraction pipeline uses a combination
-                    of native HTTP scraping, a self-hosted Worker, and community APIs. See the{" "}
-                    <Link to="/meet-the-dev" className="font-medium text-primary hover:underline">
-                      Meet the Dev
+                    <span className="font-medium text-foreground">{t("ab.tP4a")}</span> {t("ab.tP4b")}{" "}
+                    <Link to="/about-teraplayer" className="font-medium text-primary hover:underline">
+                      {t("ab.tP4c")}
                     </Link>{" "}
-                    page for the full technical stack.
+                    {t("ab.tP4d")}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">Privacy by default:</span> No account required for
-                    core features. Analytics (PostHog, Google Analytics) and advertising (Google AdSense) only load
-                    after explicit consent. See the{" "}
+                    <span className="font-medium text-foreground">{t("ab.tP5a")}</span> {t("ab.tP5b")}{" "}
                     <Link to="/privacy" className="font-medium text-primary hover:underline">
-                      Privacy Policy
+                      {t("ab.tP5c")}
                     </Link>{" "}
-                    for full details.
+                    {t("ab.tP5d")}
                   </p>
                 </div>
               </div>
@@ -426,34 +379,21 @@ export default function About() {
       {/* How it works - Technical transparency */}
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-4xl">
-          <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-            How Extraction <span className="text-primary">Works</span>
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            A transparent look at the multi-layered pipeline that resolves your links.
-          </p>
+            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+              {t("ab.eA")} <span className="text-primary">{t("ab.eB")}</span>
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              {t("ab.eSub")}
+            </p>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                icon: Code2,
-                title: "Native HTTP Scraper",
-                body: "First-pass extraction using direct HTTP requests to TeraBox share endpoints. Fast, lightweight, no browser overhead.",
-              },
-              {
-                icon: GitBranch,
-                title: "Cloudflare Worker",
-                title2: "Self-Hosted",
-                body: "A custom Worker handles geo-distributed extraction, retries, and fallback logic. Runs on Cloudflare's global network.",
-              },
-              {
-                icon: Globe,
-                title: "Community Fallback APIs",
-                body: "If primary methods fail, we try trusted third-party resolvers (e.g., xAPIverse). Only the link is shared, not your IP.",
-              },
-            ].map((layer, i) => (
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              {[
+                { icon: Code2, tk: "ab.e1t", dk: "ab.e1d" },
+                { icon: GitBranch, tk: "ab.e2t", subk: "ab.e2sub", dk: "ab.e2d" },
+                { icon: Globe, tk: "ab.e3t", dk: "ab.e3d" },
+              ].map((layer, i) => (
               <motion.div
-                key={layer.title}
+                key={layer.tk}
                 initial={{ opacity: 0, scale: 0.96 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -463,9 +403,9 @@ export default function About() {
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
                   <layer.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-sm font-semibold">{layer.title}</h3>
-                {layer.title2 && <p className="text-xs text-primary mt-0.5">{layer.title2}</p>}
-                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{layer.body}</p>
+                <h3 className="text-sm font-semibold">{t(layer.tk)}</h3>
+                {layer.subk && <p className="text-xs text-primary mt-0.5">{t(layer.subk)}</p>}
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t(layer.dk)}</p>
               </motion.div>
             ))}
           </div>
@@ -482,18 +422,18 @@ export default function About() {
             transition={{ duration: 0.5 }}
             className="mx-auto max-w-2xl"
           >
-            <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              Ready to try it?
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Paste a TeraBox link and experience the premium streaming difference — no signup required.
-            </p>
-            <Button asChild className="mt-6 h-12 px-8 text-base" size="lg">
-              <Link to="/">
-                <Zap className="mr-2 h-5 w-5" />
-                Go to TeraPlayer
-              </Link>
-            </Button>
+              <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
+                {t("ab.ctaT")}
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                {t("ab.ctaB")}
+              </p>
+              <Button asChild className="mt-6 h-12 px-8 text-base" size="lg">
+                <Link to="/">
+                  <Zap className="mr-2 h-5 w-5" />
+                  {t("ab.ctaBtn")}
+                </Link>
+              </Button>
           </motion.div>
         </div>
       </section>
@@ -501,31 +441,28 @@ export default function About() {
       </main>
 
       {/* Disclaimer */}
-      <footer className="border-t border-border/40 bg-surface-raised/50">
+      <footer className="border-t border-slate-200 bg-white">
         <div className="tp-container py-10">
           <div className="mx-auto max-w-4xl">
             <div className="flex items-start gap-3 rounded-2xl border border-border/60 bg-surface-overlay/20 p-5">
               <ExternalLink className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  <span className="font-semibold text-foreground">Disclaimer:</span> TeraPlayer is an independent tool
-                  and is <span className="font-semibold text-foreground">not affiliated with</span>, endorsed by, or
-                  sponsored by TeraBox or Flextech. All trademarks and content belong to their respective owners.
-                  TeraPlayer only accesses publicly shared content and does not host, store, or distribute any
-                  copyrighted material. Users are responsible for complying with applicable laws in their jurisdiction.
+                  <span className="font-semibold text-foreground">{t("ab.disc")}</span> {t("ab.discB")}{" "}
+                  <span className="font-semibold text-foreground">{t("ab.discC")}</span>{t("ab.discD")}
                 </p>
               </div>
             </div>
 <div className="mt-6 flex flex-col items-center justify-between gap-3 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
                 <div className="flex items-center gap-2">
                   <span className="font-display text-base font-semibold text-foreground">
-                    Tera<span className="text-primary">Player</span>
+                    Tera<span className="text-gradient">Player</span><span className="text-xs font-bold text-slate-400">.in</span>
                   </span>
                   <span>·</span>
-                  <span>Free to use · no account required</span>
+                  <span>{t("homefoot.tag")}</span>
                 </div>
                 <div className="opacity-70">
-                  Only supports public TeraBox links. Respect the original owners.
+                  {t("homefoot.note")}{t("homefoot.noteExt")}
                 </div>
               </div>
 

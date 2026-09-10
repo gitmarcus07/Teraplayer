@@ -8,12 +8,13 @@ import {
   Briefcase,
   Send,
   ExternalLink,
-  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
+import FaqCards from "../components/FaqCards";
 import { FooterLegalLinks } from "../components/Footer";
 import { Button } from "../components/ui/button";
+import { useLang } from "../i18n/LanguageContext";
 
 const fadeUp = {
   initial: { opacity: 0, scale: 0.97 },
@@ -25,47 +26,36 @@ const fadeUp = {
 const contactMethods = [
   {
     icon: Bug,
-    title: "Bug Reports",
-    body: "Found something broken? Send us the details and we'll take a look as soon as possible.",
-    action: "Report a bug",
+    titleKey: "c.m1t",
+    bodyKey: "c.m1d",
+    actionKey: "c.m1a",
     href: "mailto:teraplayer.contact@gmail.com?subject=Bug%20Report",
   },
   {
     icon: Briefcase,
-    title: "Business Inquiries",
-    body: "Partnerships, licensing, or other business-related questions. We'd love to hear from you.",
-    action: "Email us",
+    titleKey: "c.m2t",
+    bodyKey: "c.m2d",
+    actionKey: "c.m2a",
     href: "mailto:teraplayer.contact@gmail.com?subject=Business%20Inquiry",
   },
   {
     icon: MessageSquare,
-    title: "General Feedback",
-    body: "Suggestions, feature requests, or just want to say hello. All feedback is welcome.",
-    action: "Send feedback",
+    titleKey: "c.m3t",
+    bodyKey: "c.m3d",
+    actionKey: "c.m3a",
     href: "mailto:teraplayer.contact@gmail.com?subject=Feedback",
   },
 ];
 
 const faqs = [
-  {
-    q: "Is TeraPlayer free?",
-    a: "Yes, TeraPlayer is completely free to use. No account required, no hidden charges.",
-  },
-  {
-    q: "Do you store my data?",
-    a: "No data is stored by default. If you sign in with Google, your preferences sync to our database so you can access them across devices. You can clear all data at any time.",
-  },
-  {
-    q: "How long does extraction take?",
-    a: "Most links resolve in under 2 seconds. Large folders with many files may take up to 5 seconds.",
-  },
-  {
-    q: "Why does my link not work?",
-    a: "The link may be private, expired, or the third-party extractor mirrors may be temporarily unavailable. Try setting a COOKIE_JSON for more reliable extraction.",
-  },
+  { qk: "c.q1", ak: "c.a1" },
+  { qk: "c.q2", ak: "c.a2" },
+  { qk: "c.q3", ak: "c.a3" },
+  { qk: "c.q4", ak: "c.a4" },
 ];
 
 export default function Contact() {
+  const { t } = useLang();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -89,10 +79,10 @@ export default function Contact() {
             "@type": "FAQPage",
             mainEntity: faqs.map((faq) => ({
               "@type": "Question",
-              name: faq.q,
+              name: t(faq.qk),
               acceptedAnswer: {
                 "@type": "Answer",
-                text: faq.a,
+                text: t(faq.ak),
               },
             })),
           })}
@@ -101,8 +91,8 @@ export default function Contact() {
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <section className="relative overflow-hidden">
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-full max-w-3xl -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -112,13 +102,13 @@ export default function Contact() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted-foreground">
               <Mail className="h-3.5 w-3.5 text-primary" />
-              Get in touch
+              {t("c.eyebrow")}
             </div>
             <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl lg:text-6xl">
-              Contact <span className="text-primary">Us</span>
+              {t("c.titleA")} <span className="text-primary">{t("c.titleB")}</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Questions, bug reports, business inquiries — we're here to help.
+              {t("c.sub")}
             </p>
           </div>
         </motion.div>
@@ -128,9 +118,9 @@ export default function Contact() {
       <section className="tp-container py-16 md:py-20">
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-6 md:grid-cols-3">
-            {contactMethods.map((method, i) => (
-              <motion.div
-                key={method.title}
+              {contactMethods.map((method, i) => (
+                <motion.div
+                  key={method.titleKey}
                 initial={{ opacity: 0, scale: 0.96 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -140,15 +130,15 @@ export default function Contact() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
                   <method.icon className="h-6 w-6 text-primary" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-base font-semibold">{method.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{method.body}</p>
+                <h3 className="text-base font-semibold">{t(method.titleKey)}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(method.bodyKey)}</p>
                 <a
                   href={method.href}
                   target={method.href.startsWith("http") ? "_blank" : undefined}
                   rel={method.href.startsWith("http") ? "noopener noreferrer" : undefined}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80"
                 >
-                  {method.action}
+                  {t(method.actionKey)}
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </motion.div>
@@ -165,10 +155,10 @@ export default function Contact() {
               <Send className="h-7 w-7 text-primary" />
             </div>
             <h2 className="mt-5 font-display font-bold text-2xl tracking-tight sm:text-3xl">
-              Prefer to write <span className="text-primary">directly?</span>
+              {t("c.emailT").split(" ").slice(0, -1).join(" ")} <span className="text-primary">{t("c.emailT").split(" ").slice(-1)}</span>
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Drop us an email and we'll get back to you as soon as possible.
+              {t("c.emailB")}
             </p>
             <Button asChild className="mt-6 h-auto min-w-0 whitespace-normal px-5 py-3 text-base" size="lg" variant="default">
               <a href="mailto:teraplayer.contact@gmail.com">
@@ -184,29 +174,14 @@ export default function Contact() {
       <section className="tp-container py-16 md:py-20">
         <motion.div {...fadeUp} className="mx-auto max-w-3xl">
           <h2 className="font-display font-bold text-2xl tracking-tight sm:text-3xl">
-            Frequently Asked <span className="text-primary">Questions</span>
+            {t("faq.title")}
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Quick answers to common questions before you reach out.
+            {t("c.faqSub")}
           </p>
 
-          <div className="mt-8 space-y-3">
-            {faqs.map((faq, i) => (
-              <motion.div
-                key={faq.q}
-                initial={{ opacity: 0, scale: 0.96 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: 0.05 * i }}
-                className="rounded-2xl border border-border bg-surface-raised p-5 transition-[border-color,brightness] duration-300 ease-out hover:border-primary/30 hover:brightness-105"
-              >
-                <h3 className="flex items-start gap-2 text-sm font-semibold">
-                  <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  {faq.q}
-                </h3>
-                <p className="mt-2 pl-6 text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
-              </motion.div>
-            ))}
+          <div className="mt-8">
+            <FaqCards items={faqs.map((f) => ({ q: t(f.qk), a: t(f.ak) }))} />
           </div>
         </motion.div>
       </section>
@@ -214,16 +189,16 @@ export default function Contact() {
       </main>
 
       {/* Social / Footer */}
-      <footer className="border-t border-border/40 bg-surface-raised/50">
+      <footer className="border-t border-slate-200 bg-white">
         <div className="tp-container py-10">
           <div className="mx-auto max-w-4xl">
             <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
               <div className="flex items-center gap-2">
                 <span className="font-display text-base font-semibold text-foreground">
-                  Tera<span className="text-primary">Player</span>
+                  Tera<span className="text-gradient">Player</span><span className="text-xs font-bold text-slate-400">.in</span>
                 </span>
                 <span className="text-muted-foreground">·</span>
-                <span className="text-sm text-muted-foreground">Free to use · no account required</span>
+                <span className="text-sm text-muted-foreground">{t("homefoot.tag")}</span>
               </div>
               <div className="flex items-center gap-4">
                 <a
@@ -231,10 +206,10 @@ export default function Contact() {
                   className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
                 >
                   <Mail className="h-4 w-4" />
-                  Contact
+                  {t("nav.contact")}
                 </a>
                 <Link to="/about" className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">
-                  About
+                  {t("nav.about")}
                 </Link>
               </div>
             </div>
@@ -242,7 +217,7 @@ export default function Contact() {
             <FooterLegalLinks />
 
             <div className="mt-6 text-center text-xs text-muted-foreground opacity-70">
-              Only supports public TeraBox links. Respect the original owners.
+              {t("homefoot.note")}{t("homefoot.noteExt")}
             </div>
           </div>
         </div>

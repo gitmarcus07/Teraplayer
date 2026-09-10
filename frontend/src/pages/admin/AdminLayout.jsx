@@ -112,7 +112,7 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-admin="true">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>

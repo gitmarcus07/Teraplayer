@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-route
 import { Toaster } from "sonner";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { LanguageProvider, useLang } from "@/i18n/LanguageContext";
 import { AdminProvider } from "@/context/AdminContext";
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { Loader2, Settings, Clock, ExternalLink } from "lucide-react";
@@ -16,21 +17,13 @@ import { parseMarkdownLinks, getCountdown } from "@/utils/siteUtils";
 // delay the initial hero render. Home stays in the critical path.
 const About = lazy(() => import("@/pages/About"));
 const Contact = lazy(() => import("@/pages/Contact"));
-const MeetTheDev = lazy(() => import("@/pages/MeetTheDev"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const AboutTeraPlayer = lazy(() => import("@/pages/AboutTeraPlayer"));
 const Copyright = lazy(() => import("@/pages/Copyright"));
 const TeraBoxVideoDownloader = lazy(() => import("@/pages/TeraBoxVideoDownloader"));
 const TeraBoxVideoPlayer = lazy(() => import("@/pages/TeraBoxVideoPlayer"));
-const HowToDownloadTeraBoxVideos = lazy(() => import("@/pages/HowToDownloadTeraBoxVideos"));
-const HowToWatchTeraBoxVideos = lazy(() => import("@/pages/HowToWatchTeraBoxVideos"));
-const TeraBoxVideoLinkNotWorking = lazy(() => import("@/pages/TeraBoxVideoLinkNotWorking"));
-const HowToDownloadTeraBoxFolder = lazy(() => import("@/pages/HowToDownloadTeraBoxFolder"));
-const TeraBoxZipDownload = lazy(() => import("@/pages/TeraBoxZipDownload"));
-const TeraBoxPublicLink = lazy(() => import("@/pages/TeraBoxPublicLink"));
-const TeraBoxDownloadMobile = lazy(() => import("@/pages/TeraBoxDownloadMobile"));
-const TeraBoxDownloadPC = lazy(() => import("@/pages/TeraBoxDownloadPC"));
+const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const AdminRoute = lazy(() => import("@/components/admin/AdminRoute"));
 const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
@@ -88,21 +81,23 @@ function PublicShell() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/meet-the-dev" element={<MeetTheDev />} />
+            <Route path="/meet-the-dev" element={<Navigate to="/about-teraplayer" replace />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/about-teraplayer" element={<AboutTeraPlayer />} />
             <Route path="/copyright" element={<Copyright />} />
             <Route path="/terabox-video-downloader" element={<TeraBoxVideoDownloader />} />
             <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
-            <Route path="/how-to-download-terabox-videos" element={<HowToDownloadTeraBoxVideos />} />
-            <Route path="/how-to-watch-terabox-videos" element={<HowToWatchTeraBoxVideos />} />
-            <Route path="/terabox-video-link-not-working" element={<TeraBoxVideoLinkNotWorking />} />
-            <Route path="/how-to-download-terabox-folder" element={<HowToDownloadTeraBoxFolder />} />
-            <Route path="/terabox-zip-download" element={<TeraBoxZipDownload />} />
-            <Route path="/terabox-public-link" element={<TeraBoxPublicLink />} />
-            <Route path="/terabox-download-mobile" element={<TeraBoxDownloadMobile />} />
-            <Route path="/terabox-download-pc" element={<TeraBoxDownloadPC />} />
+            <Route path="/help-center" element={<HelpCenter />} />
+            {/* Consolidated guides redirect to their merged homes (keeps old links/SEO working) */}
+            <Route path="/how-to-download-terabox-videos" element={<Navigate to="/terabox-video-downloader" replace />} />
+            <Route path="/terabox-download-mobile" element={<Navigate to="/terabox-video-downloader" replace />} />
+            <Route path="/terabox-download-pc" element={<Navigate to="/terabox-video-downloader" replace />} />
+            <Route path="/terabox-zip-download" element={<Navigate to="/terabox-video-downloader" replace />} />
+            <Route path="/how-to-download-terabox-folder" element={<Navigate to="/terabox-video-downloader" replace />} />
+            <Route path="/how-to-watch-terabox-videos" element={<Navigate to="/terabox-video-player" replace />} />
+            <Route path="/terabox-video-link-not-working" element={<Navigate to="/help-center" replace />} />
+            <Route path="/terabox-public-link" element={<Navigate to="/help-center" replace />} />
             <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
@@ -289,9 +284,19 @@ function AdminShell() {
   );
 }
 
+function SkipLink() {
+  const { t } = useLang();
+  return (
+    <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white">
+      {t("skip.link")}
+    </a>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
+      <LanguageProvider>
       <HelmetProvider>
         <MotionConfig reducedMotion="user">
           <div className="App noise">
@@ -328,9 +333,7 @@ function App() {
               })}
             </script>
           </Helmet>
-          <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white">
-            Skip to content
-          </a>
+          <SkipLink />
           <BrowserRouter>
             <Routes>
               <Route path="/admin/*" element={<AdminShell />} />
@@ -346,6 +349,7 @@ function App() {
           </div>
         </MotionConfig>
       </HelmetProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

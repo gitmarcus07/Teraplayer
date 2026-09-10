@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { AlertTriangle, Link2, RotateCw, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
-import { ERROR_CATEGORIES, ERROR_COPY } from "../utils/errorHandling";
+import { ERROR_CATEGORIES, resolveErrorCopy } from "../utils/errorHandling";
+import { useLang } from "../i18n/LanguageContext";
 
 // Consistent error presentation for the core extraction flow.
 //
@@ -9,7 +10,8 @@ import { ERROR_CATEGORIES, ERROR_COPY } from "../utils/errorHandling";
 // The original URL is never cleared by this component — retry re-uses the same
 // sanitized URL passed by the parent.
 export default function ExtractionError({ error, onRetry, onCheckLink, onProcessAnother }) {
-  const copy = (error && ERROR_COPY[error.category]) || ERROR_COPY[ERROR_CATEGORIES.UNKNOWN];
+  const { t } = useLang();
+  const copy = resolveErrorCopy(error && error.category, t);
   const isInvalid = error && error.category === ERROR_CATEGORIES.INVALID_LINK;
   const handleAction = isInvalid ? onCheckLink : onRetry;
 
@@ -58,7 +60,7 @@ export default function ExtractionError({ error, onRetry, onCheckLink, onProcess
                 className="text-destructive"
               >
                 <RefreshCw className="mr-1.5 h-4 w-4" />
-                Process another link
+                {t("ex.processAnother")}
               </Button>
             )}
           </div>

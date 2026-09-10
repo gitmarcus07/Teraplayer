@@ -7,10 +7,44 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Be Vietnam Pro"', '"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Be Vietnam Pro"', '"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        body: ['"Be Vietnam Pro"', '"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        xs: '12px',
+        sm: '14px',
+        md: '16px',
+        lg: '18px',
+        xl: '20px',
+        '2xl': '24px',
+        '3xl': '30px',
+        '4xl': '48px',
+      },
+      spacing: {
+        'ds-1': '8px',
+        'ds-2': '12px',
+        'ds-3': '16px',
+        'ds-4': '24px',
+        'ds-5': '32px',
+        'ds-6': '36px',
+        'ds-7': '48px',
+        'ds-8': '54.67px',
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        sm: 'calc(var(--radius) - 4px)',
+        'ds-pill': '9999px',
+      },
+      boxShadow: {
+        'ds-1': 'rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(99, 102, 241, 0.3) 0px 10px 15px -3px, rgba(99, 102, 241, 0.3) 0px 4px 6px -4px',
+      },
+      transitionDuration: {
+        instant: '150ms',
+        fast: '200ms',
+        normal: '300ms',
       },
       colors: {
         void: 'hsl(var(--void))',

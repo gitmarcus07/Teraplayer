@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, Cookie, Settings, ShieldCheck, Sparkles, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { useLang } from "../i18n/LanguageContext";
 
 const CONSENT_KEY = "teraplayer-consent";
 
 export default function ConsentBanner() {
+  const { t } = useLang();
   const [visible, setVisible] = useState(false);
   const [customizing, setCustomizing] = useState(false);
 
@@ -45,7 +47,7 @@ export default function ConsentBanner() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Privacy consent"
+        aria-label={t("consent.dialogAria")}
         data-testid="consent-banner"
         className="relative mb-4 w-full max-w-[520px] overflow-hidden rounded-[24px] border border-primary/10 bg-surface-raised shadow-[0_24px_80px_-16px_rgba(0,0,0,0.85)] sm:mb-5"
       >
@@ -63,18 +65,17 @@ export default function ConsentBanner() {
               <Cookie className="h-[18px] w-[18px]" aria-hidden="true" />
             </span>
             <h2 className="font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
-              We value your privacy
+              {t("consent.title")}
             </h2>
           </div>
 
           <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
-            We use lightweight analytics (PostHog, Google Analytics) and may show
-            ads (Google AdSense) to keep TeraPlayer free.{" "}
+            {t("consent.bodyA")}{" "}
             <Link
               to="/privacy"
               className="font-medium text-primary hover:underline"
             >
-              Privacy Policy
+              {t("consent.privacyLink")}
             </Link>
           </p>
 
@@ -85,10 +86,9 @@ export default function ConsentBanner() {
                   <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
                 <div>
-                  <p className="text-[13px] font-medium text-foreground">Analytics</p>
+                  <p className="text-[13px] font-medium text-foreground">{t("consent.analyticsT")}</p>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-                    Privacy-conscious, aggregated usage analytics from PostHog and
-                    Google Analytics — enabled only after you accept.
+                    {t("consent.analyticsB")}
                   </p>
                 </div>
               </div>
@@ -97,10 +97,9 @@ export default function ConsentBanner() {
                   <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
                 <div>
-                  <p className="text-[13px] font-medium text-foreground">Advertising</p>
+                  <p className="text-[13px] font-medium text-foreground">{t("consent.adsT")}</p>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-                    Google AdSense verification tag, loaded only after you accept
-                    — ad units are not currently served.
+                    {t("consent.adsB")}
                   </p>
                 </div>
               </div>
@@ -116,7 +115,7 @@ export default function ConsentBanner() {
               onClick={() => setCustomizing((value) => !value)}
             >
               <Settings aria-hidden="true" />
-              {customizing ? "Hide options" : "Customize"}
+              {customizing ? t("consent.hide") : t("consent.customize")}
             </Button>
             <Button
               size="lg"
@@ -124,7 +123,7 @@ export default function ConsentBanner() {
               onClick={() => choose("accepted")}
             >
               <Check strokeWidth={2.5} aria-hidden="true" />
-              Accept All
+              {t("consent.accept")}
             </Button>
           </div>
 
@@ -136,12 +135,12 @@ export default function ConsentBanner() {
               className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
-              Decline
+              {t("consent.decline")}
             </button>
             <div aria-hidden="true" className="h-px flex-1 bg-border/40" />
           </div>
           <p className="mt-2.5 text-center text-[11px] text-muted-foreground/60">
-            Essential cookies will still be used.
+            {t("consent.essential")}
           </p>
         </div>
       </div>

@@ -7,6 +7,7 @@ import {
 } from "./ui/select";
 import { Layers } from "lucide-react";
 import { compactSize } from "../utils/format";
+import { useLang } from "../i18n/LanguageContext";
 
 /**
  * QualityPicker
@@ -14,6 +15,7 @@ import { compactSize } from "../utils/format";
  * represent different qualities of the same content.
  */
 export default function QualityPicker({ options, value, onChange }) {
+  const { t } = useLang();
   if (!options || options.length < 2) return null;
 
   const labelFor = (opt) => {
@@ -27,14 +29,14 @@ export default function QualityPicker({ options, value, onChange }) {
   return (
     <div className="flex items-center gap-2" data-testid="quality-picker">
       <Layers className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="text-xs font-medium text-muted-foreground">Quality</span>
+      <span className="text-xs font-medium text-muted-foreground">{t("qp.label")}</span>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           className="h-10 w-[180px] bg-surface-raised border-border"
           data-testid="quality-trigger"
-          aria-label="Select video quality"
+          aria-label={t("qp.aria")}
         >
-          <SelectValue placeholder="Choose quality" />
+          <SelectValue placeholder={t("qp.ph")} />
         </SelectTrigger>
         <SelectContent>
           {options.map((opt) => (

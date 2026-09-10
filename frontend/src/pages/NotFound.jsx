@@ -6,8 +6,10 @@ import Seo from "../components/Seo";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Button } from "../components/ui/button";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function NotFound() {
+  const { t } = useLang();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -28,7 +30,8 @@ export default function NotFound() {
       />
 
       <main id="main" className="tp-container">
-        <section className="py-20 md:py-28">
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-full max-w-3xl -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -40,33 +43,32 @@ export default function NotFound() {
             </div>
 
             <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">
-              404 — Not Found
+              {t("nf.eyebrow")}
             </p>
             <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl">
-              This page has <span className="text-primary">drifted off course</span>
+              {t("nf.titleA")} <span className="text-primary">{t("nf.titleB")}</span>
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
-              The link you followed may be outdated, mistyped, or the page has moved.
-              Let's get you back on track.
+              {t("nf.body")}
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link to="/">
                   <HomeIcon className="mr-2 h-5 w-5" />
-                  Back to Home
+                  {t("nf.home")}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                 <Link to="/terabox-video-player">
                   <Play className="mr-2 h-5 w-5" />
-                  TeraBox Video Player
+                  {t("nf.player")}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                 <Link to="/terabox-video-downloader">
                   <Download className="mr-2 h-5 w-5" />
-                  TeraBox Downloader
+                  {t("nf.downloader")}
                 </Link>
               </Button>
             </div>
@@ -74,16 +76,16 @@ export default function NotFound() {
             <div className="mt-10 rounded-2xl border border-border/60 bg-surface-raised p-5">
               <h2 className="flex items-center justify-center gap-2 text-sm font-semibold text-foreground">
                 <HelpCircle className="h-4 w-4 text-primary" />
-                Still can't find what you need?
+                {t("nf.helpT")}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Try the{" "}
-                <Link to="/terabox-video-link-not-working" className="font-medium text-primary hover:underline">
-                  TeraBox link not working
+                {t("nf.helpA")}{" "}
+                <Link to="/help-center" className="font-medium text-primary hover:underline">
+                  {t("nav.helpCenter")}
                 </Link>{" "}
-                guide, or{" "}
+                {t("nf.helpB")}{" "}
                 <Link to="/contact" className="font-medium text-primary hover:underline">
-                  contact us
+                  {t("nf.helpContact")}
                 </Link>
                 .
               </p>

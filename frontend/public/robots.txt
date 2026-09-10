@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /api/
+Disallow: /*?url=
+Disallow: /*&url=
 
 Sitemap: https://www.teraplayer.in/sitemap.xml

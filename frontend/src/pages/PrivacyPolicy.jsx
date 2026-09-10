@@ -19,6 +19,8 @@ import {
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import LegalNotice from "../components/LegalNotice";
+import { useLang } from "../i18n/LanguageContext";
 import { Button } from "../components/ui/button";
 
 const fadeUp = {
@@ -141,6 +143,7 @@ const SECTIONS = [
 ];
 
 export default function PrivacyPolicy() {
+  const { t } = useLang();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -161,8 +164,8 @@ export default function PrivacyPolicy() {
 
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border/40">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <section className="relative overflow-hidden">
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-full max-w-3xl -translate-x-1/2 rounded-full bg-indigo-500/10 blur-[120px]" />
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -172,15 +175,16 @@ export default function PrivacyPolicy() {
             <div className="mx-auto max-w-3xl text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                Legal
+                {t("legal.eyebrow")}
               </div>
               <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl">
-                Privacy <span className="text-primary">Policy</span>
+                {t("legal.privacyA")} <span className="text-primary">{t("legal.privacyB")}</span>
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
                 A plain-English look at what information TeraPlayer processes, why, and what you can do about it.
               </p>
-              <p className="mt-3 text-xs text-muted-foreground/80">Last updated: August 18, 2026</p>
+              <p className="mt-3 text-xs text-muted-foreground/80">{t("legal.updated")} August 18, 2026</p>
+              <LegalNotice />
             </div>
           </motion.div>
         </section>

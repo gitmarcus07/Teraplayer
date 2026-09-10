@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Film } from "lucide-react";
+import { useLang } from "../i18n/LanguageContext";
 
 const LONG_WAIT_MS = 8000;
 
@@ -10,6 +11,7 @@ const LONG_WAIT_MS = 8000;
 // a few metadata lines) so the transition into the result does not jump the
 // layout. No fake progress percentages — just a clear branded status.
 export default function ExtractionStatus() {
+  const { t } = useLang();
   const [longWait, setLongWait] = useState(false);
 
   useEffect(() => {
@@ -37,12 +39,10 @@ export default function ExtractionStatus() {
               </span>
               <div className="text-center">
                 <div className="font-display text-base font-semibold text-white sm:text-lg">
-                  Preparing your video…
+                  {t("ex.prep")}
                 </div>
                 <p className="mt-1 text-xs text-white/80">
-                  {longWait
-                    ? "Still working — this can take a little longer for some links."
-                    : "Resolving your TeraBox link…"}
+                  {longWait ? t("ex.still") : t("ex.resolving")}
                 </p>
               </div>
             </div>

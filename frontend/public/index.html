@@ -36,19 +36,23 @@
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light dark" />
 
     <title>TeraPlayer — TeraBox Online Player & Downloader</title>
 
     <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/logoforsite.png" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logoforsite.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Fonts (single consolidated request, swapped so text renders immediately) -->
+    <!-- Fonts (single consolidated request, swapped so text renders immediately.
+         Be Vietnam Pro is the DESIGN.md primary typeface; Outfit/Manrope/Inter
+         remain for display/body fallbacks to preserve TeraPlayer identity.) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -70,23 +74,10 @@
     </script>
 
     <!--
-      Google AdSense site verification — loaded only after consent so that no
-      advertising cookies are set before the visitor accepts.
+      Advertising (Google AdSense) is intentionally NOT loaded. The verification
+      tag stays removed until the site is approved, so no advertising cookies
+      are set and crawlers see no "waiting for approval" signals.
     -->
-    <script>
-        window.__tpAdsenseInited = false;
-        window.__tpInitAdsense = function () {
-            if (window.__tpAdsenseInited) return;
-            window.__tpAdsenseInited = true;
-            var s = document.createElement("script");
-            s.async = true;
-            s.src =
-                "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1829462522713040";
-            s.crossOrigin = "anonymous";
-            document.head.appendChild(s);
-        };
-        if (window.__tpConsentAccepted()) window.__tpInitAdsense();
-    </script>
 </head>
 
 <body>

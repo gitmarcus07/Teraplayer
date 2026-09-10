@@ -10,8 +10,10 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { KeyRound, AlertCircle } from "lucide-react";
+import { useLang } from "../i18n/LanguageContext";
 
 export default function PasswordDialog({ open, onOpenChange, onSubmit, url, incorrect }) {
+  const { t } = useLang();
   const [pwd, setPwd] = useState("");
 
   useEffect(() => {
@@ -32,12 +34,10 @@ export default function PasswordDialog({ open, onOpenChange, onSubmit, url, inco
             <KeyRound className="h-5 w-5" />
           </div>
           <DialogTitle>
-            {incorrect ? "Incorrect password" : "This link is password protected"}
+            {incorrect ? t("pwd.titleBad") : t("pwd.titleLock")}
           </DialogTitle>
           <DialogDescription>
-            {incorrect
-              ? "The password you entered didn't work. Please try again."
-              : "Enter the share password to continue. The password is only sent to the extraction service."}
+            {incorrect ? t("pwd.descBad") : t("pwd.descLock")}
           </DialogDescription>
         </DialogHeader>
         {incorrect && (
@@ -46,7 +46,7 @@ export default function PasswordDialog({ open, onOpenChange, onSubmit, url, inco
             data-testid="password-incorrect-hint"
           >
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            Wrong password. Double-check for typos or trailing spaces.
+            {t("pwd.hint")}
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,7 +55,7 @@ export default function PasswordDialog({ open, onOpenChange, onSubmit, url, inco
             autoFocus
             value={pwd}
             onChange={(e) => setPwd(e.target.value)}
-            placeholder="Share password"
+            placeholder={t("pwd.ph")}
             data-testid="password-input"
             className="h-10 bg-surface-overlay border-border"
           />
@@ -71,10 +71,10 @@ export default function PasswordDialog({ open, onOpenChange, onSubmit, url, inco
               onClick={() => onOpenChange?.(false)}
               data-testid="password-cancel-btn"
             >
-              Cancel
+              {t("pwd.cancel")}
             </Button>
             <Button type="submit" disabled={!pwd.trim()} data-testid="password-submit-btn">
-              {incorrect ? "Try again" : "Unlock link"}
+              {incorrect ? t("pwd.retry") : t("pwd.unlock")}
             </Button>
           </DialogFooter>
         </form>

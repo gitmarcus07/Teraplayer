@@ -25,6 +25,7 @@ import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { useDownload, humanBytes, humanSpeed } from "./DownloadPanel";
 import { truncateName } from "../utils/format";
+import { useLang } from "../i18n/LanguageContext";
 
 const TYPE_ICON = {
   video: FileVideo,
@@ -35,14 +36,14 @@ const TYPE_ICON = {
   file: FileIcon,
 };
 
-const TYPE_LABELS = {
-  video: "Video",
-  image: "Image",
-  audio: "Audio",
-  document: "Document",
-  archive: "Archive",
-  folder: "Folder",
-  file: "File",
+const TYPE_LABEL_KEYS = {
+  video: "pc.type.video",
+  image: "pc.type.image",
+  audio: "pc.type.audio",
+  document: "pc.type.document",
+  archive: "pc.type.archive",
+  folder: "pc.type.folder",
+  file: "pc.type.file",
 };
 
 export default function PreviewCard({
@@ -56,6 +57,7 @@ export default function PreviewCard({
   downloadFilename,
   downloadSize,
 }) {
+  const { t } = useLang();
   const [copied, setCopied] = useState(false);
   const copiedTimerRef = useRef(null);
 
@@ -78,11 +80,11 @@ export default function PreviewCard({
 
   const isFolder = Array.isArray(data.files) && data.files.length > 1;
   const Icon = TYPE_ICON[data.file_type || "file"] || FileIcon;
-  const typeLabel = isFolder ? "Folder" : TYPE_LABELS[data.file_type] || "File";
+  const typeLabel = isFolder ? t("pc.type.folder") : t(TYPE_LABEL_KEYS[data.file_type] || "pc.type.file");
   const canWatch = data.file_type === "video" && (data.stream_url || data.download_url);
   const hasDownloadSource = !!downloadUrl || !!data.download_url || !!data.stream_url;
   const videoUnavailable = data.file_type === "video" && !canWatch && hasDownloadSource;
-  const fullTitle = data.title || "TeraBox file";
+  const fullTitle = data.title || t("pc.fallback");
 
   const handleCopy = async () => {
     try {
@@ -99,16 +101,16 @@ export default function PreviewCard({
     ? [
         {
           icon: FolderOpen,
-          label: "Files",
-          value: `${data.files.length} ${data.files.length === 1 ? "item" : "items"}`,
+          label: t("pc.meta.files"),
+          value: `${data.files.length} ${t("pc.items")}`,
           testId: "meta-files",
         },
       ]
     : [
-        data.size_str && { icon: HardDrive, label: "Size", value: data.size_str, testId: "meta-size" },
-        data.duration && { icon: Clock, label: "Duration", value: formatDuration(data.duration), testId: "meta-duration" },
-        data.resolution && { icon: Layers, label: "Resolution", value: data.resolution, testId: "meta-resolution" },
-        { icon: Icon, label: "Type", value: typeLabel, testId: "meta-type" },
+        data.size_str && { icon: HardDrive, label: t("pc.meta.size"), value: data.size_str, testId: "meta-size" },
+        data.duration && { icon: Clock, label: t("pc.meta.duration"), value: formatDuration(data.duration), testId: "meta-duration" },
+        data.resolution && { icon: Layers, label: t("pc.meta.resolution"), value: data.resolution, testId: "meta-resolution" },
+        { icon: Icon, label: t("pc.meta.type"), value: typeLabel, testId: "meta-type" },
       ].filter(Boolean);
 
   return (
@@ -116,35 +118,37 @@ export default function PreviewCard({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="rounded-2xl border border-border bg-surface-raised overflow-hidden"
+      className="ds-card overflow-hidden"
       data-testid="preview-card"
     >
       {/* Media Tile */}
-      <div className="relative aspect-video w-full overflow-hidden">
+      <div className="relative aspect-video w-full overflow-hidden bg-surface-overlay">
         {data.thumbnail ? (
           <img
             src={data.thumbnail}
-            alt={data.title || "TeraBox preview"}
+            alt={data.title ? `${t("pc.thumbFor")} ${data.title}` : t("pc.thumbGen")}
             className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
             data-testid="preview-thumbnail"
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-surface-overlay">
-            <Icon className="h-16 w-16 text-muted-foreground" strokeWidth={1.25} />
+          <div className="flex h-full w-full items-center justify-center bg-surface-overlay" role="img" aria-label={typeLabel}>
+            <Icon className="h-16 w-16 text-muted-foreground" strokeWidth={1.25} aria-hidden="true" />
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-3 sm:p-4">
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5">
+          <div className="flex min-w-0 flex-wrap gap-1.5 sm:gap-2">
             <Badge
               variant="secondary"
               className="border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md"
               data-testid="preview-type-badge"
             >
-              {isFolder ? <FolderOpen className="mr-1 h-3 w-3" /> : <Icon className="mr-1 h-3 w-3" />}{" "}
+              {isFolder ? <FolderOpen className="mr-1 h-3 w-3" aria-hidden="true" /> : <Icon className="mr-1 h-3 w-3" aria-hidden="true" />}{" "}
               {typeLabel}
             </Badge>
             {data.size_str && !isFolder && (
@@ -153,7 +157,7 @@ export default function PreviewCard({
                 className="border border-white/10 bg-black/60 text-[10px] uppercase tracking-wider text-white backdrop-blur-md"
                 data-testid="preview-size-badge"
               >
-                <HardDrive className="mr-1 h-3 w-3" /> {data.size_str}
+                <HardDrive className="mr-1 h-3 w-3" aria-hidden="true" /> {data.size_str}
               </Badge>
             )}
           </div>
@@ -161,23 +165,23 @@ export default function PreviewCard({
             <button
               onClick={onWatch}
               data-testid="thumbnail-play-btn"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-300 ease-out hover:scale-110 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:h-14 sm:w-14"
-              aria-label="Play video"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-normal ease-out hover:scale-110 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 sm:h-14 sm:w-14"
+              aria-label={`${t("pc.play")} ${fullTitle}`}
             >
-              <Play className="h-5 w-5 fill-white sm:h-5 sm:w-5" strokeWidth={0} />
+              <Play className="h-5 w-5 fill-white" strokeWidth={0} aria-hidden="true" />
             </button>
           )}
         </div>
       </div>
 
       {/* Metadata & Actions */}
-      <div className="p-3.5">
+      <div className="p-4 sm:p-5">
         <h2
-          className="font-display text-lg font-bold leading-tight tracking-tight break-words"
+          className="break-words font-display text-lg font-bold leading-tight tracking-tight sm:text-xl"
           data-testid="preview-title"
           title={fullTitle}
         >
-          {truncateName(fullTitle, 42)}
+          {truncateName(fullTitle, 60)}
         </h2>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -186,14 +190,14 @@ export default function PreviewCard({
           ))}
         </div>
 
-        <div className="mt-3 flex flex-col gap-2">
+        <div className="mt-4 flex flex-col gap-3">
           {videoUnavailable && (
             <div
               className="flex items-center gap-1.5 text-xs text-muted-foreground"
               data-testid="video-unavailable-note"
             >
               <VideoOff className="h-3.5 w-3.5 shrink-0" />
-              Video preview isn't available for this file.
+              {t("pc.videoUnavailable")}
             </div>
           )}
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -204,7 +208,7 @@ export default function PreviewCard({
                 size="lg"
                 className="h-11 w-full text-white"
               >
-                <FolderOpen className="mr-1.5 h-4 w-4" /> Open Folder
+                <FolderOpen className="mr-1.5 h-4 w-4" /> {t("pc.openFolder")}
               </Button>
             ) : (
               <>
@@ -215,7 +219,7 @@ export default function PreviewCard({
                     size="lg"
                     className="h-11 w-full text-white sm:flex-1"
                   >
-                    <Play className="mr-1.5 h-4 w-4 fill-current" strokeWidth={0} /> Watch Now
+                    <Play className="mr-1.5 h-4 w-4 fill-current" strokeWidth={0} /> {t("pc.watch")}
                   </Button>
                 )}
                 {download.status === "downloading" ? (
@@ -226,7 +230,7 @@ export default function PreviewCard({
                       data-testid="downloading-btn"
                       className="h-11 w-full text-white sm:flex-1"
                     >
-                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Downloading…
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {t("pc.downloading")}
                     </Button>
                     <Button
                       onClick={download.cancel}
@@ -235,7 +239,7 @@ export default function PreviewCard({
                       data-testid="download-cancel-btn"
                       className="h-11 w-full sm:flex-1"
                     >
-                      <XCircle className="mr-1.5 h-4 w-4" /> Cancel
+                      <XCircle className="mr-1.5 h-4 w-4" /> {t("pc.cancel")}
                     </Button>
                   </>
                 ) : download.status === "error" ? (
@@ -246,14 +250,14 @@ export default function PreviewCard({
                     data-testid="download-retry-btn"
                     className="h-11 w-full sm:flex-1"
                   >
-                    <XCircle className="mr-1.5 h-4 w-4" /> Retry
+                    <XCircle className="mr-1.5 h-4 w-4" /> {t("pc.retry")}
                   </Button>
                 ) : !hasDownloadSource ? (
                   <div
                     className="flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-border px-3 text-center text-xs text-muted-foreground sm:flex-1"
                     data-testid="download-unavailable"
                   >
-                    Download isn't available for this file.
+                    {t("pc.dlUnavailable")}
                   </div>
                 ) : (
                   <Button
@@ -263,7 +267,7 @@ export default function PreviewCard({
                     size="lg"
                     className="h-11 w-full sm:flex-1"
                   >
-                    <Download className="mr-1.5 h-4 w-4" /> Download
+                    <Download className="mr-1.5 h-4 w-4" /> {t("pc.download")}
                   </Button>
                 )}
               </>
@@ -290,11 +294,11 @@ export default function PreviewCard({
               )}
               {download.status === "done" && (
                 <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                  <Check className="h-3.5 w-3.5" /> Download complete
+                  <Check className="h-3.5 w-3.5" /> {t("pc.done")}
                 </div>
               )}
               {download.status === "error" && (
-                <div className="text-xs text-destructive">{download.error}</div>
+                <div className="text-xs text-destructive">{t("dlp.errFailed")}</div>
               )}
             </div>
           )}
@@ -305,14 +309,14 @@ export default function PreviewCard({
               variant="outline"
               size="sm"
               className="text-xs"
-              aria-label="Copy source link"
+              aria-label={t("pc.copyAria")}
             >
               {copied ? (
                 <Check className="h-3.5 w-3.5 text-primary sm:mr-1.5" />
               ) : (
                 <Copy className="h-3.5 w-3.5 sm:mr-1.5" />
               )}
-              <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
+              <span className="hidden sm:inline">{copied ? t("pc.copied") : t("pc.copy")}</span>
             </Button>
             <Button
               onClick={onShare}
@@ -320,13 +324,13 @@ export default function PreviewCard({
               variant="outline"
               size="sm"
               className="text-xs"
-              aria-label="Share link"
+              aria-label={t("pc.shareAria")}
             >
               <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">{t("pc.share")}</span>
             </Button>
             <span className="sr-only" aria-live="polite">
-              {copied ? "Source link copied" : ""}
+              {copied ? t("pc.copiedLive") : ""}
             </span>
           </div>
         </div>
@@ -337,13 +341,13 @@ export default function PreviewCard({
 
 const Meta = ({ icon: Icon, label, value, testId }) => (
   <div
-    className="rounded-lg border border-border bg-surface-overlay/50 p-2"
+    className="rounded-xl border border-border bg-surface-overlay/50 p-2.5"
     data-testid={testId}
   >
-    <div className="mb-1 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">
-      <Icon className="h-3 w-3" /> {label}
+    <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <Icon className="h-3 w-3 shrink-0" aria-hidden="true" /> {label}
     </div>
-    <div className="line-clamp-1 text-xs font-medium text-foreground">{value}</div>
+    <div className="line-clamp-1 text-sm font-medium text-foreground" title={String(value)}>{value}</div>
   </div>
 );
 
