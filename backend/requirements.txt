@@ -23,4 +23,5 @@ python-jose==3.5.0
 
 google-auth==2.56.0
 
-email-validator==2.3.0google-api-python-client
+email-validator==2.3.0
+google-api-python-client
