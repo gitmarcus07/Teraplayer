@@ -72,3 +72,7 @@ your device/browser, and what you saw.
 
 - 🌐 https://teraplayer.in/contact
 - ✉️ teraplayer.contact@gmail.com
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
