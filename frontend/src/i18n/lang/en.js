@@ -106,6 +106,14 @@ export default {
   "faq.f11a": "Yes, you can open TeraBox links using any mobile browser that supports video playback and downloads.",
   "faq.f12q": "Can I watch without the TeraBox app?",
   "faq.f12a": "Yes, TeraPlayer works entirely without the TeraBox app — everything happens right in your browser.",
+  "faq.f13q": "What is TeraPlayer?",
+  "faq.f13a": "TeraPlayer is a free online tool that opens public TeraBox links right in your browser. Paste a link to watch TeraBox videos online, preview files, or download them — no login, no app install.",
+  "faq.f14q": "How can I watch TeraBox videos online without the app?",
+  "faq.f14a": "Copy the public TeraBox share link, paste it into TeraPlayer above, and press Watch. The TeraBox video player streams it instantly in your browser on phone or computer — the TeraBox app is never needed.",
+  "faq.f15q": "How do I download TeraBox videos to my phone?",
+  "faq.f15a": "Paste the public TeraBox link into TeraPlayer, open the preview, and tap Download. The TeraBox video downloader saves the file to your Downloads folder or gallery. Folders can be packed as ZIP, and you can pick quality when available.",
+  "seo.altPlayer": "TeraBox video player and downloader",
+  "seo.altFormats": "TeraBox video formats: HD, MP4, ZIP and folders",
 
   "comp.title": "Copyright Compliance",
   "comp.bodyA":

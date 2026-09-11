@@ -328,7 +328,7 @@ export default function Home() {
   const qualityOptions = useMemo(() => buildQualityOptions(preview), [preview]);
   const homeFaqs = useMemo(
     () =>
-      Array.from({ length: 12 }, (_, i) => ({
+      Array.from({ length: 15 }, (_, i) => ({
         q: t(`faq.f${i + 1}q`),
         a: t(`faq.f${i + 1}a`),
       })),
@@ -419,10 +419,10 @@ export default function Home() {
   return (
     <div className="App noise min-h-screen">
       <Seo
-        title="TeraPlayer — TeraBox Online Player & Downloader"
+        title="TeraPlayer - TeraBox Video Player, Downloader & Watch Online"
         description="Open TeraBox links free: watch TeraBox videos online and download supported files right in your browser. No login, HD quality."
         path="/"
-        ogTitle="TeraPlayer — TeraBox Online Player & Downloader"
+        ogTitle="TeraPlayer - TeraBox Video Player, Downloader & Watch Online"
         ogDescription="Watch TeraBox videos online and download supported files with TeraPlayer — a free TeraBox online player and downloader. No login required."
         imageAlt="TeraPlayer - TeraBox Online Player & Downloader"
         twitterDescription="Watch TeraBox videos online and download supported files with TeraPlayer."
@@ -770,7 +770,7 @@ export default function Home() {
               <div className="ref-glow-visual relative mb-6 aspect-[16/10] overflow-hidden rounded-2xl border border-indigo-100/60 bg-indigo-50/50">
                 <img
                   src="/images/feature-player.webp"
-                  alt={t("feat1.title")}
+                  alt={t("seo.altPlayer")}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -790,7 +790,7 @@ export default function Home() {
               <div className="relative mb-6 aspect-[16/10] overflow-hidden rounded-2xl border border-purple-100/60 bg-purple-50/50">
                 <img
                   src="/images/feature-formats.webp"
-                  alt={t("feat2.title")}
+                  alt={t("seo.altFormats")}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
