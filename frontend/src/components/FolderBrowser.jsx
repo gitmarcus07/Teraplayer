@@ -279,39 +279,39 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
             <span>{t("fb.zipHint")}</span>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={toggleAll}
-            aria-pressed={allSelected}
-            data-testid="select-all-btn"
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {allSelected ? (
-              <CheckSquare className="h-4 w-4 text-primary" />
-            ) : someSelected ? (
-              <CheckSquare className="h-4 w-4 text-primary/50" />
-            ) : (
-              <Square className="h-4 w-4" />
-            )}
-            {allSelected ? t("fb.deselectAll") : t("fb.selectAll")}
-          </button>
-          {selected.size > 0 && (
-            <button
-              onClick={clearSelection}
-              data-testid="clear-selection-btn"
-              className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {t("fb.clear")}
-            </button>
-          )}
-          <Button
-            size="sm"
-            disabled={selected.size === 0 || zipping}
-            onClick={downloadZip}
-            data-testid="download-zip-btn"
-            className="text-xs sm:text-sm"
-            aria-live="polite"
-          >
+<div className="flex flex-wrap items-center gap-2">
+           <button
+             onClick={toggleAll}
+             aria-pressed={allSelected}
+             data-testid="select-all-btn"
+             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+           >
+             {allSelected ? (
+               <CheckSquare className="h-4 w-4 text-primary" />
+             ) : someSelected ? (
+               <CheckSquare className="h-4 w-4 text-primary/50" />
+             ) : (
+               <Square className="h-4 w-4" />
+             )}
+             {allSelected ? t("fb.deselectAll") : t("fb.selectAll")}
+           </button>
+           {selected.size > 0 && (
+             <button
+               onClick={clearSelection}
+               data-testid="clear-selection-btn"
+               className="inline-flex min-h-[44px] items-center rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+             >
+               {t("fb.clear")}
+             </button>
+           )}
+           <Button
+             size="sm"
+             disabled={selected.size === 0 || zipping}
+             onClick={downloadZip}
+             data-testid="download-zip-btn"
+             className="min-h-[44px] text-xs sm:text-sm"
+             aria-live="polite"
+           >
             {zipping ? (
               <>
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> {zipProgress}%
@@ -338,7 +338,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           {t("fb.noMatch")}
         </div>
-      ) : view === "grid" ? (
+) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((f) => {
             const Icon = ICONS[f.file_type || "file"] || FileIcon;
@@ -353,18 +353,18 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                   isActive
                     ? "border-primary ring-1 ring-primary"
                     : isSel
-                      ? "border-primary"
-                      : "border-border"
+                    ? "border-primary"
+                    : "border-border"
                 } bg-surface-overlay/50 transition-[border-color,brightness] duration-200 hover:border-primary/60 hover:brightness-115`}
               >
                 <button
                   onClick={() => toggle(f._idx)}
-                  className="absolute left-2 top-2 z-10 rounded-md bg-black/50 p-1 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  className="absolute left-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-md bg-black/50 text-white backdrop-blur-md transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   aria-label={isSel ? t("fb.deselectAria") : t("fb.selectAria")}
                   aria-pressed={isSel}
                   data-testid="folder-select-btn"
                 >
-                  {isSel ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+                  {isSel ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
                 </button>
                 <div className="relative aspect-video w-full bg-surface-overlay">
                   {f.thumbnail ? (
@@ -380,8 +380,8 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                       className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-[background-color,opacity] duration-200 hover:bg-black/40 hover:opacity-100 focus-visible:bg-black/40 focus-visible:opacity-100"
                       aria-label={t("fb.playAria")}
                     >
-                      <span className="rounded-full bg-white/20 p-3 backdrop-blur-md transition-transform duration-200 hover:scale-110">
-                        <Play className="h-5 w-5 fill-white text-white" strokeWidth={0} />
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 p-3 backdrop-blur-md transition-transform duration-200 hover:scale-110">
+                        <Play className="h-6 w-6 fill-white text-white" strokeWidth={0} />
                       </span>
                     </button>
                   )}
@@ -405,8 +405,9 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                     onClick={() => downloadOne(f)}
                     aria-label={t("fb.dlAria")}
                     data-testid="folder-download-btn"
+                    className="min-h-[44px] min-w-[44px]"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
@@ -423,7 +424,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
               <div
                 key={f._idx}
                 data-testid="folder-item"
-                className={`flex items-center gap-3 p-3 transition-colors duration-200 ${
+                className={`flex items-center gap-3 p-3 transition-colors duration-200 min-h-[56px] ${
                   isActive ? "bg-primary/5 ring-1 ring-inset ring-primary" : isSel ? "bg-primary/5" : "hover:bg-surface-overlay/40"
                 }`}
               >
@@ -432,7 +433,7 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                   data-testid="folder-select-btn"
                   aria-label={isSel ? t("fb.deselectAria") : t("fb.selectAria")}
                   aria-pressed={isSel}
-                  className="p-1.5 text-muted-foreground hover:text-foreground"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center p-1.5 text-muted-foreground hover:text-foreground"
                 >
                   {isSel ? (
                     <CheckSquare className="h-4 w-4 text-primary" />
@@ -440,18 +441,18 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                     <Square className="h-4 w-4 text-muted-foreground" />
                   )}
                 </button>
-                <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md bg-surface-overlay">
+                <div className="h-12 w-16 shrink-0 overflow-hidden rounded-md bg-surface-overlay">
                   {f.thumbnail ? (
                     <img src={f.thumbnail} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-5 w-5" />
                     </div>
                   )}
                 </div>
                 <button
                   onClick={() => onPlayFile?.(f)}
-                  className="min-w-0 flex-1 text-left"
+                  className="min-w-0 flex-1 text-left min-h-[44px]"
                   data-testid="folder-open-btn"
                 >
                   <div className="line-clamp-1 text-sm font-medium" title={f.name || t("fb.untitled")}>{f.name || t("fb.untitled")}</div>
@@ -471,8 +472,9 @@ export default function FolderBrowser({ files, onPlayFile, folderName, activeIdx
                   onClick={() => downloadOne(f)}
                   aria-label="Download"
                   data-testid="folder-download-btn"
+                  className="min-h-[44px] min-w-[44px]"
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className="h-5 w-5" />
                 </Button>
               </div>
             );

@@ -1,0 +1,6 @@
+# ads.txt for teraplayer.in
+# REQUIRED after AdSense approval: replace the line below with your own
+# publisher ID from your AdSense account (Account > Settings > Account
+# information). Format:
+#   google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+# Until approval, this file intentionally contains no ad records.

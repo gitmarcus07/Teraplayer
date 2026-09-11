@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import Logo from "./Logo";
-import { Menu, X, Home, Info, Mail, Download, Video, FolderOpen, Archive, LifeBuoy, Sun, Moon, Globe, Check } from "lucide-react";
+import { Menu, X, Home, Info, Mail, LifeBuoy, Sun, Moon, Globe, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,21 +108,7 @@ export default function Header() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Logo />
 
-          <nav aria-label="Primary" className="flex items-center gap-3 sm:gap-4">
-            <TabLink
-              to="/terabox-video-player"
-              active={location.pathname === "/terabox-video-player"}
-              testId="nav-player"
-              icon={Video}
-              label={t("nav.video")}
-            />
-            <TabLink
-              to="/terabox-video-downloader"
-              active={location.pathname === "/terabox-video-downloader"}
-              testId="nav-downloader"
-              icon={Download}
-              label={t("nav.downloader")}
-            />
+          <nav aria-label="Primary" className="hidden flex-1 items-center justify-center gap-3 sm:gap-4 md:flex">
             <TabLink
               to="/help-center"
               active={location.pathname === "/help-center"}
@@ -130,9 +116,62 @@ export default function Header() {
               icon={LifeBuoy}
               label={t("nav.help")}
             />
+            <TabLink
+              to="/contact"
+              active={location.pathname === "/contact"}
+              testId="nav-contact"
+              icon={Mail}
+              label={t("nav.contact")}
+            />
+            <TabLink
+              to="/about"
+              active={location.pathname === "/about"}
+              testId="nav-about"
+              icon={Info}
+              label={t("nav.about")}
+            />
           </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="hidden items-center gap-1 sm:gap-2 md:flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full"
+              data-testid="theme-toggle-btn-desktop"
+              aria-label={isDark ? t("nav.themeLight") : t("nav.themeDark")}
+              aria-pressed={isDark}
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full"
+                  data-testid="language-switcher-btn-desktop"
+                  aria-label={t("nav.language")}
+                >
+                  <Globe className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" aria-label={t("nav.language")}>
+                {langs.map((l) => (
+                  <DropdownMenuItem
+                    key={l.code}
+                    onClick={() => setLang(l.code)}
+                    data-testid={`language-option-${l.code}-desktop`}
+                  >
+                    <span className="flex-1">{l.native}</span>
+                    {lang === l.code && <Check className="h-4 w-4" aria-hidden="true" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2 md:hidden">
             <Button
               variant="ghost"
               size="icon"
@@ -173,7 +212,7 @@ export default function Header() {
               ref={menuBtnRef}
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-full md:hidden"
+              className="h-10 w-10 rounded-full"
               data-testid="mobile-menu-btn"
               aria-label={t("nav.openMenu")}
               aria-expanded={mobileMenuOpen}
@@ -235,18 +274,6 @@ export default function Header() {
                 <nav aria-label="Mobile" className="flex flex-1 flex-col gap-1 overflow-y-auto p-4">
                   <DrawerLink to="/" onClick={() => setMobileMenuOpen(false)} icon={Home} testId="mobile-nav-home">
                     {t("nav.home")}
-                  </DrawerLink>
-                  <DrawerLink to="/terabox-video-player" onClick={() => setMobileMenuOpen(false)} icon={Video} testId="mobile-nav-player">
-                    {t("nav.videoPlayer")}
-                  </DrawerLink>
-                  <DrawerLink to="/terabox-video-downloader" onClick={() => setMobileMenuOpen(false)} icon={Download} testId="mobile-nav-downloader">
-                    {t("nav.downloader")}
-                  </DrawerLink>
-                  <DrawerLink to="/how-to-download-terabox-folder" onClick={() => setMobileMenuOpen(false)} icon={FolderOpen} testId="mobile-nav-folder">
-                    {t("nav.folderDl")}
-                  </DrawerLink>
-                  <DrawerLink to="/terabox-zip-download" onClick={() => setMobileMenuOpen(false)} icon={Archive} testId="mobile-nav-zip">
-                    {t("nav.zipDl")}
                   </DrawerLink>
                   <DrawerLink to="/help-center" onClick={() => setMobileMenuOpen(false)} icon={LifeBuoy} testId="mobile-nav-help">
                     {t("nav.helpCenter")}

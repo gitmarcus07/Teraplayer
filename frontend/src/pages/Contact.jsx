@@ -104,7 +104,7 @@ export default function Contact() {
               <Mail className="h-3.5 w-3.5 text-primary" />
               {t("c.eyebrow")}
             </div>
-            <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl lg:text-6xl">
+            <h1 className="font-display font-black text-4xl leading-[1.08] tracking-tighter text-balance sm:text-5xl lg:text-6xl">
               {t("c.titleA")} <span className="text-primary">{t("c.titleB")}</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
@@ -145,6 +145,39 @@ export default function Contact() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* What to include for fastest help */}
+      <section className="tp-container py-16 md:py-20">
+        <motion.div {...fadeUp} className="mx-auto max-w-5xl">
+          <h2 className="text-center font-display font-bold text-2xl tracking-tight sm:text-3xl">
+            {t("c.helpT")}
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
+            {t("c.helpSub")}
+          </p>
+          <ol className="mt-10 grid gap-6 md:grid-cols-3">
+            {[
+              { n: "1", tk: "c.h1t", dk: "c.h1d" },
+              { n: "2", tk: "c.h2t", dk: "c.h2d" },
+              { n: "3", tk: "c.h3t", dk: "c.h3d" },
+            ].map((s) => (
+              <li
+                key={s.tk}
+                className="rounded-2xl border border-border bg-surface-raised p-6"
+              >
+                <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+                  {s.n}
+                </span>
+                <h3 className="mt-4 text-base font-semibold">{t(s.tk)}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(s.dk)}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-muted-foreground">
+            {t("c.helpNote")}
+          </p>
+        </motion.div>
       </section>
 
       {/* Direct Email */}

@@ -604,66 +604,66 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
           aria-label={t("vp.seek")}
         />
 
-        <div className="mt-2 flex items-center gap-1.5 text-white sm:gap-3">
-          <button
-            data-testid="play-btn"
-            onClick={togglePlay}
-            className="rounded-lg p-2 transition-colors duration-200 hover:bg-white/10"
-            aria-label={playing ? t("vp.pause") : t("vp.play")}
-          >
-            {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-          </button>
-          <button
-            data-testid="seek-back-btn"
-            onClick={() => seek(-10)}
-            className="hidden rounded-lg p-2 transition-colors duration-200 hover:bg-white/10 sm:block"
-            aria-label={t("vp.rew")}
-          >
-            <RotateCcw className="h-5 w-5" />
-          </button>
-          <button
-            data-testid="seek-fwd-btn"
-            onClick={() => seek(10)}
-            className="hidden rounded-lg p-2 transition-colors duration-200 hover:bg-white/10 sm:block"
-            aria-label={t("vp.fwd")}
-          >
-            <RotateCw className="h-5 w-5" />
-          </button>
+<div className="mt-2 flex items-center gap-1.5 text-white sm:gap-3">
+           <button
+             data-testid="play-btn"
+             onClick={togglePlay}
+             className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:h-10 sm:w-10"
+             aria-label={playing ? t("vp.pause") : t("vp.play")}
+           >
+             {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+           </button>
+           <button
+             data-testid="seek-back-btn"
+             onClick={() => seek(-10)}
+             className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:hidden"
+             aria-label={t("vp.rew")}
+           >
+             <RotateCcw className="h-5 w-5" />
+           </button>
+           <button
+             data-testid="seek-fwd-btn"
+             onClick={() => seek(10)}
+             className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:hidden"
+             aria-label={t("vp.fwd")}
+           >
+             <RotateCw className="h-5 w-5" />
+           </button>
 
-          <div className="flex items-center gap-1.5">
-            <button
-              data-testid="mute-btn"
-              onClick={toggleMute}
-              className="rounded-lg p-2 transition-colors duration-200 hover:bg-white/10"
-              aria-label={muted ? t("vp.unmute") : t("vp.mute")}
-            >
-              {muted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-            </button>
-            <input
-              data-testid="volume-slider"
-              type="range"
-              min={0}
-              max={1}
-              step="0.05"
-              value={muted ? 0 : volume}
-              onChange={(e) => changeVolume(Number(e.target.value))}
-              className="tp-range hidden w-20 sm:block"
-              aria-label={t("vp.vol")}
-            />
-          </div>
+<div className="flex items-center gap-1.5">
+             <button
+               data-testid="mute-btn"
+               onClick={toggleMute}
+               className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
+               aria-label={muted ? t("vp.unmute") : t("vp.mute")}
+             >
+               {muted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+             </button>
+             <input
+               data-testid="volume-slider"
+               type="range"
+               min={0}
+               max={1}
+               step="0.05"
+               value={muted ? 0 : volume}
+               onChange={(e) => changeVolume(Number(e.target.value))}
+               className="tp-range w-16 sm:block hidden"
+               aria-label={t("vp.vol")}
+             />
+           </div>
 
-          <div className="ml-1 whitespace-nowrap font-mono text-xs text-white/80 sm:text-sm">
-            {fmt(current)} <span className="text-white/40">/ {fmt(duration)}</span>
-          </div>
+<div className="ml-1 whitespace-nowrap font-mono text-xs text-white/80 sm:text-sm">
+             {fmt(current)} <span className="text-white/40">/ {fmt(duration)}</span>
+           </div>
 
-          <div className="ml-auto flex items-center gap-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  data-testid="speed-btn"
-                  className="rounded-lg px-2 py-2 text-sm transition-colors duration-200 hover:bg-white/10"
-                  aria-label={t("vp.speed")}
-                >
+           <div className="ml-auto flex items-center gap-1">
+             <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                 <button
+                   data-testid="speed-btn"
+                   className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 px-2 text-sm transition-colors duration-200 hover:bg-white/20 sm:w-auto sm:px-3"
+                   aria-label={t("vp.speed")}
+                 >
                   <Gauge className="mr-1 inline h-4 w-4" />
                   {rate}x
                 </button>
@@ -682,22 +682,22 @@ export default function VideoPlayer({ src, poster, title, autoPlay = false, onDo
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <button
-              data-testid="pip-btn"
-              onClick={enterPip}
-              className="hidden rounded-lg p-2 transition-colors duration-200 hover:bg-white/10 sm:block"
-              aria-label={t("vp.pip")}
-            >
-              <PictureInPicture2 className="h-5 w-5" />
-            </button>
-            <button
-              data-testid="fullscreen-btn"
-              onClick={enterFullscreen}
-              className="rounded-lg p-2 transition-colors duration-200 hover:bg-white/10"
-              aria-label={t("vp.fs")}
-            >
-              {fullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
-            </button>
+<button
+                data-testid="pip-btn"
+                onClick={enterPip}
+                className="hidden h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:flex"
+                aria-label={t("vp.pip")}
+              >
+                <PictureInPicture2 className="h-5 w-5" />
+              </button>
+              <button
+                data-testid="fullscreen-btn"
+                onClick={enterFullscreen}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
+                aria-label={t("vp.fs")}
+              >
+                {fullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+              </button>
           </div>
         </div>
       </div>

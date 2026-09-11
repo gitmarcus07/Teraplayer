@@ -60,7 +60,7 @@ export default function AboutTeraPlayer() {
       <Seo
         title="About TeraPlayer"
         description="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
-        path="/about-teraplayer"
+        path="/about"
         ogTitle="About TeraPlayer"
         ogDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
         imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
@@ -82,7 +82,7 @@ export default function AboutTeraPlayer() {
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
                 {t("atp.eyebrow")}
               </div>
-              <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl lg:text-6xl">
+              <h1 className="font-display font-black text-4xl leading-[1.08] tracking-tighter text-balance sm:text-5xl lg:text-6xl">
                 {t("nav.about")} <span className="text-primary">TeraPlayer</span>
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">

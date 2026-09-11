@@ -15,14 +15,10 @@ import { parseMarkdownLinks, getCountdown } from "@/utils/siteUtils";
 
 // Non-critical pages and the entire admin shell are lazy-loaded so they never
 // delay the initial hero render. Home stays in the critical path.
-const About = lazy(() => import("@/pages/About"));
+const About = lazy(() => import("@/pages/AboutTeraPlayer"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
-const AboutTeraPlayer = lazy(() => import("@/pages/AboutTeraPlayer"));
-const Copyright = lazy(() => import("@/pages/Copyright"));
-const TeraBoxVideoDownloader = lazy(() => import("@/pages/TeraBoxVideoDownloader"));
-const TeraBoxVideoPlayer = lazy(() => import("@/pages/TeraBoxVideoPlayer"));
 const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const AdminRoute = lazy(() => import("@/components/admin/AdminRoute"));
@@ -81,21 +77,21 @@ function PublicShell() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/meet-the-dev" element={<Navigate to="/about-teraplayer" replace />} />
+            <Route path="/meet-the-dev" element={<Navigate to="/about" replace />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/about-teraplayer" element={<AboutTeraPlayer />} />
-            <Route path="/copyright" element={<Copyright />} />
-            <Route path="/terabox-video-downloader" element={<TeraBoxVideoDownloader />} />
-            <Route path="/terabox-video-player" element={<TeraBoxVideoPlayer />} />
+            <Route path="/about-teraplayer" element={<Navigate to="/about" replace />} />
+            <Route path="/copyright" element={<Navigate to="/contact" replace />} />
             <Route path="/help-center" element={<HelpCenter />} />
-            {/* Consolidated guides redirect to their merged homes (keeps old links/SEO working) */}
-            <Route path="/how-to-download-terabox-videos" element={<Navigate to="/terabox-video-downloader" replace />} />
-            <Route path="/terabox-download-mobile" element={<Navigate to="/terabox-video-downloader" replace />} />
-            <Route path="/terabox-download-pc" element={<Navigate to="/terabox-video-downloader" replace />} />
-            <Route path="/terabox-zip-download" element={<Navigate to="/terabox-video-downloader" replace />} />
-            <Route path="/how-to-download-terabox-folder" element={<Navigate to="/terabox-video-downloader" replace />} />
-            <Route path="/how-to-watch-terabox-videos" element={<Navigate to="/terabox-video-player" replace />} />
+            {/* Removed pages (player, downloader, folder, zip) all resolve on Home — keep old links/SEO working */}
+            <Route path="/terabox-video-downloader" element={<Navigate to="/" replace />} />
+            <Route path="/terabox-video-player" element={<Navigate to="/" replace />} />
+            <Route path="/how-to-download-terabox-videos" element={<Navigate to="/" replace />} />
+            <Route path="/terabox-download-mobile" element={<Navigate to="/" replace />} />
+            <Route path="/terabox-download-pc" element={<Navigate to="/" replace />} />
+            <Route path="/terabox-zip-download" element={<Navigate to="/" replace />} />
+            <Route path="/how-to-download-terabox-folder" element={<Navigate to="/" replace />} />
+            <Route path="/how-to-watch-terabox-videos" element={<Navigate to="/" replace />} />
             <Route path="/terabox-video-link-not-working" element={<Navigate to="/help-center" replace />} />
             <Route path="/terabox-public-link" element={<Navigate to="/help-center" replace />} />
             <Route path="*" element={<NotFound />} />

@@ -6,21 +6,10 @@ import { useLang } from "../i18n/LanguageContext";
 const LEGAL_LINKS = [
   { to: "/privacy", key: "footer.privacy" },
   { to: "/terms", key: "footer.terms" },
-  { to: "/about-teraplayer", key: "footer.aboutTp" },
-  { to: "/copyright", key: "footer.copyright" },
-];
-
-const TOOL_LINKS = [
-  { to: "/terabox-video-player", key: "explore.player" },
-  { to: "/terabox-video-downloader", key: "explore.downloader" },
-  { to: "/help-center", key: "explore.help" },
-  { to: "/about-teraplayer", key: "footer.aboutTp" },
 ];
 
 const SUPPORT_LINKS = [
   { to: "/contact", key: "footer.contactUs" },
-  { to: "/about", key: "footer.about" },
-  { to: "/help-center", key: "footer.support" },
 ];
 
 export function FooterLegalLinks() {
@@ -60,21 +49,6 @@ export default function Footer() {
             </a>
           </div>
           <div className="col-span-1 flex flex-col gap-8 md:col-span-2 md:flex-row md:gap-16 md:justify-end">
-            <nav aria-label={t("footer.tools")}>
-              <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">{t("footer.tools")}</p>
-              <ul className="space-y-3">
-                {TOOL_LINKS.map((l) => (
-                  <li key={l.to}>
-                    <Link
-                      to={l.to}
-                      className="text-sm text-slate-600 transition-colors hover:text-indigo-600"
-                    >
-                      {t(l.key)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
             <nav aria-label={t("footer.legal")}>
               <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900">{t("footer.legal")}</p>
               <ul className="space-y-3">

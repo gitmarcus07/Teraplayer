@@ -162,14 +162,14 @@ export default function PreviewCard({
             )}
           </div>
           {canWatch && !isFolder && (
-            <button
-              onClick={onWatch}
-              data-testid="thumbnail-play-btn"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-normal ease-out hover:scale-110 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 sm:h-14 sm:w-14"
-              aria-label={`${t("pc.play")} ${fullTitle}`}
-            >
-              <Play className="h-5 w-5 fill-white" strokeWidth={0} aria-hidden="true" />
-            </button>
+<button
+               onClick={onWatch}
+               data-testid="thumbnail-play-btn"
+               className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-[background-color,transform] duration-normal ease-out hover:scale-110 hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-95 sm:h-16 sm:w-16"
+               aria-label={`${t("pc.play")} ${fullTitle}`}
+             >
+               <Play className="h-6 w-6 fill-white sm:h-8 sm:w-8" strokeWidth={0} aria-hidden="true" />
+             </button>
           )}
         </div>
       </div>
@@ -302,37 +302,37 @@ export default function PreviewCard({
               )}
             </div>
           )}
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              onClick={handleCopy}
-              data-testid="copy-link-btn"
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              aria-label={t("pc.copyAria")}
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5 text-primary sm:mr-1.5" />
-              ) : (
-                <Copy className="h-3.5 w-3.5 sm:mr-1.5" />
-              )}
-              <span className="hidden sm:inline">{copied ? t("pc.copied") : t("pc.copy")}</span>
-            </Button>
-            <Button
-              onClick={onShare}
-              data-testid="share-btn"
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              aria-label={t("pc.shareAria")}
-            >
-              <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
-              <span className="hidden sm:inline">{t("pc.share")}</span>
-            </Button>
-            <span className="sr-only" aria-live="polite">
-              {copied ? t("pc.copiedLive") : ""}
-            </span>
-          </div>
+<div className="flex flex-wrap items-center justify-center gap-2 sm:flex-row sm:justify-start">
+             <Button
+               onClick={handleCopy}
+               data-testid="copy-link-btn"
+               variant="outline"
+               size="sm"
+               className="h-10 w-full text-xs sm:w-auto"
+               aria-label={t("pc.copyAria")}
+             >
+               {copied ? (
+                 <Check className="h-3.5 w-3.5 text-primary sm:mr-1.5" />
+               ) : (
+                 <Copy className="h-3.5 w-3.5 sm:mr-1.5" />
+               )}
+               <span className="hidden sm:inline">{copied ? t("pc.copied") : t("pc.copy")}</span>
+             </Button>
+             <Button
+               onClick={onShare}
+               data-testid="share-btn"
+               variant="outline"
+               size="sm"
+               className="h-10 w-full text-xs sm:w-auto"
+               aria-label={t("pc.shareAria")}
+             >
+               <Share2 className="h-3.5 w-3.5 sm:mr-1.5" />
+               <span className="hidden sm:inline">{t("pc.share")}</span>
+             </Button>
+             <span className="sr-only" aria-live="polite">
+               {copied ? t("pc.copiedLive") : ""}
+             </span>
+           </div>
         </div>
       </div>
     </motion.div>

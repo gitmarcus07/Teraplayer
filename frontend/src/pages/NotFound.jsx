@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Compass, Download, Play, Home as HomeIcon, HelpCircle } from "lucide-react";
+import { Compass, Mail, Home as HomeIcon, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo";
 import Header from "../components/Header";
@@ -45,7 +45,7 @@ export default function NotFound() {
             <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">
               {t("nf.eyebrow")}
             </p>
-            <h1 className="font-display font-black text-4xl tracking-tighter sm:text-5xl">
+            <h1 className="font-display font-black text-4xl leading-[1.08] tracking-tighter text-balance sm:text-5xl">
               {t("nf.titleA")} <span className="text-primary">{t("nf.titleB")}</span>
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
@@ -60,15 +60,15 @@ export default function NotFound() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
-                <Link to="/terabox-video-player">
-                  <Play className="mr-2 h-5 w-5" />
-                  {t("nf.player")}
+                <Link to="/help-center">
+                  <HelpCircle className="mr-2 h-5 w-5" />
+                  {t("nav.helpCenter")}
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
-                <Link to="/terabox-video-downloader">
-                  <Download className="mr-2 h-5 w-5" />
-                  {t("nf.downloader")}
+                <Link to="/contact">
+                  <Mail className="mr-2 h-5 w-5" />
+                  {t("nav.contact")}
                 </Link>
               </Button>
             </div>

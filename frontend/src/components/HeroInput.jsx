@@ -135,7 +135,7 @@ const HeroInput = forwardRef(function HeroInput(
             data-testid="paste-clipboard-btn"
             aria-label={t("input.pasteAria")}
             title={t("input.pasteAria")}
-            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-400 transition-all duration-300 hover:bg-slate-100 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 min-[400px]:flex"
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-400 transition-all duration-300 hover:bg-slate-100 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:flex"
           >
             <ClipboardPaste className="h-5 w-5" aria-hidden="true" />
           </button>

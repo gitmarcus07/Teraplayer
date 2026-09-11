@@ -11,11 +11,9 @@ import {
   RefreshCw,
   ChevronLeft,
   Loader2,
-  Download,
   Play,
   HelpCircle,
   Info,
-  Users,
   Mail,
   TriangleAlert,
   Clapperboard,
@@ -674,7 +672,7 @@ export default function Home() {
         </section>
 
         {/* Steps — bold slate heading, ringed number circles with connector. */}
-        <section
+<section
           aria-labelledby="steps-heading"
           className="mx-auto mt-24 w-full max-w-5xl px-4 sm:px-6"
         >
@@ -690,17 +688,17 @@ export default function Home() {
           </p>
           </div>
           <ol className="relative grid grid-cols-1 gap-8 sm:grid-cols-3">
-            <span aria-hidden="true" className="absolute left-[10%] right-[10%] top-12 z-0 hidden h-[2px] bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent md:block" />
+            <span aria-hidden="true" className="absolute left-1/2 right-1/2 top-12 z-0 hidden h-[2px] bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent md:block" />
             <li className="relative z-10 flex flex-col items-center rounded-2xl p-4 text-center transition-colors duration-300 hover:bg-white/40">
-              <span aria-hidden="true" className="ref-step-ring mb-4 flex h-16 w-16 items-center justify-center rounded-full !border-indigo-200 text-xl font-bold text-indigo-600">1</span>
+              <span aria-hidden="true" className="ref-step-ring mb-4 flex h-14 w-14 items-center justify-center rounded-full !border-indigo-200 text-lg font-bold text-indigo-600 sm:h-16 sm:text-xl">1</span>
               <p className="text-sm font-medium text-slate-600">{t("steps.s1")}</p>
             </li>
             <li className="relative z-10 flex flex-col items-center rounded-2xl p-4 text-center transition-colors duration-300 hover:bg-white/40">
-              <span aria-hidden="true" className="ref-step-ring mb-4 flex h-16 w-16 items-center justify-center rounded-full !border-purple-200 text-xl font-bold text-purple-600">2</span>
+              <span aria-hidden="true" className="ref-step-ring mb-4 flex h-14 w-14 items-center justify-center rounded-full !border-purple-200 text-lg font-bold text-purple-600 sm:h-16 sm:text-xl">2</span>
               <p className="text-sm font-medium text-slate-600">{t("steps.s2")}</p>
             </li>
             <li className="relative z-10 flex flex-col items-center rounded-2xl p-4 text-center transition-colors duration-300 hover:bg-white/40">
-              <span aria-hidden="true" className="ref-step-ring mb-4 flex h-16 w-16 items-center justify-center rounded-full !border-pink-200 text-xl font-bold text-pink-600">3</span>
+              <span aria-hidden="true" className="ref-step-ring mb-4 flex h-14 w-14 items-center justify-center rounded-full !border-pink-200 text-lg font-bold text-pink-600 sm:h-16 sm:text-xl">3</span>
               <p className="text-sm font-medium text-slate-600">{t("steps.s3")}</p>
             </li>
           </ol>
@@ -856,7 +854,6 @@ export default function Home() {
             <p className="text-sm leading-relaxed text-slate-300">
               {t("comp.bodyA")}{" "}
               <Link to="/contact" className="font-semibold text-indigo-300 hover:text-indigo-200 hover:underline">{t("comp.contact")}</Link>.
-              {t("comp.bodyB")} <Link to="/copyright" className="font-semibold text-indigo-300 hover:text-indigo-200 hover:underline">{t("comp.copyright")}</Link>{t("comp.bodyC")}
             </p>
           </div>
         </section>
@@ -877,25 +874,7 @@ export default function Home() {
             </p>
           </div>
 
-          <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            <li>
-              <Link
-                to="/terabox-video-downloader"
-                className="ds-guide-link text-muted-foreground"
-              >
-                <Download className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                <span>{t("explore.downloader")}</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/terabox-video-player"
-                className="ds-guide-link text-muted-foreground"
-              >
-                <Play className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                <span>{t("explore.player")}</span>
-              </Link>
-            </li>
+          <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <li>
               <Link
                 to="/help-center"
@@ -907,20 +886,11 @@ export default function Home() {
             </li>
             <li>
               <Link
-                to="/about-teraplayer"
-                className="ds-guide-link text-muted-foreground"
-              >
-                <Info className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                <span>{t("explore.aboutTp")}</span>
-              </Link>
-            </li>
-            <li>
-              <Link
                 to="/about"
                 className="ds-guide-link text-muted-foreground"
               >
-                <Users className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                <span>{t("explore.aboutUs")}</span>
+                <Info className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <span>{t("nav.about")}</span>
               </Link>
             </li>
             <li>

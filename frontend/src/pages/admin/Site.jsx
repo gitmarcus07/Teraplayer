@@ -384,7 +384,12 @@ export default function Site() {
           <title>Site | TeraPlayer Admin</title>
         </Helmet>
         <Card>
-          <CardContent className="p-8 text-center text-sm text-destructive">{error}</CardContent>
+          <CardContent className="space-y-4 p-8 text-center">
+            <p className="text-sm text-destructive">{error}</p>
+            <Button type="button" variant="outline" size="sm" onClick={loadData}>
+              <RotateCcw className="mr-2 h-4 w-4" /> Retry
+            </Button>
+          </CardContent>
         </Card>
       </>
     );

@@ -187,7 +187,7 @@ export default function HelpCenter() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="font-display text-2xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight text-slate-900 mb-6"
+                className="font-display text-2xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight text-balance text-slate-900 mb-6"
               >
                 {t("hc.titleA")} <span className="text-primary">{t("hc.titleB")}</span>
               </motion.h1>
@@ -217,13 +217,13 @@ export default function HelpCenter() {
                 className="flex flex-wrap items-center justify-center gap-3"
               >
                 <Button asChild className="h-12 px-8 text-base" size="lg">
-                  <Link to="/terabox-video-player">
+                  <Link to="/">
                     <Monitor className="mr-2 h-5 w-5" aria-hidden="true" />
                     {t("hc.ctaPlayer")}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="h-12 px-8 text-base" size="lg">
-                  <Link to="/terabox-video-downloader">
+                  <Link to="/">
                     <Download className="mr-2 h-5 w-5" aria-hidden="true" />
                     {t("hc.ctaDl")}
                   </Link>
@@ -242,7 +242,7 @@ export default function HelpCenter() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Link
-                  to="/terabox-video-player"
+                  to="/"
                   className="group glass-panel rounded-2xl p-5 border border-slate-200 transition-all duration-300 hover:shadow-md"
                 >
                   <div className="flex items-center gap-4">
@@ -256,7 +256,7 @@ export default function HelpCenter() {
                   </div>
                 </Link>
                 <Link
-                  to="/terabox-video-downloader"
+                  to="/"
                   className="group glass-panel rounded-2xl p-5 border border-slate-200 transition-all duration-300 hover:shadow-md"
                 >
                   <div className="flex items-center gap-4">
@@ -454,11 +454,11 @@ export default function HelpCenter() {
               </div>
               <p className="mt-6 text-sm text-slate-500 text-center">
                 {t("hc.pbNoteA")}{" "}
-                <Link to="/terabox-video-player" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
+                <Link to="/" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
                   {t("hc.pbNotePlayer")}
                 </Link>
                 {t("hc.pbNoteB")}{" "}
-                <Link to="/terabox-video-downloader" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
+                <Link to="/" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
                   {t("hc.pbNoteDl")}
                 </Link>
                 .
@@ -486,7 +486,7 @@ export default function HelpCenter() {
                 </p>
                 <p>
                   {t("hc.dlP4a")}{" "}
-                  <Link to="/terabox-video-downloader" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
+                  <Link to="/" className="font-medium text-indigo-600 underline-offset-4 hover:underline">
                     {t("hc.dlP4b")}
                   </Link>
                   .
@@ -519,7 +519,7 @@ export default function HelpCenter() {
                     {t("hc.pvdAd")}
                   </p>
                   <Button asChild variant="outline" className="h-9 px-4 text-sm">
-                    <Link to="/terabox-video-player">{t("hc.pvdAt")}</Link>
+                    <Link to="/">{t("hc.pvdAt")}</Link>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -537,7 +537,7 @@ export default function HelpCenter() {
                     {t("hc.pvdBd")}
                   </p>
                   <Button asChild variant="outline" className="h-9 px-4 text-sm">
-                    <Link to="/terabox-video-downloader">{t("hc.pvdBt")}</Link>
+                    <Link to="/">{t("hc.pvdBt")}</Link>
                   </Button>
                 </motion.div>
               </div>
@@ -638,13 +638,13 @@ export default function HelpCenter() {
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <Button asChild className="h-12 px-8 text-base" size="lg">
-                  <Link to="/terabox-video-player">
+                  <Link to="/">
                     <Monitor className="mr-2 h-5 w-5" />
                     {t("hc.ctaPlayer")}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="h-12 px-8 text-base" size="lg">
-                  <Link to="/terabox-video-downloader">
+                  <Link to="/">
                     <Download className="mr-2 w-5 h-5" />
                     {t("hc.ctaDl")}
                   </Link>
@@ -673,13 +673,13 @@ export default function HelpCenter() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Button asChild className="h-12 px-8 text-base" size="lg">
-                    <Link to="/terabox-video-player">
+                    <Link to="/">
                       <Monitor className="mr-2 h-5 w-5" />
                       {t("hc.ctaPlayer")}
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="h-12 px-8 text-base" size="lg">
-                    <Link to="/terabox-video-downloader">
+                    <Link to="/">
                       <Download className="mr-2 h-5 w-5" />
                       {t("hc.ctaDl")}
                     </Link>
@@ -706,11 +706,11 @@ export default function HelpCenter() {
               <Link to="/" className="text-sm text-slate-500 hover:text-slate-900 transition-colors duration-200">
                 {t("nav.home")}
               </Link>
-              <Link to="/terabox-video-player" className="text-sm text-slate-500 hover:text-slate-900 transition-colors duration-200">
-                {t("nav.videoPlayer")}
+              <Link to="/about" className="text-sm text-slate-500 hover:text-slate-900 transition-colors duration-200">
+                {t("nav.about")}
               </Link>
-              <Link to="/terabox-video-downloader" className="text-sm text-slate-500 hover:text-slate-900 transition-colors duration-200">
-                {t("nav.downloader")}
+              <Link to="/contact" className="text-sm text-slate-500 hover:text-slate-900 transition-colors duration-200">
+                {t("nav.contact")}
               </Link>
             </div>
           </div>

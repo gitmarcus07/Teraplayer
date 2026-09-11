@@ -25,43 +25,87 @@ async def get_site_settings(db) -> SiteSettings:
     if db is None:
         return DEFAULT_SITE_SETTINGS
 
-    doc = await db.site_settings.find_one({"_id": "site_status"}, {"_id": 0})
-    if not doc:
+    try:
+        doc = await db.site_settings.find_one({"_id": "site_status"}, {"_id": 0})
+    except Exception as exc:
+        logger.warning("Failed to read site settings, using defaults", exc_info=exc)
+        return DEFAULT_SITE_SETTINGS
+    if not isinstance(doc, dict):
         return DEFAULT_SITE_SETTINGS
 
-    # Parse nested objects
-    announcement_doc = doc.get("announcement", {})
-    announcement = AnnouncementSettings(
-        enabled=announcement_doc.get("enabled", False),
-        title=announcement_doc.get("title", ""),
-        message=announcement_doc.get("message", ""),
-        icon=announcement_doc.get("icon"),
-        buttons=[
-            AnnouncementButton(**btn) for btn in announcement_doc.get("buttons", [])
-        ],
-    )
+    # Parse nested objects defensively: one malformed section must never
+    # brick the whole read (previously any bad value 500'd the admin
+    # Site page with "Failed to load site settings").
+    announcement = _parse_announcement(doc.get("announcement"))
+    schedule = _parse_schedule(doc.get("schedule"))
 
-    schedule_doc = doc.get("schedule", {})
-    schedule = MaintenanceSchedule(
-        enabled=schedule_doc.get("enabled", False),
-        start_at=schedule_doc.get("start_at"),
-        end_at=schedule_doc.get("end_at"),
-        timezone=schedule_doc.get("timezone", "UTC"),
-        announcement_snapshot=(
-            AnnouncementSettings(**schedule_doc["announcement_snapshot"])
-            if schedule_doc.get("announcement_snapshot")
-            else None
-        ),
-    )
+    operating_mode = doc.get("operating_mode", "normal")
+    if operating_mode not in ("normal", "maintenance", "emergency"):
+        logger.warning("Unknown operating_mode %r, falling back to normal", operating_mode)
+        operating_mode = "normal"
 
-    return SiteSettings(
-        operating_mode=doc.get("operating_mode", "normal"),
-        maintenance_mode=doc.get("maintenance_mode", False),
-        announcement=announcement,
-        schedule=schedule,
-        updated_at=doc.get("updated_at", datetime.now(timezone.utc).isoformat()),
-        updated_by=doc.get("updated_by"),
-    )
+    updated_at = doc.get("updated_at") or datetime.now(timezone.utc).isoformat()
+    if not isinstance(updated_at, str):
+        updated_at = str(updated_at)
+
+    try:
+        return SiteSettings(
+            operating_mode=operating_mode,
+            maintenance_mode=bool(doc.get("maintenance_mode", False)),
+            announcement=announcement,
+            schedule=schedule,
+            updated_at=updated_at,
+            updated_by=doc.get("updated_by"),
+        )
+    except Exception as exc:
+        logger.warning("Failed to parse site settings, using defaults", exc_info=exc)
+        return DEFAULT_SITE_SETTINGS
+
+
+def _parse_announcement(raw) -> AnnouncementSettings:
+    """Parse announcement settings, skipping invalid buttons instead of failing."""
+    if not isinstance(raw, dict):
+        return AnnouncementSettings()
+    buttons = []
+    raw_buttons = raw.get("buttons", [])
+    if isinstance(raw_buttons, list):
+        for btn in raw_buttons:
+            if not isinstance(btn, dict):
+                continue
+            try:
+                buttons.append(AnnouncementButton(**btn))
+            except Exception as exc:
+                logger.warning("Skipping invalid announcement button %r: %s", btn.get("id"), exc)
+    try:
+        return AnnouncementSettings(
+            enabled=bool(raw.get("enabled", False)),
+            title=str(raw.get("title", "") or "")[:100],
+            message=str(raw.get("message", "") or "")[:2000],
+            icon=raw.get("icon"),
+            buttons=buttons,
+        )
+    except Exception as exc:
+        logger.warning("Failed to parse announcement, using defaults", exc_info=exc)
+        return AnnouncementSettings()
+
+
+def _parse_schedule(raw) -> MaintenanceSchedule:
+    """Parse maintenance schedule, tolerating missing/invalid parts."""
+    if not isinstance(raw, dict):
+        return MaintenanceSchedule()
+    try:
+        snapshot_raw = raw.get("announcement_snapshot")
+        snapshot = _parse_announcement(snapshot_raw) if snapshot_raw else None
+        return MaintenanceSchedule(
+            enabled=bool(raw.get("enabled", False)),
+            start_at=raw.get("start_at"),
+            end_at=raw.get("end_at"),
+            timezone=str(raw.get("timezone", "UTC") or "UTC"),
+            announcement_snapshot=snapshot,
+        )
+    except Exception as exc:
+        logger.warning("Failed to parse schedule, using defaults", exc_info=exc)
+        return MaintenanceSchedule()
 
 
 async def set_site_settings(

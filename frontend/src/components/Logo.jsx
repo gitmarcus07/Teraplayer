@@ -6,7 +6,7 @@ export default function Logo() {
       data-testid="brand-link"
       aria-label="TeraPlayer Home"
       className="group flex min-h-[44px] items-center rounded-lg cursor-pointer"
-      onClick={() => window.location.reload(true)}
+      onClick={() => { window.location.href = "/"; }}
     >
       <span className="flex items-center">
         <Zap
