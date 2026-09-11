@@ -11,13 +11,10 @@ import {
   RefreshCw,
   ChevronLeft,
   Loader2,
-  Play,
   HelpCircle,
   Info,
   Mail,
   TriangleAlert,
-  Clapperboard,
-  Rocket,
 } from "lucide-react";
 
 import Header from "../components/Header";
@@ -423,7 +420,7 @@ export default function Home() {
     <div className="App noise min-h-screen">
       <Seo
         title="TeraPlayer — TeraBox Online Player & Downloader"
-        description="TeraPlayer is a free TeraBox online player and downloader. Open TeraBox links, watch TeraBox videos online, and download supported files straight from your browser — no login."
+        description="Open TeraBox links free: watch TeraBox videos online and download supported files right in your browser. No login, HD quality."
         path="/"
         ogTitle="TeraPlayer — TeraBox Online Player & Downloader"
         ogDescription="Watch TeraBox videos online and download supported files with TeraPlayer — a free TeraBox online player and downloader. No login required."
@@ -748,10 +745,14 @@ export default function Home() {
               <figure className="flex flex-col items-center justify-center lg:col-span-5">
                 <div className="group relative w-full max-w-sm lg:max-w-none">
                   <div aria-hidden="true" className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-30 blur-lg transition duration-500 group-hover:opacity-50" />
-                  <div className="ref-glow-visual relative flex aspect-[4/3] items-center justify-center rounded-2xl border border-white/60 bg-white/80 p-3 shadow-xl backdrop-blur-md">
-                    <span className="flex h-24 w-24 items-center justify-center rounded-full bg-white/70 shadow-xl backdrop-blur">
-                      <Play className="ml-1 h-10 w-10 fill-indigo-600 text-indigo-600" aria-hidden="true" />
-                    </span>
+                  <div className="ref-glow-visual relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-white/60 bg-white/80 shadow-xl backdrop-blur-md">
+                    <img
+                      src="/images/how-player.webp"
+                      alt={t("how.caption")}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 </div>
                 <figcaption className="mt-3 text-center text-xs font-medium text-slate-400">
@@ -766,10 +767,14 @@ export default function Home() {
         <section aria-label={t("section.featAria")} className="mx-auto mt-12 grid w-full max-w-4xl grid-cols-1 gap-8 px-4 sm:px-6 md:grid-cols-2">
           <article className="glass-panel group flex flex-col justify-between rounded-3xl border-l-4 border-l-indigo-600 p-8 shadow-sm transition-all duration-300 hover:shadow-md">
             <div>
-              <div className="ref-glow-visual relative mb-6 aspect-[16/10] flex items-center justify-center gap-4 overflow-hidden rounded-2xl border border-indigo-100/60 bg-indigo-50/50">
-                <Clapperboard className="h-12 w-12 text-indigo-700 transition-transform duration-500 group-hover:scale-105" aria-hidden="true" />
-                <Rocket className="h-10 w-10 text-violet-600 transition-transform duration-500 group-hover:scale-105" aria-hidden="true" />
-                <Play className="h-14 w-14 fill-white text-white drop-shadow-lg transition-transform duration-500 group-hover:scale-105" aria-hidden="true" />
+              <div className="ref-glow-visual relative mb-6 aspect-[16/10] overflow-hidden rounded-2xl border border-indigo-100/60 bg-indigo-50/50">
+                <img
+                  src="/images/feature-player.webp"
+                  alt={t("feat1.title")}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               </div>
               <h3 className="mb-4 flex items-center gap-2 text-xl font-bold text-slate-900">
                 <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-indigo-600" />
@@ -782,11 +787,14 @@ export default function Home() {
           </article>
           <article className="glass-panel group flex flex-col justify-between rounded-3xl border-l-4 border-l-purple-600 p-8 shadow-sm transition-all duration-300 hover:shadow-md">
             <div>
-              <div className="relative mb-6 flex aspect-[16/10] flex-wrap items-center justify-center gap-3 overflow-hidden rounded-2xl border border-purple-100/60 bg-purple-50/50 p-6">
-                <span className="rounded-xl bg-white/80 px-3 py-1.5 text-xs font-extrabold text-indigo-700 shadow">HD</span>
-                <span className="rounded-xl bg-white/80 px-3 py-1.5 text-xs font-extrabold text-violet-700 shadow">MP4</span>
-                <span className="rounded-xl bg-white/80 px-3 py-1.5 text-xs font-extrabold text-pink-600 shadow">ZIP</span>
-                <span className="rounded-xl bg-white/80 px-3 py-1.5 text-xs font-extrabold text-indigo-700 shadow">{formatWords[1]}</span>
+              <div className="relative mb-6 aspect-[16/10] overflow-hidden rounded-2xl border border-purple-100/60 bg-purple-50/50">
+                <img
+                  src="/images/feature-formats.webp"
+                  alt={t("feat2.title")}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               </div>
               <h3 className="mb-4 flex items-center gap-2 text-xl font-bold text-slate-900">
                 <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-purple-600" />

@@ -58,10 +58,10 @@ export default function AboutTeraPlayer() {
       <Header />
 
       <Seo
-        title="About TeraPlayer"
+        title="About TeraPlayer - Free TeraBox Video Player & Downloader"
         description="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
         path="/about"
-        ogTitle="About TeraPlayer"
+        ogTitle="About TeraPlayer - Free TeraBox Video Player & Downloader"
         ogDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links — no account required."
         imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
         twitterDescription="TeraPlayer is a web tool for previewing, streaming, and downloading supported public TeraBox links."

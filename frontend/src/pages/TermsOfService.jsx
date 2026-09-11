@@ -157,10 +157,10 @@ export default function TermsOfService() {
       <Header />
 
       <Seo
-        title="Terms of Service — TeraPlayer"
+        title="Terms of Service - TeraPlayer Free TeraBox Tool"
         description="The Terms of Service for TeraPlayer — acceptable use, user responsibilities, third-party services, availability, and liability."
         path="/terms"
-        ogTitle="Terms of Service — TeraPlayer"
+        ogTitle="Terms of Service - TeraPlayer Free TeraBox Tool"
         ogDescription="The Terms of Service for TeraPlayer — acceptable use, user responsibilities, third-party services, availability, and liability."
         imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
         twitterDescription="The Terms of Service for TeraPlayer — acceptable use and responsibilities."

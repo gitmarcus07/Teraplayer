@@ -1,15 +1,19 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useState } from "react";
-import { dictionaries, LANGS } from "./translations";
+import { dictionaries, LANGS, localeLoaders } from "./translations";
 
 const KEY = "teraplayer.lang";
 const DEFAULT_LANG = "en";
 
 const LangCtx = createContext(null);
 
+function isKnownLang(code) {
+  return LANGS.some((l) => l.code === code);
+}
+
 function resolveInitial() {
   try {
     const saved = localStorage.getItem(KEY);
-    if (saved && dictionaries[saved]) return saved;
+    if (saved && isKnownLang(saved)) return saved;
   } catch {
     /* storage unavailable */
   }
@@ -18,6 +22,10 @@ function resolveInitial() {
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(resolveInitial);
+  // Non-English dictionaries are code-split (see translations.js) and
+  // fetched on demand. Until a chunk arrives, t() falls back to English
+  // per key, so the UI never renders a raw translation key.
+  const [extra, setExtra] = useState({});
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -28,15 +36,31 @@ export function LanguageProvider({ children }) {
     } catch {
       /* noop */
     }
-  }, [lang]);
+    if (lang !== DEFAULT_LANG && !extra[lang] && localeLoaders[lang]) {
+      let cancelled = false;
+      localeLoaders[lang]()
+        .then((m) => {
+          if (!cancelled) setExtra((prev) => ({ ...prev, [lang]: m.default || m }));
+        })
+        .catch(() => {
+          /* keep English fallback */
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+    return undefined;
+  }, [lang, extra]);
 
   const setLang = useCallback((code) => {
-    if (dictionaries[code]) setLangState(code);
+    if (isKnownLang(code)) setLangState(code);
   }, []);
 
+  const active = lang === DEFAULT_LANG ? dictionaries.en : extra[lang] || dictionaries.en;
+
   const t = useCallback(
-    (key) => dictionaries[lang][key] ?? dictionaries[DEFAULT_LANG][key] ?? key,
-    [lang]
+    (key) => active[key] ?? dictionaries.en[key] ?? key,
+    [active]
   );
 
   const value = useMemo(() => ({ lang, setLang, t, langs: LANGS }), [lang, setLang, t]);

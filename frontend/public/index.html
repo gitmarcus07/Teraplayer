@@ -39,7 +39,10 @@
     <meta name="theme-color" content="#ffffff" />
     <meta name="color-scheme" content="light dark" />
 
-    <title>TeraPlayer — TeraBox Online Player & Downloader</title>
+    <!-- NOTE: no static title/meta/OG tags here on purpose. React Helmet owns
+      them per route (see src/components/Seo.jsx); the prerender script bakes
+      the correct tags into each route's index.html. A static copy would
+      duplicate them (Helmet appends rather than replaces). -->
 
     <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
@@ -47,12 +50,12 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logoforsite.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Fonts (single consolidated request, swapped so text renders immediately.
-         Be Vietnam Pro is the DESIGN.md primary typeface; Outfit/Manrope/Inter
-         remain for display/body fallbacks to preserve TeraPlayer identity.) -->
+    <!-- Fonts: only the two families actually used (Be Vietnam Pro primary,
+         Inter body fallback — verified zero Outfit/Manrope/JetBrains usage in
+         src). Swapped so text renders immediately. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <!--
       manifest.json provides metadata used when your web app is installed on a

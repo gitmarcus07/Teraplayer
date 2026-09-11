@@ -182,10 +182,10 @@ export default function PrivacyPolicy() {
       <Header />
 
       <Seo
-        title="Privacy Policy — TeraPlayer"
+        title="Privacy Policy - TeraPlayer Free TeraBox Tool"
         description="How TeraPlayer handles information — what we process, why, cookies and local storage, third-party services, and your choices."
         path="/privacy"
-        ogTitle="Privacy Policy — TeraPlayer"
+        ogTitle="Privacy Policy - TeraPlayer Free TeraBox Tool"
         ogDescription="How TeraPlayer handles information — what we process, why, cookies and local storage, third-party services, and your choices."
         imageAlt="TeraPlayer - Watch & Download TeraBox Videos Free"
         twitterDescription="How TeraPlayer handles information and the choices you have about it."

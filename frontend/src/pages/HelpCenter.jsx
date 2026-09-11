@@ -154,10 +154,10 @@ export default function HelpCenter() {
       <Header />
 
       <Seo
-        title="Help Center — TeraPlayer"
-        description="TeraBox link not working? Fix common TeraBox link, playback, and download issues. Learn how public TeraBox share links work and how to use them with TeraPlayer."
+        title="TeraBox Link Not Working? Help Center - TeraPlayer"
+        description="TeraBox link not working? Fix playback, download and share-link issues, and learn how public TeraBox links work with TeraPlayer."
         path="/help-center"
-        ogTitle="Help Center — TeraPlayer"
+        ogTitle="TeraBox Link Not Working? Help Center - TeraPlayer"
         ogDescription="Troubleshoot TeraBox links, learn about public shares, and get answers to common questions."
         imageAlt="Help Center - TeraPlayer"
         twitterDescription="Fix TeraBox link issues and learn how public shares work with TeraPlayer."

@@ -3,9 +3,16 @@ import ReactDOM from "react-dom/client";
 import "@/index.css";
 import App from "@/App";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
+const container = document.getElementById("root");
+const app = (
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
+  </React.StrictMode>
 );
+if (container.hasChildNodes()) {
+  // Prerendered markup from `yarn prerender` — attach to it instead of
+  // rendering from scratch, so first paint keeps the server HTML.
+  ReactDOM.hydrateRoot(container, app);
+} else {
+  ReactDOM.createRoot(container).render(app);
+}
