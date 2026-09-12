@@ -61,11 +61,34 @@ async def create_notification(
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
         result = await db.admin_notifications.insert_one(notification)
-        notification["id"] = str(result.inserted_id)
+        notif_id = str(result.inserted_id)
+        # Persist the string id on the document so later reads/updates by
+        # `id` actually match. Previously the id was only added to the
+        # in-memory dict, so mark-read/archive queries by id never matched.
+        try:
+            await db.admin_notifications.update_one(
+                {"_id": result.inserted_id},
+                {"$set": {"id": notif_id}},
+            )
+        except Exception:
+            pass
+        notification["id"] = notif_id
         return notification
     except Exception as exc:
         logger.warning("Failed to create notification", exc_info=exc)
         return None
+
+
+def _normalize_notification_doc(doc: dict) -> dict:
+    """Ensure a notification doc always exposes a string `id` and no `_id`."""
+    if not isinstance(doc, dict):
+        return doc
+    if "id" not in doc or not doc.get("id"):
+        raw_oid = doc.get("_id")
+        if raw_oid is not None:
+            doc["id"] = str(raw_oid)
+    doc.pop("_id", None)
+    return doc
 
 
 async def get_notifications(
@@ -85,8 +108,8 @@ async def get_notifications(
     if unread_only:
         query["read"] = False
 
-    docs = await db.admin_notifications.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
-    return docs
+    docs = await db.admin_notifications.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+    return [_normalize_notification_doc(d) for d in docs]
 
 
 async def count_unread_notifications(db, admin_id: str) -> int:
@@ -108,8 +131,22 @@ async def mark_notification_read(db, notification_id: str, admin_id: str) -> boo
         return False
 
     try:
+        # Match by stored string `id` first (new docs), then fall back to
+        # Mongo `_id` for legacy docs created before `id` was persisted.
         result = await db.admin_notifications.update_one(
             {"id": notification_id, "$or": [{"admin_id": admin_id}, {"admin_id": None}]},
+            {"$set": {"read": True, "read_at": datetime.now(timezone.utc).isoformat()}},
+        )
+        if result.modified_count > 0:
+            return True
+        from bson import ObjectId
+
+        try:
+            oid = ObjectId(notification_id)
+        except Exception:
+            return False
+        result = await db.admin_notifications.update_one(
+            {"_id": oid, "$or": [{"admin_id": admin_id}, {"admin_id": None}]},
             {"$set": {"read": True, "read_at": datetime.now(timezone.utc).isoformat()}},
         )
         return result.modified_count > 0
@@ -142,6 +179,18 @@ async def archive_notification(db, notification_id: str, admin_id: str) -> bool:
     try:
         result = await db.admin_notifications.update_one(
             {"id": notification_id, "$or": [{"admin_id": admin_id}, {"admin_id": None}]},
+            {"$set": {"archived": True, "archived_at": datetime.now(timezone.utc).isoformat()}},
+        )
+        if result.modified_count > 0:
+            return True
+        from bson import ObjectId
+
+        try:
+            oid = ObjectId(notification_id)
+        except Exception:
+            return False
+        result = await db.admin_notifications.update_one(
+            {"_id": oid, "$or": [{"admin_id": admin_id}, {"admin_id": None}]},
             {"$set": {"archived": True, "archived_at": datetime.now(timezone.utc).isoformat()}},
         )
         return result.modified_count > 0

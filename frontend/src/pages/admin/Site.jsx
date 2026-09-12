@@ -80,6 +80,7 @@ import {
   getCountdown,
   sortButtons,
   newButtonId,
+  getButtonStyleClass,
 } from "@/utils/siteUtils";
 
 const emptyButton = {
@@ -116,6 +117,7 @@ export default function Site() {
   // Buttons tab state
   const [buttons, setButtons] = useState([]);
   const [editingButtonId, setEditingButtonId] = useState(null);
+  const [buttonEditorOpen, setButtonEditorOpen] = useState(false);
   const [buttonForm, setButtonForm] = useState(emptyButton);
 
   // Schedule tab state
@@ -246,9 +248,11 @@ export default function Site() {
       setEditingButtonId(null);
       setButtonForm({ ...emptyButton, id: newButtonId(), order: buttons.length });
     }
+    setButtonEditorOpen(true);
   }
 
   function closeButtonEditor() {
+    setButtonEditorOpen(false);
     setEditingButtonId(null);
     setButtonForm(emptyButton);
   }
@@ -630,6 +634,7 @@ export default function Site() {
                           className="flex items-center gap-3 rounded-xl border border-border/60 p-4"
                         >
                           <Button
+                            type="button"
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-foreground"
@@ -665,6 +670,7 @@ export default function Site() {
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
+                              type="button"
                               variant="ghost"
                               size="icon"
                               onClick={() => openButtonEditor(button)}
@@ -673,6 +679,7 @@ export default function Site() {
                               <GripVertical className="h-4 w-4" />
                             </Button>
                             <Button
+                              type="button"
                               variant="ghost"
                               size="icon"
                               onClick={() => deleteButton(button.id)}
@@ -1080,7 +1087,7 @@ export default function Site() {
       </AlertDialog>
 
       {/* Button Editor Dialog */}
-      <Dialog open={!!editingButtonId} onOpenChange={(open) => !open && closeButtonEditor()}>
+      <Dialog open={buttonEditorOpen} onOpenChange={(open) => !open && closeButtonEditor()}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editingButtonId ? "Edit Button" : "Add Button"}</DialogTitle>

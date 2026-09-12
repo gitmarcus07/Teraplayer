@@ -206,8 +206,14 @@ export default function Activity() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All admins</SelectItem>
-                    {data.entries?.map((entry) => (
-                      <SelectItem key={entry.admin_id} value={entry.admin_id}>{entry.admin_email}</SelectItem>
+                    {Array.from(
+                      new Map(
+                        (data.entries || [])
+                          .filter((entry) => entry.admin_id)
+                          .map((entry) => [entry.admin_id, entry.admin_email || entry.admin_id])
+                      ).entries()
+                    ).map(([adminId, adminEmail]) => (
+                      <SelectItem key={adminId} value={adminId}>{adminEmail}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

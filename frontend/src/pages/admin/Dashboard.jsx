@@ -167,7 +167,15 @@ export default function Dashboard() {
   const m = data.metrics || {};
   const isMaintenance = siteSettings?.operating_mode === "maintenance";
   const isEmergency = siteSettings?.operating_mode === "emergency";
-  const overallHealth = systemHealth?.status || "unknown";
+  const overallHealth =
+    systemHealth?.status ||
+    (systemHealth?.checks
+      ? systemHealth.checks.some((c) => c.status === "unhealthy")
+        ? "unhealthy"
+        : systemHealth.checks.some((c) => c.status === "degraded")
+          ? "degraded"
+          : "healthy"
+      : "unknown");
 
   return (
     <>

@@ -17,6 +17,7 @@ import {
   Database,
   Globe,
   Calendar,
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getErrors, getErrorSummary, exportErrorsCsv } from "@/services/adminApi";
@@ -63,6 +64,7 @@ export default function Errors() {
     error_type: "all",
     start_date: "",
     end_date: "",
+    search: "",
   });
 
   const loadData = useCallback(async () => {
@@ -99,7 +101,7 @@ export default function Errors() {
   };
 
   const handleSearch = (e) => {
-    handleFilterChange("error_type", e.target.value);
+    handleFilterChange("search", e.target.value);
   };
 
   const handleKindChange = (value) => {
@@ -122,10 +124,16 @@ export default function Errors() {
       error_type: "all",
       start_date: "",
       end_date: "",
+      search: "",
     });
   };
 
-  const hasActiveFilters = filters.kind || filters.error_type || filters.start_date || filters.end_date;
+  const hasActiveFilters =
+    (filters.kind && filters.kind !== "all") ||
+    (filters.error_type && filters.error_type !== "all") ||
+    filters.start_date ||
+    filters.end_date ||
+    filters.search;
 
   const handleExport = async () => {
     setExporting(true);
@@ -265,7 +273,7 @@ export default function Errors() {
                     id="error-search"
                     type="text"
                     placeholder="Search error type or message..."
-                    value={filters.error_type}
+                    value={filters.search}
                     onChange={handleSearch}
                     className="pl-10"
                   />

@@ -58,8 +58,8 @@ export async function getActivityFiltered(params = {}) {
   const searchParams = new URLSearchParams();
   if (params.limit) searchParams.set("limit", params.limit);
   if (params.skip) searchParams.set("skip", params.skip);
-  if (params.admin_id) searchParams.set("admin_id", params.admin_id);
-  if (params.action) searchParams.set("action", params.action);
+  if (params.admin_id && params.admin_id !== "all") searchParams.set("admin_id", params.admin_id);
+  if (params.action && params.action !== "all") searchParams.set("action", params.action);
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
   if (params.search) searchParams.set("search", params.search);
@@ -69,8 +69,8 @@ export async function getActivityFiltered(params = {}) {
 
 export async function exportActivityCsv(params = {}) {
   const searchParams = new URLSearchParams();
-  if (params.admin_id) searchParams.set("admin_id", params.admin_id);
-  if (params.action) searchParams.set("action", params.action);
+  if (params.admin_id && params.admin_id !== "all") searchParams.set("admin_id", params.admin_id);
+  if (params.action && params.action !== "all") searchParams.set("action", params.action);
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
   if (params.search) searchParams.set("search", params.search);
@@ -283,10 +283,11 @@ export async function getErrors(params = {}) {
   const searchParams = new URLSearchParams();
   if (params.limit) searchParams.set("limit", params.limit);
   if (params.skip) searchParams.set("skip", params.skip);
-  if (params.kind) searchParams.set("kind", params.kind);
-  if (params.error_type) searchParams.set("error_type", params.error_type);
+  if (params.kind && params.kind !== "all") searchParams.set("kind", params.kind);
+  if (params.error_type && params.error_type !== "all") searchParams.set("error_type", params.error_type);
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
+  if (params.search) searchParams.set("search", params.search);
   const { data } = await api.get(`/admin/errors?${searchParams.toString()}`);
   return data;
 }
@@ -298,10 +299,11 @@ export async function getErrorSummary(days = 7) {
 
 export async function exportErrorsCsv(params = {}) {
   const searchParams = new URLSearchParams();
-  if (params.kind) searchParams.set("kind", params.kind);
-  if (params.error_type) searchParams.set("error_type", params.error_type);
+  if (params.kind && params.kind !== "all") searchParams.set("kind", params.kind);
+  if (params.error_type && params.error_type !== "all") searchParams.set("error_type", params.error_type);
   if (params.start_date) searchParams.set("start_date", params.start_date);
   if (params.end_date) searchParams.set("end_date", params.end_date);
+  if (params.search) searchParams.set("search", params.search);
   const response = await api.get(`/admin/errors/export?${searchParams.toString()}`, { responseType: "blob" });
   return response.data;
 }

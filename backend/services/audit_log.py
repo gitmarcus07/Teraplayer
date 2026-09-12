@@ -70,6 +70,12 @@ async def list_audit(
     if db is None:
         return []
 
+    # Frontend sends "all" for unfiltered dropdowns — treat as no filter.
+    if admin_id in ("all", ""):
+        admin_id = None
+    if action in ("all", ""):
+        action = None
+
     query = {}
     if admin_id:
         query["admin_id"] = admin_id
@@ -106,6 +112,11 @@ async def count_audit(
     """Count audit entries with filtering."""
     if db is None:
         return 0
+
+    if admin_id in ("all", ""):
+        admin_id = None
+    if action in ("all", ""):
+        action = None
 
     query = {}
     if admin_id:

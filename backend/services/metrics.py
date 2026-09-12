@@ -400,10 +400,16 @@ async def get_errors(
     error_type: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> list[dict]:
     """Get errors with filtering and pagination."""
     if db is None:
         return []
+
+    if kind in ("all", ""):
+        kind = None
+    if error_type in ("all", ""):
+        error_type = None
 
     query = {}
     if kind:
@@ -417,6 +423,12 @@ async def get_errors(
         if end_date:
             date_query["$lte"] = end_date
         query["created_at"] = date_query
+    if search:
+        query["$or"] = [
+            {"message": {"$regex": search, "$options": "i"}},
+            {"error_type": {"$regex": search, "$options": "i"}},
+            {"kind": {"$regex": search, "$options": "i"}},
+        ]
 
     docs = await db.errors.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
     return docs
@@ -428,10 +440,16 @@ async def count_errors(
     error_type: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    search: Optional[str] = None,
 ) -> int:
     """Count errors with filtering."""
     if db is None:
         return 0
+
+    if kind in ("all", ""):
+        kind = None
+    if error_type in ("all", ""):
+        error_type = None
 
     query = {}
     if kind:
@@ -445,6 +463,12 @@ async def count_errors(
         if end_date:
             date_query["$lte"] = end_date
         query["created_at"] = date_query
+    if search:
+        query["$or"] = [
+            {"message": {"$regex": search, "$options": "i"}},
+            {"error_type": {"$regex": search, "$options": "i"}},
+            {"kind": {"$regex": search, "$options": "i"}},
+        ]
 
     return await db.errors.count_documents(query)
 

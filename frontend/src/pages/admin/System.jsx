@@ -183,7 +183,7 @@ export default function System() {
                     <p className="text-sm text-muted-foreground">Version</p>
                     <Server className="h-5 w-5 text-primary" />
                   </div>
-                  <p className="mt-2 text-2xl font-bold font-mono">{data.version || "2.0.0"}</p>
+                  <p className="mt-2 text-2xl font-bold font-mono">{data.version || sysInfo.version || "2.0.0"}</p>
                 </CardContent>
               </Card>
               <Card>
@@ -351,7 +351,7 @@ export default function System() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <dl className="grid gap-4 sm:grid-cols-2">
-                  <div><dt className="text-sm text-muted-foreground">API Version</dt><dd className="font-mono font-medium">{data.version || "2.0.0"}</dd></div>
+                  <div><dt className="text-sm text-muted-foreground">API Version</dt><dd className="font-mono font-medium">{data.version || sysInfo.version || "2.0.0"}</dd></div>
                   <div><dt className="text-sm text-muted-foreground">Python Version</dt><dd className="font-mono font-medium">{sysInfo.python || "—"}</dd></div>
                   <div><dt className="text-sm text-muted-foreground">Platform</dt><dd className="font-mono font-medium truncate max-w-[300px]">{sysInfo.platform || "—"}</dd></div>
                   <div><dt className="text-sm text-muted-foreground">Environment</dt><dd className="font-mono font-medium">{sysInfo.environment || "production"}</dd></div>

@@ -197,13 +197,13 @@ export default function ExtractionAnalytics() {
             <p className="text-sm text-muted-foreground">Detailed extraction performance and failure analysis</p>
           </div>
           <div className="flex items-center gap-2">
-            <Select value={days} onValueChange={(v) => setDays(Number(v))}>
+            <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Select range" />
               </SelectTrigger>
               <SelectContent>
                 {DATE_RANGES.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  <SelectItem key={r.value} value={String(r.value)}>{r.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -385,6 +385,20 @@ class ExtensionSubmitRequest(BaseModel):
     preview: dict[str, Any]
 
 
+class SiteModeRequest(BaseModel):
+    """Body for POST /api/admin/site/mode — matches frontend adminApi."""
+
+    operating_mode: OperatingMode
+    confirmation: bool = False
+
+
+class SearchConsoleConnectRequest(BaseModel):
+    """Body for POST /api/admin/search-console/connect — matches frontend adminApi."""
+
+    property_url: str
+    service_account_email: str
+
+
 async def _get_db():
     return db
 
@@ -923,6 +937,7 @@ async def admin_system(request: Request) -> dict[str, Any]:
 
     return {
         "status": overall_status,
+        "version": "2.0.0",
         "health_checks": [check.to_dict() for check in health_checks],
         "system_info": system_info,
         "secret_vars": secret_vars,
@@ -935,7 +950,19 @@ async def admin_system_health(request: Request) -> dict[str, Any]:
     """Get detailed health check results."""
     await require_admin(request, db)
     health_checks = await run_all_health_checks(db)
-    return {"checks": [check.to_dict() for check in health_checks]}
+    system_info = await get_system_info(db)
+    overall_status = "healthy"
+    for check in health_checks:
+        if check.status == "unhealthy":
+            overall_status = "unhealthy"
+            break
+        elif check.status == "degraded" and overall_status == "healthy":
+            overall_status = "degraded"
+    return {
+        "status": overall_status,
+        "checks": [check.to_dict() for check in health_checks],
+        "system_info": system_info,
+    }
 
 
 @admin_router.get("/system/info")
@@ -1040,11 +1067,12 @@ async def admin_errors(
     error_type: Optional[str] = Query(None),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
 ) -> dict[str, Any]:
     """Get errors with filtering and pagination."""
     await require_admin(request, db)
-    errors = await get_errors(db, limit=limit, skip=skip, kind=kind, error_type=error_type, start_date=start_date, end_date=end_date)
-    total = await count_errors(db, kind=kind, error_type=error_type, start_date=start_date, end_date=end_date)
+    errors = await get_errors(db, limit=limit, skip=skip, kind=kind, error_type=error_type, start_date=start_date, end_date=end_date, search=search)
+    total = await count_errors(db, kind=kind, error_type=error_type, start_date=start_date, end_date=end_date, search=search)
     return {"errors": errors, "total": total, "limit": limit, "skip": skip}
 
 
@@ -1066,10 +1094,11 @@ async def admin_errors_export(
     error_type: Optional[str] = Query(None),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
 ) -> Response:
     """Export errors as CSV."""
     await require_admin(request, db)
-    errors = await get_errors(db, limit=10000, skip=0, kind=kind, error_type=error_type, start_date=start_date, end_date=end_date)
+    errors = await get_errors(db, limit=10000, skip=0, kind=kind, error_type=error_type, start_date=start_date, end_date=end_date, search=search)
 
     import csv
     import io
@@ -1097,6 +1126,7 @@ async def admin_errors_export(
 # ---------------------------------------------------------------------------
 # Activity (admin only)
 # ---------------------------------------------------------------------------
+@admin_router.get("/activity")
 async def admin_activity(
     request: Request,
     limit: int = Query(50, ge=1, le=200),
@@ -1233,12 +1263,14 @@ async def admin_site_update(request: Request, body: dict[str, Any]) -> dict[str,
 @admin_router.post("/site/mode")
 async def admin_site_set_mode(
     request: Request,
-    operating_mode: OperatingMode,
-    confirmation: bool = False,
+    body: SiteModeRequest,
 ) -> dict[str, Any]:
     """Set site operating mode with confirmation for emergency mode."""
     acting = await require_admin(request, db)
     require_csrf_header(request)
+
+    operating_mode = body.operating_mode
+    confirmation = body.confirmation
 
     current = await get_site_settings(db)
 
@@ -1329,8 +1361,7 @@ async def admin_search_console_status(request: Request) -> dict[str, Any]:
 @admin_router.post("/search-console/connect")
 async def admin_search_console_connect(
     request: Request,
-    property_url: str,
-    service_account_email: str,
+    body: SearchConsoleConnectRequest,
 ) -> dict[str, Any]:
     """Connect Search Console with service account credentials.
 
@@ -1339,11 +1370,14 @@ async def admin_search_console_connect(
     acting = await require_admin(request, db)
     require_csrf_header(request)
 
+    property_url = (body.property_url or "").strip()
+    service_account_email = (body.service_account_email or "").strip()
+
     if not property_url or not property_url.startswith(("http://", "https://")):
         raise HTTPException(status_code=400, detail="Valid property URL required (http:// or https://)")
 
     try:
-        connection = await save_connection(db, property_url.strip(), service_account_email.strip())
+        connection = await save_connection(db, property_url, service_account_email)
         await record_audit(db, acting, "connect_search_console", target=property_url, ip=_client_ip(request))
         return connection.model_dump()
     except SearchConsoleError as exc:
