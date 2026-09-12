@@ -29,6 +29,7 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const { execSync } = require("child_process");
 
 const BUILD_DIR = path.join(__dirname, "..", "build");
 const ROUTES = ["/", "/about", "/contact", "/help-center", "/privacy", "/terms"];
@@ -107,6 +108,26 @@ function createServer() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const LAUNCH_ARGS = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
+
+async function launchBrowserWithAutoInstall(puppeteer) {
+  try {
+    return await puppeteer.launch({ headless: true, args: LAUNCH_ARGS });
+  } catch (e) {
+    if (!/could not find chrome/i.test(e.message || "")) throw e;
+    // Fresh CI builder (e.g. Vercel) where the puppeteer browser cache
+    // isn't persisted between builds: install the binary, then retry once.
+    // Uses the project's own puppeteer CLI, so no extra download tooling.
+    console.log("[prerender] Chrome binary missing — installing it now (one-time per builder)…");
+    try {
+      execSync("npx puppeteer browsers install chrome", { stdio: "inherit", timeout: 10 * 60 * 1000 });
+    } catch (installErr) {
+      throw new Error(`Chrome auto-install failed: ${installErr.message}`);
+    }
+    return await puppeteer.launch({ headless: true, args: LAUNCH_ARGS });
+  }
+}
+
 async function main() {
   let puppeteer;
   try {
@@ -125,10 +146,7 @@ async function main() {
 
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
-    });
+    browser = await launchBrowserWithAutoInstall(puppeteer);
   } catch (e) {
     fail(`Chromium could not launch: ${e.message}`);
     server.close();
