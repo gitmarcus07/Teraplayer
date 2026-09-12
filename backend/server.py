@@ -1373,8 +1373,14 @@ async def admin_search_console_connect(
     property_url = (body.property_url or "").strip()
     service_account_email = (body.service_account_email or "").strip()
 
-    if not property_url or not property_url.startswith(("http://", "https://")):
-        raise HTTPException(status_code=400, detail="Valid property URL required (http:// or https://)")
+    if not property_url or not (
+        property_url.startswith(("http://", "https://"))
+        or property_url.startswith("sc-domain:")
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Valid property URL required (http://, https://, or sc-domain:)"
+        )
 
     try:
         connection = await save_connection(db, property_url, service_account_email)
