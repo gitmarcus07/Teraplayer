@@ -1,5 +1,5 @@
 /**
- * Post-build prerendering — makes every public route a real multi-page load.
+ * Post-build prerendering - makes every public route a real multi-page load.
  *
  * After `craco build`, this crawls the static build with headless Chromium
  * and writes a fully rendered `index.html` for each route:
@@ -11,7 +11,7 @@
  *   build/terms/index.html
  *
  * Result: opening any page (link, refresh, direct URL) is a full document
- * load — the browser shows its loading state and content paints instantly
+ * load - the browser shows its loading state and content paints instantly
  * without waiting for JS. React then hydrates (see src/index.js) and
  * in-app navigation stays instant SPA-style.
  *
@@ -35,7 +35,7 @@ const BUILD_DIR = path.join(__dirname, "..", "build");
 const ROUTES = ["/", "/about", "/contact", "/help-center", "/privacy", "/terms"];
 
 // Fail the build when prerendering fails so a blank-shell deploy can never
-// ship silently. Opt out with PRERENDER_STRICT=0 (not recommended —
+// ship silently. Opt out with PRERENDER_STRICT=0 (not recommended ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â
 // crawlers/reviewers would see an empty page).
 const STRICT = process.env.PRERENDER_STRICT !== "0";
 
@@ -67,7 +67,7 @@ const MIME = {
 // can render any route from the root shell.
 //
 // IMPORTANT: the fallback always serves the PRISTINE template captured
-// before crawling — never a file already overwritten by a previous route's
+// before crawling ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â never a file already overwritten by a previous route's
 // snapshot. Otherwise route N would inherit route N-1's tags and every
 // snapshot would end up with duplicate/conflicting SEO tags.
 let pristineShell = null;
@@ -110,21 +110,57 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LAUNCH_ARGS = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"];
 
+async function launchSparticuzChromium() {
+  // Serverless Chromium for minimal containers such as Vercel.
+  const mod = require("@sparticuz/chromium");
+  const chromium = mod && mod.default ? mod.default : mod;
+  const puppeteerCore = require("puppeteer-core");
+
+  if (typeof chromium.executablePath !== "function" || !Array.isArray(chromium.args)) {
+    throw new Error("@sparticuz/chromium API mismatch (missing executablePath/args)");
+  }
+
+  const executablePath = await chromium.executablePath();
+
+  return await puppeteerCore.launch({
+    args: [...chromium.args, ...LAUNCH_ARGS],
+    defaultViewport: { width: 1366, height: 900 },
+    executablePath,
+    headless: chromium.headless,
+  });
+}
+
 async function launchBrowserWithAutoInstall(puppeteer) {
+  // 1. Full Chrome ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â fast path wherever OS libraries exist (local dev,
+  // typical CI images with system libs).
   try {
     return await puppeteer.launch({ headless: true, args: LAUNCH_ARGS });
-  } catch (e) {
-    if (!/could not find chrome/i.test(e.message || "")) throw e;
-    // Fresh CI builder (e.g. Vercel) where the puppeteer browser cache
-    // isn't persisted between builds: install the binary, then retry once.
-    // Uses the project's own puppeteer CLI, so no extra download tooling.
-    console.log("[prerender] Chrome binary missing — installing it now (one-time per builder)…");
+  } catch (fullErr) {
+    const firstLine = (fullErr.message || "").split("\n")[0];
+    console.log(`[prerender] Full Chrome launch failed (${firstLine}) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â trying serverless Chromium buildÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦`);
+    // 2. Serverless Chromium ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â for minimal containers (Vercel) where full
+    // Chrome fails with missing .so libraries (e.g. libnspr4.so).
     try {
-      execSync("npx puppeteer browsers install chrome", { stdio: "inherit", timeout: 10 * 60 * 1000 });
-    } catch (installErr) {
-      throw new Error(`Chrome auto-install failed: ${installErr.message}`);
+      return await launchSparticuzChromium();
+    } catch (sparticuzErr) {
+      // 3. Last resort: the host may simply lack the cached binary while
+      // having system libs. Install full Chrome, then retry once.
+      if (!/could not find chrome/i.test(fullErr.message || "")) {
+        throw new Error(
+          `full Chrome: ${firstLine} | serverless Chromium: ${(sparticuzErr.message || "").split("\n")[0]}`
+        );
+      }
+      // Fresh CI builder (e.g. Render) where the puppeteer browser cache
+      // isn't persisted between builds: install the binary, then retry once.
+      // Uses the project's own puppeteer CLI, so no extra download tooling.
+      console.log("[prerender] Chrome binary missing ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â installing it now (one-time per builder)ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦");
+      try {
+        execSync("npx puppeteer browsers install chrome", { stdio: "inherit", timeout: 10 * 60 * 1000 });
+      } catch (installErr) {
+        throw new Error(`Chrome auto-install failed: ${installErr.message}`);
+      }
+      return await puppeteer.launch({ headless: true, args: LAUNCH_ARGS });
     }
-    return await puppeteer.launch({ headless: true, args: LAUNCH_ARGS });
   }
 }
 
@@ -162,10 +198,10 @@ async function main() {
         timeout: 90000,
       });
       // Let lazy chunks, entrance animations and scroll-triggered
-      // (whileInView) sections settle…
+      // (whileInView) sections settleÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦
       await page.waitForSelector("main", { timeout: 30000 }).catch(() => {});
-      // …scroll through once so every scroll-triggered section renders
-      // its final (visible) state into the snapshot…
+      // ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦scroll through once so every scroll-triggered section renders
+      // its final (visible) state into the snapshotÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦
       await page.evaluate(async () => {
         const h = document.documentElement.scrollHeight;
         for (let y = 0; y <= h; y += 600) {
@@ -192,5 +228,5 @@ async function main() {
 }
 
 main().catch((e) => {
-  fail(`failed (${e.message}) — NOT shipping: fix the error above or the deploy would serve blank HTML to crawlers`);
+  fail(`failed (${e.message}) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â NOT shipping: fix the error above or the deploy would serve blank HTML to crawlers`);
 });
