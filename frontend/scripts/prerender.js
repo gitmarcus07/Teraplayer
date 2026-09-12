@@ -15,8 +15,16 @@
  * without waiting for JS. React then hydrates (see src/index.js) and
  * in-app navigation stays instant SPA-style.
  *
- * Deliberately non-fatal: if Chromium cannot launch (e.g. a restricted
- * build sandbox), it warns and exits 0 so the plain SPA build still ships.
+ * Failure handling: see STRICT MODE below. In short, a broken prerender
+ * fails the build by default so blank HTML can never ship silently.
+ *
+ * STRICT MODE (default ON): any prerender failure fails the build instead.
+ * A blank-shell deploy is invisible to visitors (the SPA still boots) but
+ * crawlers and reviewers (Google AdSense, Search) see an empty page, which
+ * reads as "low value content" / "site unavailable". Failing loudly makes
+ * a broken prerender impossible to miss in deploy logs.
+ * Set PRERENDER_STRICT=0 to restore the old warn-and-continue behaviour,
+ * but only if you understand the tradeoff above.
  */
 const fs = require("fs");
 const http = require("http");
@@ -24,6 +32,20 @@ const path = require("path");
 
 const BUILD_DIR = path.join(__dirname, "..", "build");
 const ROUTES = ["/", "/about", "/contact", "/help-center", "/privacy", "/terms"];
+
+// Fail the build when prerendering fails so a blank-shell deploy can never
+// ship silently. Opt out with PRERENDER_STRICT=0 (not recommended —
+// crawlers/reviewers would see an empty page).
+const STRICT = process.env.PRERENDER_STRICT !== "0";
+
+function fail(message) {
+  if (STRICT) {
+    console.error(`[prerender] FATAL: ${message} (set PRERENDER_STRICT=0 to downgrade to a warning)`);
+    process.exitCode = 1;
+  } else {
+    console.warn(`[prerender] WARNING: ${message}`);
+  }
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -90,7 +112,7 @@ async function main() {
   try {
     puppeteer = require("puppeteer");
   } catch (e) {
-    console.warn("[prerender] puppeteer not installed, skipping.");
+    fail(`puppeteer not installed, skipping (${e.message})`);
     return;
   }
 
@@ -108,7 +130,7 @@ async function main() {
       args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
     });
   } catch (e) {
-    console.warn("[prerender] Chromium could not launch, skipping:", e.message);
+    fail(`Chromium could not launch: ${e.message}`);
     server.close();
     return;
   }
@@ -144,6 +166,7 @@ async function main() {
       console.log(`[prerender] ${route} -> ${(html.length / 1024).toFixed(1)} KB html`);
       await page.close();
     }
+    console.log(`[prerender] done: ${ROUTES.length} routes prerendered`);
   } finally {
     await browser.close();
     server.close();
@@ -151,5 +174,5 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.warn("[prerender] failed, shipping plain SPA build:", e.message);
+  fail(`failed (${e.message}) — NOT shipping: fix the error above or the deploy would serve blank HTML to crawlers`);
 });

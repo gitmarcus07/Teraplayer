@@ -6,7 +6,7 @@
 #
 # Services:
 #   1. Backend — FastAPI web service (Python)
-#   2. Frontend — Static site (React SPA)
+#   (Frontend deploys on Vercel — see note in the disabled section below.)
 #
 # External dependencies:
 #   - MongoDB Atlas (free M0 tier): https://www.mongodb.com/atlas
@@ -50,15 +50,19 @@ services:
       # - key: TERABOX_WORKER_URL
       #   sync: false
 
-  # --- Frontend SPA ----------------------------------------------------------
-  - type: web
-    name: teraplayer-frontend
-    env: static
-    region: oregon
-    buildCommand: yarn install && yarn build
-    staticPublishPath: build
-    pullRequestPreviewsEnabled: false
-    autoDeploy: true
-    envVars:
-      - key: REACT_APP_BACKEND_URL
-        value: https://teraplayer-api.onrender.com  # Replace with your backend URL
+  # --- Frontend --------------------------------------------------------------
+  # NOTE (2026-09-12): the public site is deployed on Vercel, NOT here —
+  # teraplayer.in resolves to Vercel infrastructure. The Render static-site
+  # service below is therefore disabled; re-enable only if you move the
+  # frontend back to Render. The backend API service above is unaffected.
+  # - type: web
+  #   name: teraplayer-frontend
+  #   env: static
+  #   region: oregon
+  #   buildCommand: yarn install && yarn build
+  #   staticPublishPath: build
+  #   pullRequestPreviewsEnabled: false
+  #   autoDeploy: true
+  #   envVars:
+  #     - key: REACT_APP_BACKEND_URL
+  #       value: https://teraplayer-api.onrender.com  # Replace with your backend URL
