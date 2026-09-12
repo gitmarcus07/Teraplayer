@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { Loader2, Lock, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import logo from "@/components/logo.png";
+import Logo from "@/components/Logo";
 import { useAdmin } from "@/context/AdminContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,7 +58,9 @@ export default function AdminLogin() {
             <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/30">
               <ShieldCheck className="h-6 w-6 text-primary" />
             </div>
-            <img src={logo} alt="TeraPlayer" className="h-10 w-auto mb-2" />
+            <div className="mb-2 flex justify-center">
+              <Logo />
+            </div>
             <CardTitle className="text-xl">Admin Control Center</CardTitle>
             <CardDescription>Sign in with your admin credentials</CardDescription>
           </CardHeader>
