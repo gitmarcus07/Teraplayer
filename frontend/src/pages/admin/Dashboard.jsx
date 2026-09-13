@@ -228,8 +228,8 @@ export default function Dashboard() {
                   </Badge>
                 </AlertTitle>
                 <AlertDescription className="mt-1">
-                  {isEmergency && "Public access disabled. Admin access preserved."}
-                  {isMaintenance && "Public API requests returning 503. Admin access normal."}
+                  {isEmergency && "Public access disabled (Public API returning 503). Admin access preserved."}
+                  {isMaintenance && "Website in maintenance — Public API & Telegram bot stay online. Admin access normal."}
                   {overallHealth === "unhealthy" && "One or more critical services are down."}
                   {overallHealth === "degraded" && "Some services are experiencing degraded performance."}
                 </AlertDescription>

@@ -303,13 +303,13 @@ export default function SearchConsole() {
             <h1 className="text-2xl font-bold">Search Console</h1>
             <p className="text-sm text-muted-foreground">Google Search Console performance for teraplayer.in</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" className="shrink-0" onClick={handleRefresh} disabled={loading}>
               <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
               Refresh
             </Button>
             {status.connected ? (
-              <Button variant="outline" size="sm" onClick={() => setDisconnectConfirm(true)}>
+              <Button variant="outline" size="sm" className="shrink-0" onClick={() => setDisconnectConfirm(true)}>
                 <XCircle className="mr-2 h-4 w-4" /> Disconnect
               </Button>
             ) : (
@@ -322,26 +322,26 @@ export default function SearchConsole() {
 
         {/* Connection Status */}
         <Card className={cn("border-l-4", status.connected ? "border-emerald-500" : "border-amber-500")}>
-          <CardContent className="p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", status.connected ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", status.connected ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
                   {status.connected ? <CheckCircle2 className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="font-medium">
                     {status.connected ? "Connected" : "Not Connected"}
                   </p>
                   {status.property_url && (
-                    <p className="text-sm text-muted-foreground font-mono">{status.property_url}</p>
+                    <p className="break-all font-mono text-xs text-muted-foreground sm:text-sm">{status.property_url}</p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 pl-[52px] text-xs text-muted-foreground sm:pl-0 sm:text-sm">
                 {status.last_sync_at && (
                   <>
                     <span>Last sync: </span>
-                    <span className="font-medium">{new Date(status.last_sync_at).toLocaleString()}</span>
+                    <span className="whitespace-nowrap font-medium">{new Date(status.last_sync_at).toLocaleString()}</span>
                   </>
                 )}
                 {status.last_error && (
@@ -382,10 +382,10 @@ export default function SearchConsole() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Label className="text-sm">Date Range</Label>
                     <Select value={dateRange} onValueChange={setDateRange}>
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-full min-w-[150px] flex-1 sm:w-[180px] sm:flex-none">
                         <SelectValue placeholder="Select range" />
                       </SelectTrigger>
                       <SelectContent>
@@ -406,14 +406,14 @@ export default function SearchConsole() {
                   </div>
 
                   {showCustomRange && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex w-full flex-wrap items-center gap-2">
                       <Label htmlFor="custom-start" className="text-sm">From</Label>
                       <Input
                         id="custom-start"
                         type="date"
                         value={customStart}
                         onChange={(e) => setCustomStart(e.target.value)}
-                        className="w-[160px]"
+                        className="w-full min-w-[140px] flex-1 sm:w-[160px] sm:flex-none"
                       />
                       <Label htmlFor="custom-end" className="text-sm">To</Label>
                       <Input
@@ -421,7 +421,7 @@ export default function SearchConsole() {
                         type="date"
                         value={customEnd}
                         onChange={(e) => setCustomEnd(e.target.value)}
-                        className="w-[160px]"
+                        className="w-full min-w-[140px] flex-1 sm:w-[160px] sm:flex-none"
                       />
                     </div>
                   )}
@@ -444,7 +444,7 @@ export default function SearchConsole() {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-7">
+              <TabsList className="flex h-auto w-full max-w-full items-center gap-1 overflow-x-auto p-1 md:grid md:grid-cols-7">
                 {[
                   { id: "overview", label: "Overview", icon: BarChart2 },
                   { id: "chart", label: "Charts", icon: BarChart2 },
@@ -454,8 +454,8 @@ export default function SearchConsole() {
                   { id: "devices", label: "Devices", icon: Monitor },
                   { id: "appearances", label: "Appearance", icon: Layers },
                 ].map((tab) => (
-                  <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1.5 text-sm py-3">
-                    <tab.icon className="h-4 w-4" />
+                  <TabsTrigger key={tab.id} value={tab.id} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs sm:px-3 sm:text-sm">
+                    <tab.icon className="h-4 w-4 shrink-0" />
                     {tab.label}
                   </TabsTrigger>
                 ))}
@@ -478,9 +478,9 @@ export default function SearchConsole() {
                       ].map((metric, i) => (
                         <Card key={i}>
                           <CardContent className="p-5">
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm text-muted-foreground">{metric.label}</p>
-                              <div className={cn("text-2xl font-bold", metric.change !== null && metric.change !== undefined && metric.change < 0 ? "text-destructive" : "")}>
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="min-w-0 flex-1 break-words text-sm text-muted-foreground">{metric.label}</p>
+                              <div className={cn("shrink-0 text-xl font-bold sm:text-2xl", metric.change !== null && metric.change !== undefined && metric.change < 0 ? "text-destructive" : "")}>
                                 {metric.value}
                               </div>
                             </div>

@@ -444,7 +444,9 @@ export default function Site() {
                   </Badge>
                 </AlertTitle>
                 <AlertDescription className="mt-1">
-                  Public API requests are returning 503. The admin control center and the public maintenance page still work.
+                  {isEmergency
+                    ? "Public API requests are returning 503. The admin control center and the public maintenance page still work."
+                    : "Website shows a maintenance page. Public API & Telegram bot stay online — use this to divert traffic to the bot."}
                   {countdown && <span className="ml-2 font-mono text-primary">Countdown: {countdown}</span>}
                 </AlertDescription>
               </div>
@@ -454,7 +456,7 @@ export default function Site() {
 
         <form onSubmit={handleSave} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="flex h-auto w-full max-w-full items-center gap-1 overflow-x-auto p-1 md:grid md:grid-cols-6">
               {[
                 { id: "settings", label: "Operating Mode", icon: Settings },
                 { id: "announcement", label: "Announcement", icon: Bell },
@@ -463,8 +465,8 @@ export default function Site() {
                 { id: "history", label: "History", icon: History },
                 { id: "preview", label: "Preview", icon: Eye },
               ].map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1.5 text-sm py-3">
-                  <tab.icon className="h-4 w-4" />
+                <TabsTrigger key={tab.id} value={tab.id} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs sm:px-3 sm:text-sm">
+                  <tab.icon className="h-4 w-4 shrink-0" />
                   {tab.label}
                 </TabsTrigger>
               ))}
@@ -491,23 +493,26 @@ export default function Site() {
                             : "border-border/60 hover:border-primary/30"
                         )}
                       >
-                        <div className="flex items-start gap-4">
-                          <span className="text-3xl shrink-0">{mode.icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <label className="font-medium cursor-pointer">{mode.label}</label>
-                              {operatingMode === mode.value && (
-                                <Badge variant="outline" className="text-xs text-emerald-600">
-                                  Active
-                                </Badge>
-                              )}
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                          <div className="flex min-w-0 flex-1 items-start gap-3">
+                            <span className="shrink-0 text-2xl sm:text-3xl">{mode.icon}</span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <label className="font-medium cursor-pointer">{mode.label}</label>
+                                {operatingMode === mode.value && (
+                                  <Badge variant="outline" className="text-xs text-emerald-600">
+                                    Active
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="mt-1 break-words text-sm text-muted-foreground">{mode.description}</p>
                             </div>
-                            <p className="mt-1 text-sm text-muted-foreground">{mode.description}</p>
                           </div>
                           <Button
                             type="button"
                             variant={operatingMode === mode.value ? "default" : "outline"}
                             size="sm"
+                            className="w-full shrink-0 sm:w-auto"
                             onClick={() => handleModeChange(mode.value)}
                             disabled={saving || operatingMode === mode.value}
                           >
@@ -523,8 +528,8 @@ export default function Site() {
                     <AlertTitle>Important Notes</AlertTitle>
                     <AlertDescription className="space-y-1 text-sm">
                       <p><strong>Normal:</strong> All services online. No maintenance page shown.</p>
-                      <p><strong>Maintenance:</strong> Public users see maintenance page. Admins access /admin normally.</p>
-                      <p><strong>Emergency:</strong> Immediately restricts public access. Requires confirmation. Admin access always preserved.</p>
+                      <p><strong>Maintenance:</strong> Website shows maintenance page. Public API & Telegram bot stay online. Admins access /admin normally.</p>
+                      <p><strong>Emergency:</strong> Full kill-switch — disables website, Public API, and extraction. Requires confirmation. Admin access always preserved.</p>
                     </AlertDescription>
                   </Alert>
                 </CardContent>

@@ -145,15 +145,15 @@ export default function System() {
 
         {/* Overall Status */}
         <Card className={cn("border-l-4", overallStatus === "healthy" && "border-emerald-500", overallStatus === "degraded" && "border-amber-500", overallStatus === "unhealthy" && "border-destructive")}>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg", overallStatus === "healthy" && "bg-emerald-100", overallStatus === "degraded" && "bg-amber-100", overallStatus === "unhealthy" && "bg-destructive/10")}>
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-lg", overallStatus === "healthy" && "bg-emerald-100", overallStatus === "degraded" && "bg-amber-100", overallStatus === "unhealthy" && "bg-destructive/10")}>
                   {statusIcon(overallStatus)}
                 </div>
-                <div>
-                  <p className="text-xl font-semibold capitalize">System Status: {overallStatus}</p>
-                  <p className="text-sm text-muted-foreground">Last checked: {data.timestamp ? new Date(data.timestamp).toLocaleString() : "—"}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-lg font-semibold capitalize sm:text-xl">System Status: {overallStatus}</p>
+                  <p className="break-words text-xs text-muted-foreground sm:text-sm">Last checked: {data.timestamp ? new Date(data.timestamp).toLocaleString() : "—"}</p>
                 </div>
               </div>
             </div>
@@ -161,14 +161,14 @@ export default function System() {
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="flex h-auto w-full max-w-full items-center gap-1 overflow-x-auto p-1 md:grid md:grid-cols-3">
             {[
               { id: "overview", label: "Overview", icon: Activity },
               { id: "health", label: "Health Checks", icon: Shield },
               { id: "info", label: "System Info", icon: Server },
             ].map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1.5 text-sm py-3">
-                <tab.icon className="h-4 w-4" />
+              <TabsTrigger key={tab.id} value={tab.id} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs sm:px-3 sm:text-sm">
+                <tab.icon className="h-4 w-4 shrink-0" />
                 {tab.label}
               </TabsTrigger>
             ))}
@@ -229,12 +229,12 @@ export default function System() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {Object.entries(secretVars).map(([name, configured]) => (
-                  <div key={name} className="flex items-center justify-between">
-                    <span className="font-mono text-xs">{name}</span>
+                  <div key={name} className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 flex-1 break-all font-mono text-xs">{name}</span>
                     {configured ? (
-                      <Badge variant="outline" className="gap-1.5 text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> Configured</Badge>
+                      <Badge variant="outline" className="shrink-0 gap-1.5 text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> Configured</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-amber-600">Not configured</Badge>
+                      <Badge variant="outline" className="shrink-0 text-amber-600">Not configured</Badge>
                     )}
                   </div>
                 ))}
@@ -308,25 +308,25 @@ export default function System() {
               <CardContent className="space-y-3">
                 {checks.length > 0 ? (
                   checks.map((check) => (
-                    <div key={check.name} className={cn("flex items-center justify-between gap-4 rounded-xl border p-4", check.status === "healthy" && "border-emerald-500/30 bg-emerald-500/5", check.status === "degraded" && "border-amber-500/30 bg-amber-500/5", check.status === "unhealthy" && "border-destructive/30 bg-destructive/5")}>
-                      <div className="flex items-center gap-3">
-                        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", check.status === "healthy" && "bg-emerald-100 text-emerald-600", check.status === "degraded" && "bg-amber-100 text-amber-600", check.status === "unhealthy" && "bg-destructive/10 text-destructive")}>
+                    <div key={check.name} className={cn("flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4", check.status === "healthy" && "border-emerald-500/30 bg-emerald-500/5", check.status === "degraded" && "border-amber-500/30 bg-amber-500/5", check.status === "unhealthy" && "border-destructive/30 bg-destructive/5")}>
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", check.status === "healthy" && "bg-emerald-100 text-emerald-600", check.status === "degraded" && "bg-amber-100 text-amber-600", check.status === "unhealthy" && "bg-destructive/10 text-destructive")}>
                           {statusIcon(check.status)}
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className="font-medium capitalize">{check.name.replace("_", " ")}</p>
-                          <p className="text-sm text-muted-foreground">{check.details || check.error || "No details"}</p>
+                          <p className="break-words text-sm text-muted-foreground">{check.details || check.error || "No details"}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <Badge variant={check.status === "healthy" ? "default" : check.status === "degraded" ? "secondary" : "destructive"} className="capitalize">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pl-[52px] text-xs text-muted-foreground sm:justify-end sm:pl-0 sm:text-sm">
+                        <Badge variant={check.status === "healthy" ? "default" : check.status === "degraded" ? "secondary" : "destructive"} className="shrink-0 capitalize">
                           {check.status}
                         </Badge>
                         {check.latency_ms && (
-                          <span className="font-mono"><Wifi className="mr-1 h-3.5 w-3.5 inline" /> {check.latency_ms.toFixed(1)}ms</span>
+                          <span className="whitespace-nowrap font-mono"><Wifi className="mr-1 h-3.5 w-3.5 inline" /> {check.latency_ms.toFixed(1)}ms</span>
                         )}
                         {check.timestamp && (
-                          <span>Updated: {new Date(check.timestamp).toLocaleTimeString()}</span>
+                          <span className="whitespace-nowrap">Updated: {new Date(check.timestamp).toLocaleTimeString()}</span>
                         )}
                       </div>
                     </div>
@@ -392,12 +392,12 @@ export default function System() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {Object.entries(secretVars).map(([name, configured]) => (
-                  <div key={name} className="flex items-center justify-between">
-                    <span className="font-mono text-xs">{name}</span>
+                  <div key={name} className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 flex-1 break-all font-mono text-xs">{name}</span>
                     {configured ? (
-                      <Badge variant="outline" className="gap-1.5 text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> Configured</Badge>
+                      <Badge variant="outline" className="shrink-0 gap-1.5 text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> Configured</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-amber-600">Not configured</Badge>
+                      <Badge variant="outline" className="shrink-0 text-amber-600">Not configured</Badge>
                     )}
                   </div>
                 ))}

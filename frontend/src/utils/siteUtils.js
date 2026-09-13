@@ -63,8 +63,8 @@ export function getButtonStyleClass(style) {
 /** Operating mode options */
 export const OPERATING_MODES = [
   { value: "normal", label: "Normal", description: "Everything works normally. Website, Public API, and Extraction are online.", icon: "🟢" },
-  { value: "maintenance", label: "Maintenance", description: "Public users see a maintenance page. Admins can still access /admin.", icon: "🟡" },
-  { value: "emergency", label: "Emergency", description: "Immediately disables public access to selected services. Admin access always remains.", icon: "🔴" },
+  { value: "maintenance", label: "Maintenance", description: "Website shows a maintenance page. Public API & Telegram bot stay online. Admins can still access /admin.", icon: "🟡" },
+  { value: "emergency", label: "Emergency", description: "Full kill-switch: disables website, Public API, and extraction. Admin access always remains.", icon: "🔴" },
 ];
 
 /** Format date for display */

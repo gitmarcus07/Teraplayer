@@ -1670,10 +1670,18 @@ app.add_middleware(RequestIDMiddleware)
 
 
 async def maintenance_dispatch(request: Request, call_next):
-    """Block all non-admin API traffic based on site operating mode.
+    """Block non-admin API traffic based on site operating mode.
+
+    - ``maintenance``: website shows a maintenance page (frontend gates on
+      /api/site/status), but the Public API / extraction stay ONLINE so the
+      Telegram bot (which uses /api/preview) keeps working. This lets admins
+      divert website traffic to the bot during maintenance.
+    - ``emergency``: full public kill-switch — all public /api traffic
+      returns 503. Admin API, /api/site/status and /api/health stay up.
 
     The admin API and the public /api/site/status (used by the frontend to
-    render the maintenance screen) and /api/health (platform probes) stay up.
+    render the maintenance screen) and /api/health (platform probes) stay up
+    in every mode.
     """
     path = request.url.path
     if db is not None and path.startswith("/api") and not path.startswith("/api/admin"):
@@ -1681,7 +1689,7 @@ async def maintenance_dispatch(request: Request, call_next):
             try:
                 status = await get_public_site_status(db)
                 operating_mode = status.get("operating_mode", "normal")
-                if operating_mode in ("maintenance", "emergency"):
+                if operating_mode == "emergency":
                     return JSONResponse(
                         status_code=503,
                         content={

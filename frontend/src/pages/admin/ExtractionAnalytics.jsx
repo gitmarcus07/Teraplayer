@@ -196,9 +196,9 @@ export default function ExtractionAnalytics() {
             <h1 className="text-2xl font-bold">Extraction Analytics</h1>
             <p className="text-sm text-muted-foreground">Detailed extraction performance and failure analysis</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full min-w-[140px] flex-1 sm:w-[160px] sm:flex-none">
                 <SelectValue placeholder="Select range" />
               </SelectTrigger>
               <SelectContent>
@@ -207,11 +207,11 @@ export default function ExtractionAnalytics() {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            <Button variant="outline" size="sm" className="shrink-0" onClick={handleExport} disabled={exporting}>
               <Download className={cn("mr-2 h-4 w-4", exporting && "animate-spin")} />
               Export CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
+            <Button variant="outline" size="sm" className="shrink-0" onClick={loadData} disabled={loading}>
               <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
               Refresh
             </Button>
@@ -253,15 +253,15 @@ export default function ExtractionAnalytics() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="flex h-auto w-full max-w-full items-center gap-1 overflow-x-auto p-1 md:grid md:grid-cols-4">
             {[
               { id: "overview", label: "Overview", icon: BarChart2 },
               { id: "by-kind", label: "By Kind", icon: FileText },
               { id: "failures", label: "Failures", icon: AlertTriangle },
               { id: "api", label: "API Analytics", icon: BarChart2 },
             ].map((tab) => (
-              <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1.5 text-sm py-3">
-                <tab.icon className="h-4 w-4" />
+              <TabsTrigger key={tab.id} value={tab.id} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs sm:px-3 sm:text-sm">
+                <tab.icon className="h-4 w-4 shrink-0" />
                 {tab.label}
               </TabsTrigger>
             ))}
