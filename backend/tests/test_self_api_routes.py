@@ -97,6 +97,14 @@ class TestSelfTeraboxEndpoint:
         assert r.status_code == 200, r.text
         assert r.json()["password_required"] is True
 
+    def test_password_submitted_failure_returns_unified_message(self, client, monkeypatch):
+        _patch_resolver(monkeypatch, {"ok": False, "error": "some chain noise", "files": []})
+        r = client.post("/api/terabox", json={"url": "https://terabox.com/s/1abc", "password": "1234"})
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["status"] == "error"
+        assert data["error"] == "Password-protected links are not supported."
+
 
 class TestSelfHealthEndpoint:
     def test_health_never_leaks_secrets(self, client):

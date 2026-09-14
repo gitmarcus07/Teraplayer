@@ -856,6 +856,10 @@ async def terabox_self_compat(payload: TeraboxSelfRequest, request: Request) -> 
     except Exception:  # noqa: BLE001
         logger.warning("self /api/terabox mapping failed")
         return {"status": "error", "error": "mapping failed", "total_files": 0, "list": []}
+    if (payload.password or "").strip() and data.get("status") == "error":
+        # Password links are unsupported: always answer with the single
+        # locked sentence instead of leaking which leg failed (or didn't).
+        data["error"] = "Password-protected links are not supported."
     try:
         await record_metric(db, "terabox_self", bool(preview.get("ok")))
     except Exception:  # noqa: BLE001 - metrics must never break extraction
