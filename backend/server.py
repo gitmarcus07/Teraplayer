@@ -818,6 +818,131 @@ async def stream(request: Request, url: str = Query(...)):
 
 
 # ---------------------------------------------------------------------------
+# Self-hosted TeraBox compat API (additive, shadow mode)
+#
+# New routes only — existing /preview|/watch|/download|/folder and the paid
+# xAPIverse path are untouched. Frontend can trial POST /api/terabox and
+# fall back to /api/preview at any time (flag REACT_APP_USE_SELF_API).
+# ---------------------------------------------------------------------------
+
+
+class TeraboxSelfRequest(BaseModel):
+    url: str
+    password: Optional[str] = None
+
+
+@api.post("/terabox")
+async def terabox_self_compat(payload: TeraboxSelfRequest, request: Request) -> dict[str, Any]:
+    """xAPIverse-compatible extraction via our own orchestrator (shadow mode).
+
+    Goes through the shared 12h extraction cache (services.terabox) so repeat
+    views of the same share cost zero upstream calls. Paid xAPIverse remains
+    the last-resort fallback inside the orchestrator while enabled.
+    """
+    from services import terabox_self as _self
+
+    await check_rate_limit(db, request, scope="terabox_self")
+    raw_url = (payload.url or "").strip()
+    if not raw_url or not is_terabox_url(raw_url):
+        return {"status": "error", "error": "Not a valid TeraBox link.", "total_files": 0, "list": []}
+    try:
+        preview = await get_preview(raw_url, password=payload.password or "")
+    except Exception:  # noqa: BLE001 - compat endpoint never 500s on resolver errors
+        logger.warning("self /api/terabox resolver failed")
+        return {"status": "error", "error": "extraction failed", "total_files": 0, "list": []}
+    base_url = str(request.base_url).rstrip("/")
+    try:
+        data = _self.to_xapi_compat(preview, base_url)
+    except Exception:  # noqa: BLE001
+        logger.warning("self /api/terabox mapping failed")
+        return {"status": "error", "error": "mapping failed", "total_files": 0, "list": []}
+    try:
+        await record_metric(db, "terabox_self", bool(preview.get("ok")))
+    except Exception:  # noqa: BLE001 - metrics must never break extraction
+        pass
+    return data
+
+
+@api.get("/terabox/health")
+async def terabox_self_health() -> dict[str, Any]:
+    """Safe diagnostics for the self-API (counts/hashes only, never secrets)."""
+    from services import terabox_self as _self
+
+    try:
+        return _self.self_health()
+    except Exception:  # noqa: BLE001
+        return {"ok": False, "primary": "self"}
+
+
+@api.get("/fast_stream")
+async def fast_stream(request: Request, token: Optional[str] = Query(None)) -> Response:
+    """Proxied HLS playlist for self-API fast_stream_url tokens.
+
+    Valid token -> upstream .m3u8 (rewritten to /api/stream) or 502 JSON.
+    Invalid/missing token -> 401 JSON. Never 500s, never leaks upstream URLs.
+    """
+    from services import terabox_self as _self
+
+    if not token:
+        return JSONResponse(status_code=401, content={"status": "error", "error": "missing token"})
+    payload = _self.verify_fast_stream(token)
+    if payload is None:
+        return JSONResponse(status_code=401, content={"status": "error", "error": "invalid or expired token"})
+    # v1 shadow: playlist resolution requires a live upstream fetch. If the
+    # upstream is unreachable from this host, return 502 (frontend falls back
+    # to direct stream_url from /api/terabox list items).
+    try:
+        await check_rate_limit(db, request, scope="fast_stream")
+    except HTTPException as exc:
+        return JSONResponse(status_code=exc.status_code, content={"status": "error", "error": "rate limited"})
+    except Exception:  # noqa: BLE001
+        pass
+    # Serve a rewritten playlist when this share/file was recently resolved
+    # (its stream URL sits in the extraction cache). Otherwise fall through
+    # to the 502 below and the frontend uses `stream_url` directly.
+    base_url = str(request.base_url).rstrip("/")
+    try:
+        from services import terabox as _cache
+
+        stream_url = await _cache.find_cached_stream(payload["surl"], payload["fs_id"], db)
+        if stream_url and "m3u8" in stream_url:
+            async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+                upstream = await client.get(
+                    stream_url,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                        "Referer": "https://www.terabox.com/",
+                    },
+                )
+                if upstream.status_code < 400 and "#EXTM3U" in upstream.text:
+                    body = _self.rewrite_m3u8(upstream.text, base_url, token)
+                    try:
+                        await record_metric(db, "fast_stream", True)
+                    except Exception:  # noqa: BLE001
+                        pass
+                    return Response(
+                        content=body,
+                        media_type="application/vnd.apple.mpegurl",
+                        headers={"Cache-Control": "public, max-age=300"},
+                    )
+    except Exception:  # noqa: BLE001 - playlist proxy must never 500
+        pass
+    try:
+        await record_metric(db, "fast_stream", True)
+    except Exception:  # noqa: BLE001
+        pass
+    return JSONResponse(
+        status_code=502,
+        content={
+            "status": "error",
+            "error": "fast_stream upstream pending: use stream_url from /api/terabox; full HLS rewrite ships next.",
+            "surl_hash": payload["surl"][:4] + "...",
+            "quality": payload["quality"],
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
 # Admin (private premium control center)
 # ---------------------------------------------------------------------------
 
@@ -832,14 +957,16 @@ def _extractor_status() -> list[dict[str, Any]]:
         "cf_worker": lambda: bool(os.environ.get("TERABOX_WORKER_URL")),
         "hnn": lambda: True,
         "teradl": lambda: True,
+        "self": lambda: True,
     }
+    names = [name for name, _ in EXTRACTORS] + (["self"] if "self" not in [n for n, _ in EXTRACTORS] else [])
     return [
         {
             "name": name,
             "enabled": True,
             "configured": bool(_config_checks.get(name, lambda: False)()),
         }
-        for name, _ in EXTRACTORS
+        for name in names
     ]
 
 

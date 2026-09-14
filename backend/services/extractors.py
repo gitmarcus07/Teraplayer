@@ -216,7 +216,29 @@ PASSWORD_PHRASES = (
 )
 
 
-PASSWORD_ERRNO_DEFINITIVE = {-130, -9, 105, -105, 130, "-130", "-9", "105", "-105", "130"}
+# Definitive: TeraBox uses these ONLY for password failures (observed live).
+PASSWORD_ERRNO_DEFINITIVE = {-130, -9, "-130", "-9"}
+
+# Ambiguous: TeraBox ALSO returns these for dead/expired/invalid links
+# (observed: fake surl -> errno 105 with empty message). Only treated as a
+# password signal when the message text also carries a password phrase —
+# otherwise a dead link would wrongly prompt for a password.
+PASSWORD_ERRNO_AMBIGUOUS = {105, -105, 130, "105", "-105", "130"}
+
+
+def _coerce_errno(errno: Any) -> Any:
+    """Normalize int/numeric-string errnos so upstream type flicker can't
+    change detection outcomes (see native_extractor._coerce_errno)."""
+    try:
+        if isinstance(errno, bool):
+            return errno
+        if isinstance(errno, float):
+            return int(errno)
+        if isinstance(errno, str) and errno.strip().lstrip("+-").isdigit():
+            return int(errno.strip())
+    except (TypeError, ValueError):
+        pass
+    return errno
 
 
 def _is_password_error(data: Any) -> bool:
@@ -227,9 +249,13 @@ def _is_password_error(data: Any) -> bool:
       - data (any type) contains a known password phrase in its string repr
     """
     if isinstance(data, dict):
-        errno = data.get("errno") or data.get("error_code") or data.get("code")
+        errno = _coerce_errno(data.get("errno") or data.get("error_code") or data.get("code"))
         if errno in PASSWORD_ERRNO_DEFINITIVE:
             return True
+        if errno in PASSWORD_ERRNO_AMBIGUOUS:
+            # Ambiguous errno: require password text, else it's a dead link.
+            text = str(data).lower()
+            return any(p in text for p in PASSWORD_PHRASES)
         # Fall through to text check for non-errno cases
     text = str(data).lower()
     return any(p in text for p in PASSWORD_PHRASES)
@@ -464,7 +490,8 @@ async def _extract_via_playwright(url: str, client: httpx.AsyncClient, password:
     NOT available through static HTML parsing.
 
     Requires Playwright with Chromium installed, AND a valid ndus cookie
-    configured via the COOKIE_JSON environment variable.
+    configured via COOKIE_POOL_JSON (preferred) or the COOKIE_JSON
+    environment variable.
 
     Without a valid ndus cookie, TeraBox's /share/list API returns errno=-21
     because sign/timestamp/shareid/uk are session-dependent tokens that
@@ -472,14 +499,21 @@ async def _extract_via_playwright(url: str, client: httpx.AsyncClient, password:
     """
     pw_cookie = os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS")
     if not pw_cookie:
+        try:
+            from . import cookie_pool
+
+            pw_cookie = cookie_pool.next_cookie_header()
+        except Exception:
+            pw_cookie = ""
+    if not pw_cookie:
         raise ValueError(
             "playwright: COOKIE_JSON not configured. "
             "A valid ndus cookie is required for Playwright-based extraction."
         )
 
-    from .playwright_extractor import _extract_via_playwright as _pw_extract
-
     try:
+        from .playwright_extractor import _extract_via_playwright as _pw_extract
+
         return await _pw_extract(url, client, password)
     except ImportError as exc:
         raise ValueError(f"playwright: Playwright not available ({exc})")
@@ -519,10 +553,10 @@ async def _extract_via_cf_worker(url: str, client: httpx.AsyncClient, password: 
             raise ValueError("cf_worker: invalid response type")
 
         if data.get("password_required") or _is_password_error(data):
-            raise PasswordError(f"cf_worker: {data.get('error', 'password required')}")
+            raise PasswordError(_err("cf_worker", data.get("error", "password required")))
 
         if not data.get("ok"):
-            raise ValueError(f"cf_worker: {data.get('error', 'unknown error')}")
+            raise ValueError(_err("cf_worker", data.get("error", "unknown error")))
 
         if not data.get("download_url") and not data.get("stream_url"):
             raise ValueError("cf_worker: no direct link in response")
@@ -538,7 +572,7 @@ async def _extract_via_cf_worker(url: str, client: httpx.AsyncClient, password: 
     except PasswordError:
         raise
     except Exception as exc:
-        raise ValueError(f"cf_worker: {exc}")
+        raise ValueError(_err("cf_worker", exc))
 
 
 # ---------------------------------------------------------------------------
@@ -546,16 +580,33 @@ async def _extract_via_cf_worker(url: str, client: httpx.AsyncClient, password: 
 # ---------------------------------------------------------------------------
 
 
-EXTRACTORS = [
-    # xAPIverse is the PRIMARY extractor: it resolves links through the
-    # xapiverse.com API and does NOT require a personal TeraBox ndus cookie.
-    ("xapiverse", extract_via_xapiverse),
-    ("playwright", _extract_via_playwright),
-    ("cf_worker", _extract_via_cf_worker),
-    ("hnn", _extract_via_hnn),
-    ("teradl", _extract_via_teradl),
-    # ("savetube", _extract_via_savetube),  # Disabled: DNS for ytshorts.savetube.me no longer resolves
-]
+def _allow_xapiverse() -> bool:
+    """Paid fallback gate. Default ON during the shadow-compare week so the
+    site never breaks; set ALLOW_XAPIVERSE_FALLBACK=false to go $0-only."""
+    return (os.environ.get("ALLOW_XAPIVERSE_FALLBACK", "true").strip().lower()
+            not in ("0", "false", "no", "off"))
+
+
+def _build_extractors() -> list:
+    """Free legs first, paid xAPIverse LAST as fallback (shadow-mode policy).
+
+    Built dynamically so ALLOW_XAPIVERSE_FALLBACK=false drops the paid leg
+    without code changes. Existing tests monkeypatch EXTRACTORS directly and
+    are unaffected.
+    """
+    chain = [
+        ("cf_worker", _extract_via_cf_worker),
+        ("playwright", _extract_via_playwright),
+        ("hnn", _extract_via_hnn),
+        ("teradl", _extract_via_teradl),
+        # ("savetube", _extract_via_savetube),  # Disabled: DNS for ytshorts.savetube.me no longer resolves
+    ]
+    if _allow_xapiverse():
+        chain.append(("xapiverse", extract_via_xapiverse))
+    return chain
+
+
+EXTRACTORS = _build_extractors()
 
 
 def _is_playable_result(result: dict[str, Any]) -> bool:
@@ -583,6 +634,13 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
     """
     last_error: str | None = None
     password_required = False
+
+    def _chain_error(name: str, exc: BaseException) -> str:
+        """Prefix extractor errors with the leg name — without doubling it
+        when the message already carries the prefix (user-visible text)."""
+        msg = str(exc)
+        return msg if msg.startswith(f"{name}:") else f"{name}: {msg}"
+
     async with httpx.AsyncClient(follow_redirects=True) as client:
         for name, fn in EXTRACTORS:
             try:
@@ -593,11 +651,11 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
                 last_error = f"{name}: no direct link"
             except PasswordError as exc:
                 password_required = True
-                last_error = f"{name}: {exc}"
+                last_error = _chain_error(name, exc)
                 logger.info("Extractor %s reports password protection: %s", name, exc)
                 continue
             except Exception as exc:  # noqa: BLE001
-                last_error = f"{name}: {exc}"
+                last_error = _chain_error(name, exc)
                 logger.warning("Extractor %s failed: %s", name, exc)
                 continue
 
@@ -607,7 +665,7 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
             return {
                 "ok": False,
                 "source": "hnn",
-                "error": "Incorrect password. Please try again." if password else "This link is password protected.",
+                "error": "Password-protected links are not supported.",
                 "password_required": True,
                 "password_incorrect": bool(password),
                 "title": "Password required",
@@ -629,18 +687,25 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
                 native["ok"] = False
                 native["error"] = last_error or "No direct download link available."
                 native["password_required"] = False
-                native["password_incorrect"] = False
+                native["password_incorrect"] = bool(password)
                 return native
         except Exception as exc:  # noqa: BLE001
             last_error = f"native: {exc}"
 
     # Determine the primary error reason
     pw_cookie = os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS")
+    if not pw_cookie:
+        try:
+            from . import cookie_pool
+
+            pw_cookie = cookie_pool.next_cookie_header()
+        except Exception:
+            pw_cookie = ""
     cookie_hint = ""
     if not pw_cookie:
         cookie_hint = (
             "TeraBox now requires an authenticated session to extract files. "
-            "Set COOKIE_JSON in your .env file with your ndus cookie "
+            "Set COOKIE_POOL_JSON in your .env file with your ndus cookie "
             "(see .env.example for instructions)."
         )
 
@@ -651,7 +716,10 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
         "source": "none",
         "error": error_msg,
         "password_required": False,
-        "password_incorrect": False,
+        # A submitted password that produced no playable result: flag it so
+        # repeated identical calls return a consistent shape (previously the
+        # flag flickered depending on which extractor failed first).
+        "password_incorrect": bool(password),
         "title": "Unavailable",
         "size": None,
         "size_str": None,
@@ -668,6 +736,17 @@ async def resolve_terabox(url: str, password: str = "") -> dict[str, Any]:
 def _shortid_or_url(url: str) -> str:
     sid = extract_share_id(url)
     return sid or url
+
+
+def _err(name: str, msg: Any) -> str:
+    """Prefix a leg error with its name — stripping ALL existing repeats of
+    the prefix first (upstream may already prefix once or twice), so logs
+    and user-facing text always carry exactly one."""
+    text = str(msg).strip()
+    prefix = f"{name}:"
+    while text.startswith(prefix):
+        text = text[len(prefix):].strip()
+    return f"{prefix} {text}" if text else prefix
 
 
 VIDEO_EXTS = {"mp4", "mkv", "avi", "mov", "webm", "flv", "m4v", "wmv", "ts", "mpeg", "mpg"}

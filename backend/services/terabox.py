@@ -14,14 +14,18 @@ from typing import Any
 
 from pymongo import ReplaceOne
 
-from .extractors import resolve_terabox, is_terabox_url
+from .extractors import resolve_terabox, is_terabox_url, extract_share_id
 from .native_extractor import extract_native
 
 logger = logging.getLogger(__name__)
 
 # In-memory cache fallback (used when MongoDB is not configured)
 _MEMORY_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
-CACHE_TTL_SECONDS = 300  # 5 minutes
+# Shadow-mode economy: share metadata is immutable, so cache long (default
+# 12h, override via CACHE_TTL_SECONDS) to cut repeat paid upstream calls at
+# 6-7k req/day. Mongo TTL index cleanup is separate; the app-level age check
+# below is what governs cache hits.
+CACHE_TTL_SECONDS = int(os.environ.get("CACHE_TTL_SECONDS", "43200") or 43200)
 
 # Will be set by get_preview() on first call
 _db = None
@@ -35,6 +39,18 @@ def _set_db(database) -> None:
 
 # Load COOKIE_JSON from env
 COOKIE_JSON = os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS") or ""
+
+
+def _native_cookie() -> str:
+    """Cookie for the native fallback: single env first, then pool header."""
+    if COOKIE_JSON:
+        return COOKIE_JSON
+    try:
+        from . import cookie_pool
+
+        return cookie_pool.next_cookie_header()
+    except Exception:
+        return ""
 
 
 def parse_share_input(text: str) -> tuple[str, str]:
@@ -63,6 +79,24 @@ def parse_share_input(text: str) -> tuple[str, str]:
             return parts[0].strip(), parts[1].strip()
 
     return s, ""
+
+
+def canonical_cache_key(url: str, password: str = "") -> str:
+    """Normalize cache keys so the same share hits one entry.
+
+    Strips mirror differences (1024terabox vs terabox), the leading '1' in
+    /s/1xxx paths, and tracking query params. Password stays part of the key.
+    Falls back to the lowercased raw URL when no share id is found.
+    """
+    u = (url or "").strip()
+    try:
+        sid = extract_share_id(u)
+    except Exception:
+        sid = None
+    if sid:
+        sid = sid[1:] if sid.startswith("1") else sid
+        return f"surl:{sid}::{password or ''}"
+    return f"{u.lower()}::{password or ''}"
 
 
 async def _get_cached(cache_key: str) -> dict[str, Any] | None:
@@ -122,7 +156,7 @@ async def get_preview(url: str, password: str = "") -> dict[str, Any]:
             "error": "Not a valid TeraBox link. Please paste a link from terabox.com or a supported mirror.",
         }
 
-    cache_key = f"{url}::{password}"
+    cache_key = canonical_cache_key(url, password)
 
     # Check cache
     cached = await _get_cached(cache_key)
@@ -139,10 +173,11 @@ async def get_preview(url: str, password: str = "") -> dict[str, Any]:
     # If all community extractors failed, try native TeraBox API extraction as a
     # final fallback — but ONLY when an ndus cookie is configured. Production uses
     # the xAPIverse API as the primary path and must NOT require a personal cookie.
-    if not data.get("ok") and not data.get("password_required") and COOKIE_JSON:
+    _cookie = _native_cookie()
+    if not data.get("ok") and not data.get("password_required") and _cookie:
         logger.info("Community extractors failed, trying native TeraBox API extraction...")
         try:
-            native = await extract_native(url, password=password, cookie_json=COOKIE_JSON)
+            native = await extract_native(url, password=password, cookie_json=_cookie)
             if native.get("ok"):
                 await _set_cached(cache_key, native)
                 return native
@@ -160,3 +195,35 @@ async def get_preview(url: str, password: str = "") -> dict[str, Any]:
 def clear_cache() -> None:
     """Clear all cached extraction results."""
     _MEMORY_CACHE.clear()
+
+
+async def find_cached_stream(surl: str, fs_id: str, database=None) -> str | None:
+    """Best-effort lookup of a previously resolved stream URL by share+file.
+
+    Scans the in-memory cache, then (bounded) Mongo cache docs whose keys
+    match this share. Returns the stream/download URL or None. Used by the
+    self-API fast_stream route so recently resolved links serve playlists
+    without extra upstream calls. Never raises.
+    """
+    try:
+        prefix = f"surl:{surl}::"
+        for key, (_, data) in list(_MEMORY_CACHE.items()):
+            if not key.startswith(prefix):
+                continue
+            for f in data.get("files") or []:
+                if isinstance(f, dict) and str(f.get("fs_id") or "") == str(fs_id):
+                    url = f.get("stream_url") or f.get("download_url")
+                    if url:
+                        return url
+        db = database if database is not None else _db
+        if db is not None:
+            cursor = db.cache.find({"_key": {"$regex": f"^surl:{surl}::"}}).sort("cached_at", -1).limit(20)
+            async for doc in cursor:
+                for f in (doc.get("data") or {}).get("files") or []:
+                    if isinstance(f, dict) and str(f.get("fs_id") or "") == str(fs_id):
+                        url = f.get("stream_url") or f.get("download_url")
+                        if url:
+                            return url
+    except Exception:
+        pass
+    return None

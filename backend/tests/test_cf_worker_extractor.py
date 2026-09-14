@@ -163,12 +163,14 @@ class TestCfWorkerExtractor:
 class TestFallbackChain:
     def test_cf_worker_is_in_chain(self):
         names = [name for name, _ in extractors.EXTRACTORS]
-        # xAPIverse is the primary extractor; playwright/cf_worker remain fallbacks
-        assert names[0] == "xapiverse", f"Expected xapiverse first, got {names}"
+        # Shadow-mode policy: free legs first, paid xAPIverse last as fallback
         assert "cf_worker" in names
         assert "hnn" in names
         assert "teradl" in names
         assert "savetube" not in names, "savetube extractor is disabled — DNS no longer resolves"
+        if "xapiverse" in names:
+            assert names[-1] == "xapiverse", f"Expected xapiverse last, got {names}"
+            assert names.index("cf_worker") < names.index("xapiverse")
 
     def test_falls_through_when_cf_worker_fails(self, monkeypatch):
         async def _cf_stub(url, client, password=""):

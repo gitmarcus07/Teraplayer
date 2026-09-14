@@ -96,7 +96,9 @@ class TestPasswordErrorDetection:
         assert _is_password_error({"errno": -9}) is True
 
     def test_errno_105_triggers(self):
-        assert _is_password_error({"errno": 105}) is True
+        # 105 is AMBIGUOUS (also returned for dead links): needs password text.
+        assert _is_password_error({"errno": 105}) is False
+        assert _is_password_error({"errno": 105, "errmsg": "wrong password"}) is True
 
     def test_string_wrong_password_triggers(self):
         assert _is_password_error("wrong password") is True

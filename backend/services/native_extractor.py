@@ -64,7 +64,11 @@ CLIENTTYPE = "0"
 WEB = "1"
 
 # Password detection — must stay in sync with extractors.py
-PASSWORD_ERRNO_DEFINITIVE = {-130, -9, 105, -105, 130}
+# Definitive errnos are password-only; ambiguous ones (also returned for
+# dead/expired links, e.g. fake surl -> 105 with empty message) require
+# password text in the message.
+PASSWORD_ERRNO_DEFINITIVE = {-130, -9}
+PASSWORD_ERRNO_AMBIGUOUS = {105, -105, 130}
 PASSWORD_PHRASES = {
     "password required", "wrong password", "invalid password",
     "incorrect password", "need password", "password protected",
@@ -73,10 +77,30 @@ PASSWORD_PHRASES = {
 }
 
 
+def _coerce_errno(errno: Any) -> Any:
+    """Normalize upstream errno values: TeraBox flickers between int and
+    numeric-string forms run to run (e.g. -9 vs "-9"). Coerce numeric
+    strings to int so set-membership checks behave identically."""
+    try:
+        if isinstance(errno, bool):
+            return errno
+        if isinstance(errno, float):
+            return int(errno)
+        if isinstance(errno, str) and errno.strip().lstrip("+-").isdigit():
+            return int(errno.strip())
+    except (TypeError, ValueError):
+        pass
+    return errno
+
+
 def _is_password_error(errno: int, errmsg: str) -> bool:
     """Determine if API response indicates password protection."""
-    if errno in PASSWORD_ERRNO_DEFINITIVE:
+    coerced = _coerce_errno(errno)
+    if coerced in PASSWORD_ERRNO_DEFINITIVE:
         return True
+    if coerced in PASSWORD_ERRNO_AMBIGUOUS:
+        # Ambiguous errno: require password text, else it's a dead link.
+        return any(p in (errmsg or "").lower() for p in PASSWORD_PHRASES)
     # Fallback: check raw errmsg for known password phrases
     return any(p in errmsg.lower() for p in PASSWORD_PHRASES) if errmsg else False
 
@@ -436,10 +460,10 @@ async def _call_share_list(
             data = resp.json()
             _log_response("share_list", str(resp.url), resp.status_code, data, log_raw=True)
 
-            errno = data.get("errno", -1)
+            errno = _coerce_errno(data.get("errno", -1))
             errmsg = data.get("errmsg") or data.get("error_msg") or ""
 
-            if errno == 0 or errno == "0":
+            if errno == 0:
                 if data.get("list"):
                     return data
                 # Empty list - try next domain
@@ -517,10 +541,10 @@ async def _call_get_download(
             data = resp.json()
             _log_response("get_download", str(resp.url), resp.status_code, data, log_raw=True)
 
-            errno = data.get("errno")
+            errno = _coerce_errno(data.get("errno"))
             errmsg = data.get("errmsg") or data.get("error_msg") or ""
 
-            if errno == 0 or errno == "0":
+            if errno == 0:
                 dlink = data.get("dlink") or data.get("download_link") or data.get("url")
                 if dlink:
                     logger.info(f"Got direct dlink from {api_domain}")
@@ -671,7 +695,7 @@ async def extract_native(
 
         if share_list_data.get("error") == "password_required":
             return _make_error_response(
-                "Incorrect password. Please try again." if password else "This link is password protected.",
+                "Password-protected links are not supported.",
                 tokens=tokens,
                 password_required=True,
                 password_incorrect=bool(password),
@@ -696,7 +720,7 @@ async def extract_native(
 
             if dlink == "password_required":
                 return _make_error_response(
-                    "Incorrect password. Please try again." if password else "This link is password protected.",
+                    "Password-protected links are not supported.",
                     tokens=tokens,
                     password_required=True,
                     password_incorrect=bool(password),

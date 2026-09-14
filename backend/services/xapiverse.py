@@ -157,6 +157,14 @@ async def extract_via_xapiverse(url: str, client: httpx.AsyncClient, password: s
     if not XAPIVERSE_API_KEY:
         raise ValueError("xapiverse: XAPIVERSE_API_KEY not configured")
 
+    # The xAPIverse endpoint accepts only {"url"} — it has no password field.
+    # Skip BEFORE any HTTP call so password links never burn a paid credit
+    # here and never come back as a false "incorrect password". The
+    # password-capable legs (cf_worker, hnn, teradl, native, playwright)
+    # still get their turn with the password.
+    if (password or "").strip():
+        raise ValueError("xapiverse: password-protected links unsupported")
+
     headers = dict(DEFAULT_HEADERS)
     headers["xAPIverse-Key"] = XAPIVERSE_API_KEY
 

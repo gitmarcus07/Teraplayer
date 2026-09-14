@@ -101,6 +101,18 @@ class TestMissingApiKey:
         monkeypatch.setattr(xapiverse, "XAPIVERSE_API_KEY", "")
         assert xapiverse.is_configured() is False
 
+    def test_password_link_skips_paid_call_entirely(self, monkeypatch):
+        """The xAPIverse API accepts only {url} (no password field), so a
+        password-protected link must NEVER spend a paid credit there — and
+        must never masquerade as 'incorrect password'."""
+        monkeypatch.setattr(xapiverse, "XAPIVERSE_API_KEY", "test-api-key")
+        client = _make_client(post_result=_resp(200, json_data=SAMPLE_SUCCESS))
+        with pytest.raises(ValueError, match="password.*unsupported"):
+            run_async(
+                xapiverse.extract_via_xapiverse("https://terabox.com/s/1abc", client, "1234")
+            )
+        client.post.assert_not_called()
+
 
 class TestSuccessfulMapping:
     def _extract(self, monkeypatch, payload):
@@ -325,14 +337,19 @@ class TestNoSensitiveLeaks:
 
 
 class TestFallbackChain:
-    def test_xapiverse_position_in_chain(self):
+    def test_free_first_xapiverse_last_in_chain(self):
+        """Shadow-mode policy: free extractors first, paid xAPIverse LAST as
+        fallback (still enabled via ALLOW_XAPIVERSE_FALLBACK)."""
         names = [name for name, _ in extractors.EXTRACTORS]
-        # xAPIverse is the PRIMARY extractor (no personal cookie required)
-        assert names[0] == "xapiverse"
+        # Paid fallback must be last so free legs get first chance
+        assert names[-1] == "xapiverse"
         assert "playwright" in names
         assert "cf_worker" in names
         assert "hnn" in names
         assert "teradl" in names
+        # Free legs come before paid
+        assert names.index("cf_worker") < names.index("xapiverse")
+        assert names.index("hnn") < names.index("xapiverse")
 
     def test_chain_falls_through_to_xapiverse(self, monkeypatch):
         async def _cf_stub(url, client, password=""):

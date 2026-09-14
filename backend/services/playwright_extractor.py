@@ -68,8 +68,15 @@ async def _extract_via_playwright(
     # Normalize surl (remove leading '1')
     surl = surl[1:] if surl.startswith("1") else surl
 
-    # Get cookie from env
+    # Get cookie from env (single value preferred, pool header as fallback)
     cookie_json = os.environ.get("COOKIE_JSON") or os.environ.get("TERABOX_NDUS") or ""
+    if not cookie_json:
+        try:
+            from . import cookie_pool
+
+            cookie_json = cookie_pool.next_cookie_header()
+        except Exception:
+            cookie_json = ""
     
     # Build ndus cookie value
     ndus_value = ""
@@ -472,6 +479,11 @@ def _is_password_error(errno: int, errmsg: str) -> bool:
     """Determine if API response indicates password protection."""
     PASSWORD_ERRNO_DEFINITIVE = {-130}
     PASSWORD_ERRNO_AMBIGUOUS = {-9, 105}
+    try:
+        if isinstance(errno, str) and errno.strip().lstrip("+-").isdigit():
+            errno = int(errno.strip())
+    except (TypeError, ValueError):
+        pass
     PASSWORD_PHRASES = {
         "password required", "wrong password", "invalid password",
         "incorrect password", "need password", "password protected",
