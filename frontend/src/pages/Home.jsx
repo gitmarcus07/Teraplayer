@@ -116,8 +116,28 @@ export default function Home() {
   const heroInputRef = useRef(null);
   const folderBrowserRef = useRef(null);
   const playerAreaRef = useRef(null);
+  const resultAreaRef = useRef(null);
   const wasWatchingRef = useRef(false);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Fastvideosave-style UX: the loader / result renders below the fold, so
+  // bring it into view automatically. Central helper keeps the sticky-header
+  // offset and smooth scroll consistent everywhere.
+  const scrollToResult = useCallback(() => {
+    const el = resultAreaRef.current;
+    if (!el) return;
+    const header = document.querySelector('[data-testid="app-header"]');
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    el.style.scrollMarginTop = `${headerH + 12}px`;
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      });
+    });
+  }, []);
 
   const submit = useCallback(
     async (url, password = "") => {
@@ -300,6 +320,22 @@ export default function Home() {
     }
     wasWatchingRef.current = watching;
   }, [watching]);
+
+  // Like fastvideosave.net: as soon as resolving starts, move the viewport
+  // down to the output box (loader) so the user sees progress immediately,
+  // even on long pages where the result renders below the fold.
+  useEffect(() => {
+    if (loading) scrollToResult();
+  }, [loading, scrollToResult]);
+
+  // When the video/result arrives (or an error / browser-extraction status),
+  // keep it in view so the user can watch or download without hunting for it.
+  // Waits a tick for the result card to mount before scrolling.
+  useEffect(() => {
+    const hasResult =
+      (preview && typeof preview === "object") || errorInfo || extStatus || extRunning;
+    if (!loading && hasResult) scrollToResult();
+  }, [loading, preview, errorInfo, extStatus, extRunning, scrollToResult]);
 
   const copyLink = async () => {
     try {
@@ -504,6 +540,10 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Result output box — fastvideosave-style scroll target. The loader,
+            status, error and preview all mount here so auto-scroll lands the
+            user directly on the video / download actions. */}
+        <div ref={resultAreaRef} data-testid="result-area" className="scroll-mt-4">
         {loading && <ExtractionStatus />}
 
         {extStatus && (
@@ -660,6 +700,7 @@ export default function Home() {
             </div>
           </div>
         )}
+        </div>
 
         {/* Intro paragraph — centered gray, like the reference. */}
         <section aria-label={t("explore.aboutTp")} className="mx-auto mt-8 max-w-3xl px-4 sm:px-6">

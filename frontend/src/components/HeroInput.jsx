@@ -18,6 +18,11 @@ const HeroInput = forwardRef(function HeroInput(
   const [value, setValue] = useState(defaultValue);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
+  const autoSubmitTimerRef = useRef(null);
+
+  useEffect(() => () => {
+    if (autoSubmitTimerRef.current) clearTimeout(autoSubmitTimerRef.current);
+  }, []);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -79,8 +84,57 @@ const HeroInput = forwardRef(function HeroInput(
   };
 
   const handleChange = (e) => {
-    setValue(e.target.value);
+    const next = e.target.value;
+    const prevLen = value.length;
+    setValue(next);
     if (error) setError(null);
+
+    // Fallback for paste methods that don't fire onPaste reliably
+    // (mobile long-press, autofill, password managers): when the value jumps
+    // from empty/short to a full valid link in one change, auto-resolve it
+    // just like fastvideosave-style UX. Typing char-by-char never triggers
+    // this because submitValue runs debounced and only on a length jump.
+    if (!loading && next.length - prevLen > 10) {
+      const clean = sanitizeUrl(next);
+      if (clean && isLikelyTeraBoxUrl(clean)) {
+        if (autoSubmitTimerRef.current) clearTimeout(autoSubmitTimerRef.current);
+        autoSubmitTimerRef.current = setTimeout(() => {
+          setValue(clean);
+          submitValue(clean);
+        }, 500);
+      }
+    }
+  };
+
+  const handlePaste = (e) => {
+    if (loading) return;
+    const pastedText = e.clipboardData?.getData("text") || "";
+    if (!pastedText) return;
+    // Compute what the input will hold after this paste (respects cursor /
+    // selection) so a paste into an empty or occupied field both work.
+    const el = inputRef.current;
+    let nextValue = pastedText;
+    try {
+      const start = el?.selectionStart ?? value.length;
+      const end = el?.selectionEnd ?? value.length;
+      nextValue = value.slice(0, start) + pastedText + value.slice(end);
+    } catch {
+      nextValue = value ? `${value}${pastedText}` : pastedText;
+    }
+    const clean = sanitizeUrl(nextValue.trim());
+    if (!clean) return;
+    // Only hijack the paste when it looks like a link — otherwise let the
+    // user keep editing normally.
+    if (!/https?:\/\//i.test(clean) && !isLikelyTeraBoxUrl(clean)) return;
+    e.preventDefault();
+    if (autoSubmitTimerRef.current) clearTimeout(autoSubmitTimerRef.current);
+    setValue(clean);
+    setError(null);
+    // Let the input paint the pasted value first, then auto-start resolving
+    // so the user sees the link before the loader takes over.
+    autoSubmitTimerRef.current = setTimeout(() => {
+      submitValue(clean);
+    }, 150);
   };
 
   const hasText = value.trim().length > 0;
@@ -119,6 +173,7 @@ const HeroInput = forwardRef(function HeroInput(
           data-testid="paste-input"
           value={value}
           onChange={handleChange}
+          onPaste={handlePaste}
           placeholder={t("input.placeholder")}
           aria-label={t("input.label")}
           aria-invalid={error ? "true" : undefined}
